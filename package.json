@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "tsc"
   },
   "repository": {
@@ -20,12 +20,12 @@
   "homepage": "https://github.com/weiroll/weiroll.js#readme",
   "devDependencies": {
     "@types/chai": "^4.2.18",
-    "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^8.2.2",
+    "@types/node": "^15.12.2",
     "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
     "mocha": "^9.0.0",
     "ts-loader": "^9.2.3",
+    "ts-node": "^10.0.0",
     "typescript": "^4.3.2"
   },
   "dependencies": {
