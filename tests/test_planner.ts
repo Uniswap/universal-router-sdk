@@ -19,6 +19,7 @@ describe('planner', () => {
         const sum1 = planner.addCommand(Math.add(1, 2)) as ReturnValue;
         const sum2 = planner.addCommand(Math.add(3, 4)) as ReturnValue;
         const sum3 = planner.addCommand(Math.add(sum1, sum2)) as ReturnValue;
+        // const [commands, state] = planner.plan();
 
         expect(planner.commands.length).to.equal(3);
         expect(sum1.commandIndex).to.equal(0);
