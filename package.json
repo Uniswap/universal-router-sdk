@@ -1,0 +1,34 @@
+{
+  "name": "weiroll.js",
+  "version": "0.1.0",
+  "description": "The weiroll planner in JS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weiroll/weiroll.js.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/weiroll/weiroll.js/issues"
+  },
+  "homepage": "https://github.com/weiroll/weiroll.js#readme",
+  "devDependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/mocha": "^8.2.2",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^9.0.0",
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "ethers": "^5.3.1"
+  }
+}
