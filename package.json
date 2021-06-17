@@ -1,5 +1,5 @@
 {
-  "name": "weiroll.js",
+  "name": "@weiroll/weiroll.js",
   "version": "0.1.0",
   "description": "The weiroll planner in JS",
   "main": "dist/index.js",
