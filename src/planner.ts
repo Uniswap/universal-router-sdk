@@ -12,21 +12,38 @@ export interface Value {
     readonly param: ParamType;
 }
 
-export interface LiteralValue extends Value {
+function isValue(arg:any): arg is Value {
+    return (arg as Value).param !== undefined;
+}
+
+export class LiteralValue implements Value {
+    readonly param: ParamType;
     readonly value: string;
+
+    constructor(param: ParamType, value: string) {
+        defineReadOnly(this, "param", param);
+        defineReadOnly(this, "value", value);
+    }
 }
 
-export function isLiteralValue(value: any): value is LiteralValue {
-    return (value as LiteralValue).value !== undefined;
-}
-
-export interface ReturnValue extends Value {
+export class ReturnValue implements Value {
+    readonly param: ParamType;
     readonly planner: Planner;
     readonly commandIndex: number; // Index of the command in the array of planned commands
+
+    constructor(param: ParamType, planner: Planner, commandIndex: number) {
+        defineReadOnly(this, "param", param);
+        defineReadOnly(this, "planner", planner);
+        defineReadOnly(this, "commandIndex", commandIndex);
+    }
 }
 
-export function isReturnValue(value: any): value is ReturnValue {
-    return (value as ReturnValue).commandIndex !== undefined;
+export class StateValue implements Value {
+    readonly param: ParamType;
+
+    constructor() {
+        defineReadOnly(this, "param", ParamType.from('bytes[]'));
+    }
 }
 
 export interface FunctionCall {
@@ -46,9 +63,9 @@ export function isDynamicType(param: ParamType): boolean {
 
 function abiEncodeSingle(param: ParamType, value: any): LiteralValue {
     if(isDynamicType(param)) {
-        return {param: param, value: hexDataSlice(defaultAbiCoder.encode([param], [value]), 32)};
+        return new LiteralValue(param, hexDataSlice(defaultAbiCoder.encode([param], [value]), 32));
     }
-    return {param: param, value: defaultAbiCoder.encode([param], [value])};
+    return new LiteralValue(param, defaultAbiCoder.encode([param], [value]));
 }
 
 function buildCall(contract: Contract, fragment: FunctionFragment): ContractFunction {
@@ -58,7 +75,7 @@ function buildCall(contract: Contract, fragment: FunctionFragment): ContractFunc
         }
         const encodedArgs = args.map((arg, idx) => {
             const param = fragment.inputs[idx];
-            if(isReturnValue(arg)) {
+            if(isValue(arg)) {
                 if(arg.param.type != param.type) {
                     // Todo: type casting rules
                     throw new Error(`Cannot pass value of type ${arg.param.type} to input of type ${param.type}`);
@@ -153,15 +170,17 @@ export class Contract extends BaseContract {
 }
 
 export class Planner {
-    calls: FunctionCall[];
+    readonly state: StateValue;
+    calls: {call: FunctionCall, replacesState: boolean}[];
 
     constructor() {
+        defineReadOnly(this, "state", new StateValue());
         this.calls = [];
     }
 
-    addCommand(call: FunctionCall): ReturnValue | null {
+    add(call: FunctionCall): ReturnValue | null {
         for(let arg of call.args) {
-            if(isReturnValue(arg)) {
+            if(arg instanceof ReturnValue) {
                 if(arg.planner != this) {
                     throw new Error("Cannot reuse return values across planners");
                 }
@@ -169,12 +188,28 @@ export class Planner {
         }
 
         const commandIndex = this.calls.length;
-        this.calls.push(call);
+        this.calls.push({call, replacesState: false});
         
         if(call.fragment.outputs.length != 1) {
             return null;
         }
-        return {planner: this, commandIndex, param: call.fragment.outputs[0]};
+        return new ReturnValue(call.fragment.outputs[0], this, commandIndex);
+    }
+
+    replaceState(call: FunctionCall) {
+        for(let arg of call.args) {
+            if(arg instanceof ReturnValue) {
+                if(arg.planner != this) {
+                    throw new Error("Cannot reuse return values across planners");
+                }
+            }
+        }
+
+        if(call.fragment.outputs.length != 1 || call.fragment.outputs[0].type != 'bytes[]') {
+            throw new Error("Function replacing state must return a bytes[]");
+        }
+
+        this.calls.push({call, replacesState: true});
     }
 
     plan(): {commands: string[], state: string[]} {
@@ -185,14 +220,14 @@ export class Planner {
 
         // Build visibility maps
         for(let i = 0; i < this.calls.length; i++) {
-            const call = this.calls[i];
+            const {call} = this.calls[i];
             for(let arg of call.args) {
-                if(isReturnValue(arg)) {
+                if(arg instanceof ReturnValue) {
                     commandVisibility[arg.commandIndex] = i;
-                } else if(isLiteralValue(arg)) {
+                } else if(arg instanceof LiteralValue) {
                     literalVisibility.set(arg.value, i);
-                } else {
-                    throw new Error("Unknown function argument type");
+                } else if(!(arg instanceof StateValue)) {
+                    throw new Error(`Unknown function argument type '${typeof arg}'`);
                 }
             }
         }
@@ -219,18 +254,20 @@ export class Planner {
 
         // Build commands, and add state entries as needed
         for(let i = 0; i < this.calls.length; i++) {
-            const call = this.calls[i];
+            const {call, replacesState} = this.calls[i];
 
             // Build a list of argument value indexes
             const args = new Uint8Array(7).fill(0xff);
             call.args.forEach((arg, j) => {
                 let slot;
-                if(isReturnValue(arg)) {
+                if(arg instanceof ReturnValue) {
                     slot = returnSlotMap[arg.commandIndex];
-                } else if(isLiteralValue(arg)) {
+                } else if(arg instanceof LiteralValue) {
                     slot = literalSlotMap.get(arg.value);
+                } else if(arg instanceof StateValue) {
+                    slot = 0xfe;
                 } else {
-                    throw new Error("Unknown function argument type");
+                    throw new Error(`Unknown function argument type '${typeof arg}'`);
                 }
                 if(isDynamicType(arg.param)) {
                     slot |= 0x80;
@@ -241,6 +278,9 @@ export class Planner {
             // Figure out where to put the return value
             let ret = 0xff;
             if(commandVisibility[i] != -1) {
+                if(replacesState) {
+                    throw new Error(`Return value of ${call.fragment.name} cannot be used to replace state and in another function`);
+                }
                 ret = state.length;
 
                 // Is there a spare state slot?
@@ -261,6 +301,8 @@ export class Planner {
                 if(isDynamicType(call.fragment.outputs[0])) {
                     ret |= 0x80;
                 }
+            } else if(replacesState) {
+                ret = 0xfe;
             }
 
             commands.push(hexConcat([

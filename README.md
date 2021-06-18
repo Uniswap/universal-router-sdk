@@ -1,2 +1,50 @@
 # weiroll.js
-The Weiroll planner for JS
+weiroll.js is a planner for the operation-chaining/scripting language [weiroll](https://github.com/weiroll/weiroll).
+
+It provides an easy-to-use API for generating weiroll programs that can then be passed to any compatible implementation.
+
+## Installation
+```
+npm install --save @weiroll/weiroll.js
+```
+
+## Usage
+
+### Wrapping contracts
+Weiroll programs consist of a sequence of delegatecalls to library functions in external contracts. Before you can start creating a weiroll program, you will need to create interfaces for at least one library contract you intend to use.
+
+The easiest way to do this is by wrapping ethers.js contract instances:
+
+```
+const ethersContract = new ethers.Contract(address, abi);
+const contract = weiroll.Contract.fromEthersContract(ethersContract);
+```
+
+You can repeat this for each library contract you wish to use. A weiroll `Contract` object can be reused across as many planner instances as you wish; there is no need to construct them again for each new program.
+
+### Planning programs
+First, instantiate a planner:
+
+```
+const planner = new weiroll.Planner();
+```
+
+Next, add one or more commands to execute:
+
+```
+const ret = planner.addCommand(contract.func(a, b));
+```
+
+Return values from one invocation can be used in another one:
+
+```
+planner.addCommand(contract.func2(ret));
+```
+
+Remember to wrap each call to a contract in `planner.addCommand`. Attempting to pass the result of one contract function directly to another will not work - each one needs to be added to the planner!
+
+Once you are done planning operations, generate the program:
+
+```
+const {commands, state} = planner.plan();
+```

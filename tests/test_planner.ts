@@ -47,9 +47,9 @@ describe('Planner', () => {
 
     it('adds function calls to a list of commands', () => {
         const planner = new Planner();
-        const sum1 = planner.addCommand(Math.add(1, 2));
-        const sum2 = planner.addCommand(Math.add(3, 4));
-        const sum3 = planner.addCommand(Math.add(sum1, sum2));
+        const sum1 = planner.add(Math.add(1, 2));
+        const sum2 = planner.add(Math.add(3, 4));
+        const sum3 = planner.add(Math.add(sum1, sum2));
 
         expect(planner.calls.length).to.equal(3);
         expect(sum1.commandIndex).to.equal(0);
@@ -59,7 +59,7 @@ describe('Planner', () => {
 
     it('plans a simple program', () => {
         const planner = new Planner();
-        planner.addCommand(Math.add(1, 2));
+        planner.add(Math.add(1, 2));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(1);
@@ -72,7 +72,7 @@ describe('Planner', () => {
 
     it('deduplicates identical literals', () => {
         const planner = new Planner();
-        const sum1 = planner.addCommand(Math.add(1, 1));
+        const sum1 = planner.add(Math.add(1, 1));
         const {commands, state} = planner.plan();
 
         expect(state.length).to.equal(1);
@@ -80,8 +80,8 @@ describe('Planner', () => {
 
     it('plans a program that uses return values', () => {
         const planner = new Planner();
-        const sum1 = planner.addCommand(Math.add(1, 2));
-        planner.addCommand(Math.add(sum1, 3));
+        const sum1 = planner.add(Math.add(1, 2));
+        planner.add(Math.add(sum1, 3));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(2);
@@ -96,8 +96,8 @@ describe('Planner', () => {
 
     it('plans a program that needs extra state slots for intermediate values', () => {
         const planner = new Planner();
-        const sum1 = planner.addCommand(Math.add(1, 1));
-        planner.addCommand(Math.add(1, sum1));
+        const sum1 = planner.add(Math.add(1, 1));
+        planner.add(Math.add(1, sum1));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(2);
@@ -111,7 +111,7 @@ describe('Planner', () => {
 
     it('plans a program that takes dynamic arguments', () => {
         const planner = new Planner();
-        planner.addCommand(Strings.strlen("Hello, world!"));
+        planner.add(Strings.strlen("Hello, world!"));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(1);
@@ -123,7 +123,7 @@ describe('Planner', () => {
 
     it('plans a program that returns dynamic arguments', () => {
         const planner = new Planner();
-        planner.addCommand(Strings.strcat("Hello, ", "world!"));
+        planner.add(Strings.strcat("Hello, ", "world!"));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(1);
@@ -136,8 +136,8 @@ describe('Planner', () => {
 
     it('plans a program that takes a dynamic argument from a return value', () => {
         const planner = new Planner();
-        const str = planner.addCommand(Strings.strcat("Hello, ", "world!"));
-        planner.addCommand(Strings.strlen(str));
+        const str = planner.add(Strings.strcat("Hello, ", "world!"));
+        planner.add(Strings.strlen(str));
         const {commands, state} = planner.plan();
 
         expect(commands.length).to.equal(2);
@@ -151,6 +151,21 @@ describe('Planner', () => {
 
     it('requires argument counts to match the function definition', () => {
         const planner = new Planner();
-        expect(() => planner.addCommand(Math.add(1))).to.throw();
-    })
+        expect(() => planner.add(Math.add(1))).to.throw();
+    });
+
+    it('plans a call to a function that takes and replaces the current state', () => {
+        const TestContract = Contract.fromEthersContract(new ethers.Contract(SAMPLE_ADDRESS, [
+            "function useState(bytes[] state) returns(bytes[])"
+        ]));
+
+        const planner = new Planner();
+        planner.replaceState(TestContract.useState(planner.state));
+        const {commands, state} = planner.plan();
+        
+        expect(commands.length).to.equal(1);
+        expect(commands[0]).to.equal("0x08f389c8fefffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+
+        expect(state.length).to.equal(0);
+    });
 });
