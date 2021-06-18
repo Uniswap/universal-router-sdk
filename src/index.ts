@@ -6,10 +6,7 @@ export {
     ContractFunction,
     FunctionCall,
     Value,
-    StaticValue,
-    ReturnValue
-} from './contract';
-
-export {
+    LiteralValue,
+    ReturnValue,
     Planner
 } from './planner';

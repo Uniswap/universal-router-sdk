@@ -148,4 +148,9 @@ describe('Planner', () => {
         expect(state[0]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ["Hello, "]), 32));
         expect(state[1]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ["world!"]), 32));
     });
+
+    it('requires argument counts to match the function definition', () => {
+        const planner = new Planner();
+        expect(() => planner.addCommand(Math.add(1))).to.throw();
+    })
 });
