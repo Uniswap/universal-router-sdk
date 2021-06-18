@@ -53,6 +53,9 @@ function abiEncodeSingle(param: ParamType, value: any): LiteralValue {
 
 function buildCall(contract: Contract, fragment: FunctionFragment): ContractFunction {
     return function(...args: Array<any>): FunctionCall {
+        if(args.length != fragment.inputs.length) {
+            throw new Error(`Function ${fragment.name} has ${fragment.inputs.length} arguments but ${args.length} provided`);
+        }
         const encodedArgs = args.map((arg, idx) => {
             const param = fragment.inputs[idx];
             if(isReturnValue(arg)) {
