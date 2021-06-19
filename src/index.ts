@@ -1,7 +1,6 @@
 "use strict";
 
 export {
-    isReturnValue,
     Contract,
     ContractFunction,
     FunctionCall,

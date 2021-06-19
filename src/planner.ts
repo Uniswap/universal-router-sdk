@@ -6,8 +6,6 @@ import { defineReadOnly, getStatic } from '@ethersproject/properties';
 import { hexConcat, hexDataSlice, hexlify } from '@ethersproject/bytes';
 import { Heap } from 'heap-js';
 
-const maxInputs = 7;
-
 export interface Value {
     readonly param: ParamType;
 }
@@ -21,8 +19,8 @@ export class LiteralValue implements Value {
     readonly value: string;
 
     constructor(param: ParamType, value: string) {
-        defineReadOnly(this, "param", param);
-        defineReadOnly(this, "value", value);
+        this.param = param;
+        this.value = value;
     }
 }
 
@@ -32,9 +30,9 @@ export class ReturnValue implements Value {
     readonly commandIndex: number; // Index of the command in the array of planned commands
 
     constructor(param: ParamType, planner: Planner, commandIndex: number) {
-        defineReadOnly(this, "param", param);
-        defineReadOnly(this, "planner", planner);
-        defineReadOnly(this, "commandIndex", commandIndex);
+        this.param =  param;
+        this.planner =  planner;
+        this.commandIndex =  commandIndex;
     }
 }
 
@@ -42,7 +40,7 @@ export class StateValue implements Value {
     readonly param: ParamType;
 
     constructor() {
-        defineReadOnly(this, "param", ParamType.from('bytes[]'));
+        this.param = ParamType.from('bytes[]');
     }
 }
 
@@ -54,10 +52,9 @@ export interface FunctionCall {
 
 export type ContractFunction = (...args: Array<any>) => FunctionCall;
 
-const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
-const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
+export function isDynamicType(param?: ParamType): boolean {
+    if (typeof param === "undefined") return false
 
-export function isDynamicType(param: ParamType): boolean {
     return ["string", "bytes", "array", "tuple"].includes(param.baseType);
 }
 
@@ -95,9 +92,9 @@ class BaseContract {
     readonly functions: { [ name: string ]: ContractFunction };
 
     constructor(address: string, contractInterface: ContractInterface) {
-        defineReadOnly(this, "interface", getStatic<(contractInterface: ContractInterface) => Interface>(new.target, "getInterface")(contractInterface));
-        defineReadOnly(this, "address", address);
-        defineReadOnly(this, "functions", {});
+        this.interface = getStatic<(contractInterface: ContractInterface) => Interface>(new.target, "getInterface")(contractInterface);
+        this.address = address;
+        this.functions = {};
 
         const uniqueNames: { [ name: string ]: Array<string> } = { };
         const uniqueSignatures: { [ signature: string ]: boolean } = { };
@@ -174,7 +171,7 @@ export class Planner {
     calls: {call: FunctionCall, replacesState: boolean}[];
 
     constructor() {
-        defineReadOnly(this, "state", new StateValue());
+        this.state = new StateValue();
         this.calls = [];
     }
 
@@ -190,7 +187,7 @@ export class Planner {
         const commandIndex = this.calls.length;
         this.calls.push({call, replacesState: false});
         
-        if(call.fragment.outputs.length != 1) {
+        if(call.fragment.outputs?.length != 1) {
             return null;
         }
         return new ReturnValue(call.fragment.outputs[0], this, commandIndex);
@@ -205,7 +202,7 @@ export class Planner {
             }
         }
 
-        if(call.fragment.outputs.length != 1 || call.fragment.outputs[0].type != 'bytes[]') {
+        if(call.fragment.outputs?.length != 1 || call.fragment.outputs[0].type != 'bytes[]') {
             throw new Error("Function replacing state must return a bytes[]");
         }
 
@@ -283,9 +280,15 @@ export class Planner {
                 }
                 ret = state.length;
 
+                const topNode = nextDeadSlot.peek();
+
                 // Is there a spare state slot?
-                if(nextDeadSlot.peek().dies <= i) {
-                    ret = nextDeadSlot.pop().slot;
+                if(typeof topNode !== "undefined" && topNode.dies <= i) {
+                    const extractedTopNode = nextDeadSlot.pop();
+
+                    if (extractedTopNode) {
+                        ret = extractedTopNode?.slot;
+                    }
                 }
 
                 // Store the slot mapping
@@ -298,7 +301,7 @@ export class Planner {
                     state.push('0x');
                 }
 
-                if(isDynamicType(call.fragment.outputs[0])) {
+                if(isDynamicType(call.fragment.outputs?.[0])) {
                     ret |= 0x80;
                 }
             } else if(replacesState) {

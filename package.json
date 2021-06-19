@@ -3,10 +3,23 @@
   "version": "0.2.0",
   "description": "The weiroll planner in JS",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
-    "build": "tsc"
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "tsdx-test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
   },
   "repository": {
     "type": "git",
@@ -17,16 +30,43 @@
   "bugs": {
     "url": "https://github.com/weiroll/weiroll.js/issues"
   },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "size-limit": [
+    {
+      "path": "dist/weiroll.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/weiroll.esm.js",
+      "limit": "10 KB"
+    }
+  ],
   "homepage": "https://github.com/weiroll/weiroll.js#readme",
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^4.12.0",
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.12.2",
     "chai": "^4.3.4",
+    "husky": "^6.0.0",
     "mocha": "^9.0.0",
+    "size-limit": "^4.12.0",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
-    "typescript": "^4.3.2"
+    "tsdx": "^0.14.1",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.3"
   },
   "dependencies": {
     "ethers": "^5.3.1",
