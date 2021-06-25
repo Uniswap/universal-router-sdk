@@ -9,7 +9,7 @@
     "src"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=14"
   },
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
@@ -26,7 +26,8 @@
     "type": "git",
     "url": "git+https://github.com/weiroll/weiroll.js.git"
   },
-  "author": "",
+  "author": "@weiroll",
+  "module": "dist/weiroll.js.esm.js",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/weiroll/weiroll.js/issues"
@@ -41,12 +42,12 @@
   },
   "size-limit": [
     {
-      "path": "dist/weiroll.cjs.production.min.js",
-      "limit": "10 KB"
+      "path": "dist/weiroll.js.cjs.production.min.js",
+      "limit": "35 KB"
     },
     {
-      "path": "dist/weiroll.esm.js",
-      "limit": "10 KB"
+      "path": "dist/weiroll.js.esm.js",
+      "limit": "35 KB"
     }
   ],
   "homepage": "https://github.com/weiroll/weiroll.js#readme",
