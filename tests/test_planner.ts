@@ -1,13 +1,11 @@
-import * as chai from 'chai';
 import { expect } from 'chai';
 import { ethers } from 'ethers';
-import { hexDataSlice } from '@ethersproject/bytes';
+import { hexConcat, hexDataSlice } from '@ethersproject/bytes';
 import { defaultAbiCoder } from '@ethersproject/abi';
-import { Contract, Planner, ReturnValue } from '../src/planner';
+import { Contract, Planner } from '../src/planner';
 import * as mathABI from '../abis/Math.json';
 import * as stringsABI from '../abis/Strings.json';
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const SAMPLE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
 describe('Contract', () => {
@@ -55,12 +53,9 @@ describe('Planner', () => {
     const planner = new Planner();
     const sum1 = planner.add(Math.add(1, 2));
     const sum2 = planner.add(Math.add(3, 4));
-    const sum3 = planner.add(Math.add(sum1, sum2));
+    planner.add(Math.add(sum1, sum2));
 
-    expect(planner.calls.length).to.equal(3);
-    expect(sum1.commandIndex).to.equal(0);
-    expect(sum2.commandIndex).to.equal(1);
-    expect(sum3.commandIndex).to.equal(2);
+    expect(planner.commands.length).to.equal(3);
   });
 
   it('plans a simple program', () => {
@@ -80,8 +75,8 @@ describe('Planner', () => {
 
   it('deduplicates identical literals', () => {
     const planner = new Planner();
-    const sum1 = planner.add(Math.add(1, 1));
-    const { commands, state } = planner.plan();
+    planner.add(Math.add(1, 1));
+    const { state } = planner.plan();
 
     expect(state.length).to.equal(1);
   });
@@ -94,10 +89,10 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(2);
     expect(commands[0]).to.equal(
-      '0x771602f70001ffffffffff00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f70001ffffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
     expect(commands[1]).to.equal(
-      '0x771602f70002ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(3);
@@ -168,10 +163,10 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(2);
     expect(commands[0]).to.equal(
-      '0xd824ccf38081ffffffffff80eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0xd824ccf38081ffffffffff81eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
     expect(commands[1]).to.equal(
-      '0x367bbd7880ffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x367bbd7881ffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(2);
@@ -205,5 +200,219 @@ describe('Planner', () => {
     );
 
     expect(state.length).to.equal(0);
+  });
+
+  describe('addSubplan()', () => {
+    const SubplanContract = Contract.fromEthersContract(
+      new ethers.Contract(SAMPLE_ADDRESS, [
+        'function execute(bytes32[] commands, bytes[] state) returns(bytes[])',
+      ])
+    );
+
+    const ReadonlySubplanContract = Contract.fromEthersContract(
+      new ethers.Contract(SAMPLE_ADDRESS, [
+        'function execute(bytes32[] commands, bytes[] state)',
+      ])
+    );
+
+    it('supports subplans', () => {
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state));
+
+      const { commands, state } = planner.plan();
+      expect(commands).to.deep.equal([
+        '0xde792d5f82fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+
+      expect(state.length).to.equal(3);
+      expect(state[0]).to.equal(defaultAbiCoder.encode(['uint'], [1]));
+      expect(state[1]).to.equal(defaultAbiCoder.encode(['uint'], [2]));
+      const subcommands = defaultAbiCoder.decode(
+        ['bytes32[]'],
+        hexConcat([
+          '0x0000000000000000000000000000000000000000000000000000000000000020',
+          state[2],
+        ])
+      )[0];
+      expect(subcommands).to.deep.equal([
+        '0x771602f70001ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+    });
+
+    it('allows return value access in the parent scope', () => {
+      const subplanner = new Planner();
+      const sum = subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state));
+      planner.add(Math.add(sum, 3));
+
+      const { commands } = planner.plan();
+      expect(commands).to.deep.equal([
+        // Invoke subplanner
+        '0xde792d5f83fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        // sum + 3
+        '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+    });
+
+    it('allows return value access across scopes', () => {
+      const subplanner1 = new Planner();
+      const sum = subplanner1.add(Math.add(1, 2));
+
+      const subplanner2 = new Planner();
+      subplanner2.add(Math.add(sum, 3));
+
+      const planner = new Planner();
+      planner.addSubplan(
+        SubplanContract.execute(subplanner1, subplanner1.state)
+      );
+      planner.addSubplan(
+        SubplanContract.execute(subplanner2, subplanner2.state)
+      );
+
+      const { commands, state } = planner.plan();
+      expect(commands).to.deep.equal([
+        // Invoke subplanner1
+        '0xde792d5f83fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        // Invoke subplanner2
+        '0xde792d5f84fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+
+      expect(state.length).to.equal(5);
+      const subcommands2 = defaultAbiCoder.decode(
+        ['bytes32[]'],
+        hexConcat([
+          '0x0000000000000000000000000000000000000000000000000000000000000020',
+          state[4],
+        ])
+      )[0];
+      expect(subcommands2).to.deep.equal([
+        // sum + 3
+        '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+    });
+
+    it("doesn't allow return values to be referenced before they are defined", () => {
+      const subplanner = new Planner();
+      const sum = subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      planner.add(Math.add(sum, 3));
+
+      expect(() => planner.plan()).to.throw(
+        'Return value from "add" is not visible here'
+      );
+    });
+
+    it('requires calls to addSubplan to have subplan and state args', () => {
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      expect(() =>
+        planner.addSubplan(SubplanContract.execute(subplanner, []))
+      ).to.throw('Subplans must take planner and state arguments');
+      expect(() =>
+        planner.addSubplan(SubplanContract.execute([], subplanner.state))
+      ).to.throw('Subplans must take planner and state arguments');
+    });
+
+    it("doesn't allow more than one subplan per call", () => {
+      const MultiSubplanContract = Contract.fromEthersContract(
+        new ethers.Contract(SAMPLE_ADDRESS, [
+          'function execute(bytes32[] commands, bytes32[] commands2, bytes[] state) returns(bytes[])',
+        ])
+      );
+
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      expect(() =>
+        planner.addSubplan(
+          MultiSubplanContract.execute(subplanner, subplanner, subplanner.state)
+        )
+      ).to.throw('Subplans can only take one planner argument');
+    });
+
+    it("doesn't allow more than one state array per call", () => {
+      const MultiStateContract = Contract.fromEthersContract(
+        new ethers.Contract(SAMPLE_ADDRESS, [
+          'function execute(bytes32[] commands, bytes[] state, bytes[] state2) returns(bytes[])',
+        ])
+      );
+
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      expect(() =>
+        planner.addSubplan(
+          MultiStateContract.execute(
+            subplanner,
+            subplanner.state,
+            subplanner.state
+          )
+        )
+      ).to.throw('Subplans can only take one state argument');
+    });
+
+    it('requires subplan functions return bytes32[] or nothing', () => {
+      const BadSubplanContract = Contract.fromEthersContract(
+        new ethers.Contract(SAMPLE_ADDRESS, [
+          'function execute(bytes32[] commands, bytes[] state) returns(uint)',
+        ])
+      );
+
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      expect(() =>
+        planner.addSubplan(
+          BadSubplanContract.execute(subplanner, subplanner.state)
+        )
+      ).to.throw('Subplans must return a bytes[] replacement state or nothing');
+    });
+
+    it('forbids infinite loops', () => {
+      const planner = new Planner();
+      planner.addSubplan(SubplanContract.execute(planner, planner.state));
+      expect(() => planner.plan()).to.throw('A planner cannot contain itself');
+    });
+
+    it('allows for subplans without return values', () => {
+      const subplanner = new Planner();
+      subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      planner.addSubplan(
+        ReadonlySubplanContract.execute(subplanner, subplanner.state)
+      );
+
+      const { commands } = planner.plan();
+      expect(commands).to.deep.equal([
+        '0xde792d5f82feffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      ]);
+    });
+
+    it('does not allow return values from inside read-only subplans to be used outside them', () => {
+      const subplanner = new Planner();
+      const sum = subplanner.add(Math.add(1, 2));
+
+      const planner = new Planner();
+      planner.addSubplan(
+        ReadonlySubplanContract.execute(subplanner, subplanner.state)
+      );
+      planner.add(Math.add(sum, 3));
+
+      expect(() => planner.plan()).to.throw(
+        'Return value from "add" is not visible here'
+      );
+    });
   });
 });

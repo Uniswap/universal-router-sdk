@@ -4,7 +4,6 @@ import { Interface, ParamType, defaultAbiCoder } from '@ethersproject/abi';
 import type { FunctionFragment } from '@ethersproject/abi';
 import { defineReadOnly, getStatic } from '@ethersproject/properties';
 import { hexConcat, hexDataSlice, hexlify } from '@ethersproject/bytes';
-import { Heap } from 'heap-js';
 
 export interface Value {
   readonly param: ParamType;
@@ -14,7 +13,7 @@ function isValue(arg: any): arg is Value {
   return (arg as Value).param !== undefined;
 }
 
-export class LiteralValue implements Value {
+class LiteralValue implements Value {
   readonly param: ParamType;
   readonly value: string;
 
@@ -24,23 +23,31 @@ export class LiteralValue implements Value {
   }
 }
 
-export class ReturnValue implements Value {
+class ReturnValue implements Value {
   readonly param: ParamType;
-  readonly planner: Planner;
-  readonly commandIndex: number; // Index of the command in the array of planned commands
+  readonly command: Command; // Function call we want the return value of
 
-  constructor(param: ParamType, planner: Planner, commandIndex: number) {
+  constructor(param: ParamType, command: Command) {
     this.param = param;
-    this.planner = planner;
-    this.commandIndex = commandIndex;
+    this.command = command;
   }
 }
 
-export class StateValue implements Value {
+class StateValue implements Value {
   readonly param: ParamType;
 
   constructor() {
     this.param = ParamType.from('bytes[]');
+  }
+}
+
+class SubplanValue implements Value {
+  readonly param: ParamType;
+  readonly planner: Planner;
+
+  constructor(planner: Planner) {
+    this.param = ParamType.from('bytes[]');
+    this.planner = planner;
   }
 }
 
@@ -89,6 +96,8 @@ function buildCall(
           );
         }
         return arg;
+      } else if (arg instanceof Planner) {
+        return new SubplanValue(arg);
       } else {
         return abiEncodeSingle(param, arg);
       }
@@ -186,42 +195,98 @@ export class Contract extends BaseContract {
   readonly [key: string]: ContractFunction | any;
 }
 
+enum CommandType {
+  CALL,
+  RAWCALL,
+  SUBPLAN,
+}
+
+class Command {
+  readonly call: FunctionCall;
+  readonly type: CommandType;
+
+  constructor(call: FunctionCall, type: CommandType) {
+    this.call = call;
+    this.type = type;
+  }
+}
+
+interface PlannerState {
+  // Maps from a command to the slot used for its return value
+  returnSlotMap: Map<Command, number>;
+  // Maps from a literal to the slot used to store it
+  literalSlotMap: Map<string, number>;
+  // An array of unused state slots
+  freeSlots: Array<number>;
+  // Maps from a command to the slots that expire when it's executed
+  stateExpirations: Map<Command, number[]>;
+  // Maps from a command to the last command that consumes its output
+  commandVisibility: Map<Command, Command>;
+  // The initial state array
+  state: Array<string>;
+}
+
 export class Planner {
   readonly state: StateValue;
-  calls: { call: FunctionCall; replacesState: boolean }[];
+  commands: Command[];
 
   constructor() {
     this.state = new StateValue();
-    this.calls = [];
+    this.commands = [];
   }
 
   add(call: FunctionCall): ReturnValue | null {
-    for (let arg of call.args) {
-      if (arg instanceof ReturnValue) {
-        if (arg.planner !== this) {
-          throw new Error('Cannot reuse return values across planners');
-        }
+    const command = new Command(call, CommandType.CALL);
+    this.commands.push(command);
+
+    for (const arg of call.args) {
+      if (arg instanceof SubplanValue) {
+        throw new Error(
+          'Only subplans can have arguments of type SubplanValue'
+        );
       }
     }
-
-    const commandIndex = this.calls.length;
-    this.calls.push({ call, replacesState: false });
 
     if (call.fragment.outputs?.length !== 1) {
       return null;
     }
-    return new ReturnValue(call.fragment.outputs[0], this, commandIndex);
+    return new ReturnValue(call.fragment.outputs[0], command);
+  }
+
+  addSubplan(call: FunctionCall) {
+    let hasSubplan = false;
+    let hasState = false;
+    for (const arg of call.args) {
+      if (arg instanceof SubplanValue) {
+        if (hasSubplan) {
+          throw new Error('Subplans can only take one planner argument');
+        }
+        hasSubplan = true;
+      }
+      if (arg instanceof StateValue) {
+        if (hasState) {
+          throw new Error('Subplans can only take one state argument');
+        }
+        hasState = true;
+      }
+    }
+    if (!hasSubplan || !hasState) {
+      throw new Error('Subplans must take planner and state arguments');
+    }
+
+    if (
+      call.fragment.outputs?.length === 1 &&
+      call.fragment.outputs[0].type !== 'bytes[]'
+    ) {
+      throw new Error(
+        'Subplans must return a bytes[] replacement state or nothing'
+      );
+    }
+
+    this.commands.push(new Command(call, CommandType.SUBPLAN));
   }
 
   replaceState(call: FunctionCall) {
-    for (let arg of call.args) {
-      if (arg instanceof ReturnValue) {
-        if (arg.planner !== this) {
-          throw new Error('Cannot reuse return values across planners');
-        }
-      }
-    }
-
     if (
       call.fragment.outputs?.length !== 1 ||
       call.fragment.outputs[0].type !== 'bytes[]'
@@ -229,120 +294,224 @@ export class Planner {
       throw new Error('Function replacing state must return a bytes[]');
     }
 
-    this.calls.push({ call, replacesState: true });
+    this.commands.push(new Command(call, CommandType.RAWCALL));
   }
 
-  plan(): { commands: string[]; state: string[] } {
-    // Tracks the last time a literal is used in the program
-    let literalVisibility = new Map<string, number>();
-    // Tracks the last time a command's output is used in the program
-    let commandVisibility: number[] = Array(this.calls.length).fill(-1);
+  private preplan(
+    commandVisibility: Map<Command, Command>,
+    literalVisibility: Map<string, Command>,
+    seen?: Set<Command>,
+    planners?: Set<Planner>
+  ) {
+    if (seen === undefined) {
+      seen = new Set<Command>();
+    }
+    if (planners === undefined) {
+      planners = new Set<Planner>();
+    }
+
+    if (planners.has(this)) {
+      throw new Error('A planner cannot contain itself');
+    }
+    planners.add(this);
 
     // Build visibility maps
-    for (let i = 0; i < this.calls.length; i++) {
-      const { call } = this.calls[i];
-      for (let arg of call.args) {
+    for (let command of this.commands) {
+      for (let arg of command.call.args) {
         if (arg instanceof ReturnValue) {
-          commandVisibility[arg.commandIndex] = i;
+          if (!seen.has(arg.command)) {
+            throw new Error(
+              `Return value from "${arg.command.call.fragment.name}" is not visible here`
+            );
+          }
+          commandVisibility.set(arg.command, command);
         } else if (arg instanceof LiteralValue) {
-          literalVisibility.set(arg.value, i);
+          literalVisibility.set(arg.value, command);
+        } else if (arg instanceof SubplanValue) {
+          let subplanSeen = seen;
+          if (
+            !command.call.fragment.outputs ||
+            command.call.fragment.outputs.length === 0
+          ) {
+            // Read-only subplan; return values aren't visible externally
+            subplanSeen = new Set<Command>(seen);
+          }
+          arg.planner.preplan(
+            commandVisibility,
+            literalVisibility,
+            subplanSeen,
+            planners
+          );
         } else if (!(arg instanceof StateValue)) {
           throw new Error(`Unknown function argument type '${typeof arg}'`);
         }
       }
+      seen.add(command);
     }
 
-    // Tracks when state slots go out of scope
-    type HeapEntry = { slot: number; dies: number };
-    let nextDeadSlot = new Heap<HeapEntry>((a, b) => a.dies - b.dies);
+    return { commandVisibility, literalVisibility };
+  }
 
-    // Tracks the state slot each literal is stored in
-    let literalSlotMap = new Map<string, number>();
-    // Tracks the state slot each return value is stored in
-    let returnSlotMap = Array(this.calls.length);
-
-    let commands: string[] = [];
-    let state: string[] = [];
-
-    // Prepopulate the state with literals
-    literalVisibility.forEach((dies, literal) => {
-      const slot = state.length;
-      literalSlotMap.set(literal, slot);
-      nextDeadSlot.push({ slot, dies });
-      state.push(literal);
+  private buildCommandArgs(
+    command: Command,
+    returnSlotMap: Map<Command, number>,
+    literalSlotMap: Map<string, number>,
+    state: Array<string>
+  ): string {
+    // Build a list of argument value indexes
+    const args = new Uint8Array(7).fill(0xff);
+    command.call.args.forEach((arg, j) => {
+      let slot: number;
+      if (arg instanceof ReturnValue) {
+        slot = returnSlotMap.get(arg.command) as number;
+      } else if (arg instanceof LiteralValue) {
+        slot = literalSlotMap.get(arg.value) as number;
+      } else if (arg instanceof StateValue) {
+        slot = 0xfe;
+      } else if (arg instanceof SubplanValue) {
+        // buildCommands has already built the subplan and put it in the last state slot
+        slot = state.length - 1;
+      } else {
+        throw new Error(`Unknown function argument type '${typeof arg}'`);
+      }
+      if (isDynamicType(arg.param)) {
+        slot |= 0x80;
+      }
+      args[j] = slot;
     });
 
-    // Build commands, and add state entries as needed
-    for (let i = 0; i < this.calls.length; i++) {
-      const { call, replacesState } = this.calls[i];
+    return hexlify(args);
+  }
 
-      // Build a list of argument value indexes
-      const args = new Uint8Array(7).fill(0xff);
-      call.args.forEach((arg, j) => {
-        let slot;
-        if (arg instanceof ReturnValue) {
-          slot = returnSlotMap[arg.commandIndex];
-        } else if (arg instanceof LiteralValue) {
-          slot = literalSlotMap.get(arg.value);
-        } else if (arg instanceof StateValue) {
-          slot = 0xfe;
-        } else {
-          throw new Error(`Unknown function argument type '${typeof arg}'`);
-        }
-        if (isDynamicType(arg.param)) {
-          slot |= 0x80;
-        }
-        args[j] = slot;
-      });
+  private buildCommands(ps: PlannerState): Array<string> {
+    const encodedCommands = new Array<string>();
+    // Build commands, and add state entries as needed
+    for (let command of this.commands) {
+      if (command.type === CommandType.SUBPLAN) {
+        // Find the subplan
+        const subplanner = (
+          command.call.args.find(
+            (arg) => arg instanceof SubplanValue
+          ) as SubplanValue
+        ).planner;
+        // Build a list of commands
+        const subcommands = subplanner.buildCommands(ps);
+        // Encode them and push them to a new state slot
+        ps.state.push(
+          hexDataSlice(defaultAbiCoder.encode(['bytes32[]'], [subcommands]), 32)
+        );
+        // The slot is no longer needed after this command
+        ps.freeSlots.push(ps.state.length - 1);
+      }
+
+      const args = this.buildCommandArgs(
+        command,
+        ps.returnSlotMap,
+        ps.literalSlotMap,
+        ps.state
+      );
+
+      // Add any newly unused state slots to the list
+      ps.freeSlots = ps.freeSlots.concat(
+        ps.stateExpirations.get(command) || []
+      );
 
       // Figure out where to put the return value
       let ret = 0xff;
-      if (commandVisibility[i] !== -1) {
-        if (replacesState) {
+      if (ps.commandVisibility.has(command)) {
+        if (
+          command.type === CommandType.RAWCALL ||
+          command.type === CommandType.SUBPLAN
+        ) {
           throw new Error(
-            `Return value of ${call.fragment.name} cannot be used to replace state and in another function`
+            `Return value of ${command.call.fragment.name} cannot be used to replace state and in another function`
           );
         }
-        ret = state.length;
+        ret = ps.state.length;
 
-        const topNode = nextDeadSlot.peek();
-
-        // Is there a spare state slot?
-        if (typeof topNode !== 'undefined' && topNode.dies <= i) {
-          const extractedTopNode = nextDeadSlot.pop();
-
-          if (extractedTopNode) {
-            ret = extractedTopNode?.slot;
-          }
+        if (ps.freeSlots.length > 0) {
+          ret = ps.freeSlots.pop() as number;
         }
 
         // Store the slot mapping
-        returnSlotMap[i] = ret;
+        ps.returnSlotMap.set(command, ret);
 
         // Make the slot available when it's not needed
-        nextDeadSlot.push({ slot: ret, dies: commandVisibility[i] });
+        const expiryCommand = ps.commandVisibility.get(command) as Command;
+        ps.stateExpirations.set(
+          expiryCommand,
+          (ps.stateExpirations.get(expiryCommand) || []).concat([ret])
+        );
 
-        if (ret === state.length) {
-          state.push('0x');
+        if (ret === ps.state.length) {
+          ps.state.push('0x');
         }
 
-        if (isDynamicType(call.fragment.outputs?.[0])) {
+        if (isDynamicType(command.call.fragment.outputs?.[0])) {
           ret |= 0x80;
         }
-      } else if (replacesState) {
-        ret = 0xfe;
+      } else if (
+        command.type === CommandType.RAWCALL ||
+        command.type === CommandType.SUBPLAN
+      ) {
+        if (
+          command.call.fragment.outputs &&
+          command.call.fragment.outputs.length === 1
+        ) {
+          ret = 0xfe;
+        }
       }
 
-      commands.push(
+      encodedCommands.push(
         hexConcat([
-          call.contract.interface.getSighash(call.fragment),
-          hexlify(args),
+          command.call.contract.interface.getSighash(command.call.fragment),
+          args,
           hexlify([ret]),
-          call.contract.address,
+          command.call.contract.address,
         ])
       );
     }
+    return encodedCommands;
+  }
 
-    return { commands, state };
+  plan(): { commands: string[]; state: string[] } {
+    // Tracks the last time a literal is used in the program
+    const literalVisibility = new Map<string, Command>();
+    // Tracks the last time a command's output is used in the program
+    const commandVisibility = new Map<Command, Command>();
+
+    this.preplan(commandVisibility, literalVisibility);
+
+    // Maps from commands to the slots that expire on execution (if any)
+    const stateExpirations = new Map<Command, number[]>();
+
+    // Tracks the state slot each literal is stored in
+    const literalSlotMap = new Map<string, number>();
+
+    const state = new Array<string>();
+
+    // Prepopulate the state and state expirations with literals
+    literalVisibility.forEach((lastCommand, literal) => {
+      const slot = state.length;
+      state.push(literal);
+      literalSlotMap.set(literal, slot);
+      stateExpirations.set(
+        lastCommand,
+        (stateExpirations.get(lastCommand) || []).concat([slot])
+      );
+    });
+
+    const ps: PlannerState = {
+      returnSlotMap: new Map<Command, number>(),
+      literalSlotMap,
+      freeSlots: new Array<number>(),
+      stateExpirations,
+      commandVisibility,
+      state,
+    };
+
+    let encodedCommands = this.buildCommands(ps);
+
+    return { commands: encodedCommands, state };
   }
 }

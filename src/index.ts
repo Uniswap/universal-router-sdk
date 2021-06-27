@@ -3,7 +3,5 @@ export {
   ContractFunction,
   FunctionCall,
   Value,
-  LiteralValue,
-  ReturnValue,
   Planner,
 } from './planner';
