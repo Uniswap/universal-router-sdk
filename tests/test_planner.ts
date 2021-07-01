@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { hexConcat, hexDataSlice } from '@ethersproject/bytes';
 import { defaultAbiCoder } from '@ethersproject/abi';
-import { Contract, Planner } from '../src/planner';
+import { CommandFlags, Contract, Planner } from '../src/planner';
 import * as mathABI from '../abis/Math.json';
 import * as stringsABI from '../abis/Strings.json';
 
@@ -12,7 +12,7 @@ describe('Contract', () => {
   let Math: Contract;
 
   before(() => {
-    Math = Contract.fromEthersContract(
+    Math = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi)
     );
   });
@@ -41,10 +41,10 @@ describe('Planner', () => {
   let Strings: Contract;
 
   before(() => {
-    Math = Contract.fromEthersContract(
+    Math = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi)
     );
-    Strings = Contract.fromEthersContract(
+    Strings = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, stringsABI.abi)
     );
   });
@@ -65,7 +65,7 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(1);
     expect(commands[0]).to.equal(
-      '0x771602f70001ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(2);
@@ -89,10 +89,10 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(2);
     expect(commands[0]).to.equal(
-      '0x771602f70001ffffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f7000001ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
     expect(commands[1]).to.equal(
-      '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(3);
@@ -109,10 +109,10 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(2);
     expect(commands[0]).to.equal(
-      '0x771602f70000ffffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f7000000ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
     expect(commands[1]).to.equal(
-      '0x771602f70001ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(2);
@@ -127,7 +127,7 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(1);
     expect(commands[0]).to.equal(
-      '0x367bbd7880ffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x367bbd780080ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(1);
@@ -143,7 +143,7 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(1);
     expect(commands[0]).to.equal(
-      '0xd824ccf38081ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0xd824ccf3008081ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(2);
@@ -163,10 +163,10 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(2);
     expect(commands[0]).to.equal(
-      '0xd824ccf38081ffffffffff81eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0xd824ccf3008081ffffffff81eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
     expect(commands[1]).to.equal(
-      '0x367bbd7881ffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x367bbd780081ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(2);
@@ -184,7 +184,7 @@ describe('Planner', () => {
   });
 
   it('plans a call to a function that takes and replaces the current state', () => {
-    const TestContract = Contract.fromEthersContract(
+    const TestContract = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, [
         'function useState(bytes[] state) returns(bytes[])',
       ])
@@ -196,20 +196,20 @@ describe('Planner', () => {
 
     expect(commands.length).to.equal(1);
     expect(commands[0]).to.equal(
-      '0x08f389c8fefffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      '0x08f389c800fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     );
 
     expect(state.length).to.equal(0);
   });
 
   describe('addSubplan()', () => {
-    const SubplanContract = Contract.fromEthersContract(
+    const SubplanContract = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, [
         'function execute(bytes32[] commands, bytes[] state) returns(bytes[])',
       ])
     );
 
-    const ReadonlySubplanContract = Contract.fromEthersContract(
+    const ReadonlySubplanContract = Contract.createLibrary(
       new ethers.Contract(SAMPLE_ADDRESS, [
         'function execute(bytes32[] commands, bytes[] state)',
       ])
@@ -224,7 +224,7 @@ describe('Planner', () => {
 
       const { commands, state } = planner.plan();
       expect(commands).to.deep.equal([
-        '0xde792d5f82fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0xde792d5f0082fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
 
       expect(state.length).to.equal(3);
@@ -238,7 +238,7 @@ describe('Planner', () => {
         ])
       )[0];
       expect(subcommands).to.deep.equal([
-        '0x771602f70001ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
     });
 
@@ -253,9 +253,9 @@ describe('Planner', () => {
       const { commands } = planner.plan();
       expect(commands).to.deep.equal([
         // Invoke subplanner
-        '0xde792d5f83fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0xde792d5f0083fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
         // sum + 3
-        '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
     });
 
@@ -277,9 +277,9 @@ describe('Planner', () => {
       const { commands, state } = planner.plan();
       expect(commands).to.deep.equal([
         // Invoke subplanner1
-        '0xde792d5f83fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0xde792d5f0083fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
         // Invoke subplanner2
-        '0xde792d5f84fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0xde792d5f0084fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
 
       expect(state.length).to.equal(5);
@@ -292,7 +292,7 @@ describe('Planner', () => {
       )[0];
       expect(subcommands2).to.deep.equal([
         // sum + 3
-        '0x771602f70102ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
     });
 
@@ -322,7 +322,7 @@ describe('Planner', () => {
     });
 
     it("doesn't allow more than one subplan per call", () => {
-      const MultiSubplanContract = Contract.fromEthersContract(
+      const MultiSubplanContract = Contract.createLibrary(
         new ethers.Contract(SAMPLE_ADDRESS, [
           'function execute(bytes32[] commands, bytes32[] commands2, bytes[] state) returns(bytes[])',
         ])
@@ -340,7 +340,7 @@ describe('Planner', () => {
     });
 
     it("doesn't allow more than one state array per call", () => {
-      const MultiStateContract = Contract.fromEthersContract(
+      const MultiStateContract = Contract.createLibrary(
         new ethers.Contract(SAMPLE_ADDRESS, [
           'function execute(bytes32[] commands, bytes[] state, bytes[] state2) returns(bytes[])',
         ])
@@ -362,7 +362,7 @@ describe('Planner', () => {
     });
 
     it('requires subplan functions return bytes32[] or nothing', () => {
-      const BadSubplanContract = Contract.fromEthersContract(
+      const BadSubplanContract = Contract.createLibrary(
         new ethers.Contract(SAMPLE_ADDRESS, [
           'function execute(bytes32[] commands, bytes[] state) returns(uint)',
         ])
@@ -396,7 +396,7 @@ describe('Planner', () => {
 
       const { commands } = planner.plan();
       expect(commands).to.deep.equal([
-        '0xde792d5f82feffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        '0xde792d5f0082feffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       ]);
     });
 
@@ -414,5 +414,140 @@ describe('Planner', () => {
         'Return value from "add" is not visible here'
       );
     });
+  });
+
+  it('plans CALLs', () => {
+    let Math = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi)
+    );
+
+    const planner = new Planner();
+    planner.add(Math.add(1, 2));
+    const { commands } = planner.plan();
+
+    expect(commands.length).to.equal(1);
+    expect(commands[0]).to.equal(
+      '0x771602f7010001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    );
+  });
+
+  it('plans STATICCALLs', () => {
+    let Math = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi),
+      CommandFlags.STATICCALL
+    );
+
+    const planner = new Planner();
+    planner.add(Math.add(1, 2));
+    const { commands } = planner.plan();
+
+    expect(commands.length).to.equal(1);
+    expect(commands[0]).to.equal(
+      '0x771602f7020001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    );
+  });
+
+  it('plans STATICCALLs via .staticcall()', () => {
+    let Math = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi)
+    );
+
+    const planner = new Planner();
+    planner.add(Math.add(1, 2).staticcall());
+    const { commands } = planner.plan();
+
+    expect(commands.length).to.equal(1);
+    expect(commands[0]).to.equal(
+      '0x771602f7020001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    );
+  });
+
+  it('plans CALLs with value', () => {
+    const Test = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, ['function deposit(uint x) payable'])
+    );
+
+    const planner = new Planner();
+    planner.add(Test.deposit(123).withValue(456));
+
+    const { commands } = planner.plan();
+    expect(commands.length).to.equal(1);
+    expect(commands[0]).to.equal(
+      '0xb6b55f25030001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    );
+  });
+
+  it('allows returns from other calls to be used for the value parameter', () => {
+    const Test = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, ['function deposit(uint x) payable'])
+    );
+
+    const planner = new Planner();
+    const sum = planner.add(Math.add(1, 2));
+    planner.add(Test.deposit(123).withValue(sum));
+
+    const { commands } = planner.plan();
+    expect(commands.length).to.equal(2);
+    expect(commands).to.deep.equal([
+      '0x771602f7000001ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      '0xb6b55f25030102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    ]);
+  });
+
+  it('does not allow value-calls for DELEGATECALL or STATICCALL', () => {
+    expect(() => Math.add(1, 2).withValue(3)).to.throw(
+      'Only CALL operations can send value'
+    );
+
+    const StaticMath = Contract.createContract(
+      new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi),
+      CommandFlags.STATICCALL
+    );
+    expect(() => StaticMath.add(1, 2).withValue(3)).to.throw(
+      'Only CALL operations can send value'
+    );
+  });
+
+  it('does not allow making DELEGATECALL static', () => {
+    expect(() => Math.add(1, 2).staticcall()).to.throw(
+      'Only CALL operations can be made static'
+    );
+  });
+
+  it('uses extended commands where necessary', () => {
+    const Test = Contract.createLibrary(
+      new ethers.Contract(SAMPLE_ADDRESS, [
+        'function test(uint a, uint b, uint c, uint d, uint e, uint f, uint g) returns(uint)',
+      ])
+    );
+
+    const planner = new Planner();
+    planner.add(Test.test(1, 2, 3, 4, 5, 6, 7));
+    const { commands } = planner.plan();
+    expect(commands.length).to.equal(2);
+    expect(commands[0]).to.equal(
+      '0xe473580d40000000000000ffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    );
+    expect(commands[1]).to.equal(
+      '0x00010203040506ffffffffffffffffffffffffffffffffffffffffffffffffff'
+    );
+  });
+
+  it('supports capturing the whole return value as a bytes', () => {
+    const Test = Contract.createLibrary(
+      new ethers.Contract(SAMPLE_ADDRESS, [
+        'function returnsTuple() returns(uint a, bytes32[] b)',
+        'function acceptsBytes(bytes raw)',
+      ])
+    );
+
+    const planner = new Planner();
+    const ret = planner.add(Test.returnsTuple().rawValue());
+    planner.add(Test.acceptsBytes(ret));
+    const { commands } = planner.plan();
+    expect(commands).to.deep.equal([
+      '0x61a7e05e80ffffffffffff80eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      '0x3e9ef66a0080ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    ]);
   });
 });

@@ -3,7 +3,7 @@ import type { Contract as EthersContract } from '@ethersproject/contracts';
 import { Interface, ParamType, defaultAbiCoder } from '@ethersproject/abi';
 import type { FunctionFragment } from '@ethersproject/abi';
 import { defineReadOnly, getStatic } from '@ethersproject/properties';
-import { hexConcat, hexDataSlice, hexlify } from '@ethersproject/bytes';
+import { hexConcat, hexDataSlice } from '@ethersproject/bytes';
 
 export interface Value {
   readonly param: ParamType;
@@ -51,10 +51,75 @@ class SubplanValue implements Value {
   }
 }
 
-export interface FunctionCall {
+export enum CommandFlags {
+  DELEGATECALL = 0x00,
+  CALL = 0x01,
+  STATICCALL = 0x02,
+  CALL_WITH_VALUE = 0x03,
+  CALLTYPE_MASK = 0x03,
+  EXTENDED_COMMAND = 0x40,
+  TUPLE_RETURN = 0x80,
+}
+
+export class FunctionCall {
   readonly contract: Contract;
+  readonly flags: CommandFlags;
   readonly fragment: FunctionFragment;
   readonly args: Value[];
+  readonly callvalue?: Value;
+
+  constructor(
+    contract: Contract,
+    flags: CommandFlags,
+    fragment: FunctionFragment,
+    args: Value[],
+    callvalue?: Value
+  ) {
+    this.contract = contract;
+    this.flags = flags;
+    this.fragment = fragment;
+    this.args = args;
+    this.callvalue = callvalue;
+  }
+
+  withValue(value: Value): FunctionCall {
+    if (
+      (this.flags & CommandFlags.CALLTYPE_MASK) !== CommandFlags.CALL &&
+      (this.flags & CommandFlags.CALLTYPE_MASK) !== CommandFlags.CALL_WITH_VALUE
+    ) {
+      throw new Error('Only CALL operations can send value');
+    }
+    return new FunctionCall(
+      this.contract,
+      (this.flags & ~CommandFlags.CALLTYPE_MASK) | CommandFlags.CALL_WITH_VALUE,
+      this.fragment,
+      this.args,
+      encodeArg(value, ParamType.from('uint'))
+    );
+  }
+
+  rawValue(): FunctionCall {
+    return new FunctionCall(
+      this.contract,
+      this.flags | CommandFlags.TUPLE_RETURN,
+      this.fragment,
+      this.args,
+      this.callvalue
+    );
+  }
+
+  staticcall(): FunctionCall {
+    if ((this.flags & CommandFlags.CALLTYPE_MASK) !== CommandFlags.CALL) {
+      throw new Error('Only CALL operations can be made static');
+    }
+    return new FunctionCall(
+      this.contract,
+      (this.flags & ~CommandFlags.CALLTYPE_MASK) | CommandFlags.STATICCALL,
+      this.fragment,
+      this.args,
+      this.callvalue
+    );
+  }
 }
 
 export type ContractFunction = (...args: Array<any>) => FunctionCall;
@@ -75,6 +140,22 @@ function abiEncodeSingle(param: ParamType, value: any): LiteralValue {
   return new LiteralValue(param, defaultAbiCoder.encode([param], [value]));
 }
 
+function encodeArg(arg: any, param: ParamType): Value {
+  if (isValue(arg)) {
+    if (arg.param.type !== param.type) {
+      // Todo: type casting rules
+      throw new Error(
+        `Cannot pass value of type ${arg.param.type} to input of type ${param.type}`
+      );
+    }
+    return arg;
+  } else if (arg instanceof Planner) {
+    return new SubplanValue(arg);
+  } else {
+    return abiEncodeSingle(param, arg);
+  }
+}
+
 function buildCall(
   contract: Contract,
   fragment: FunctionFragment
@@ -86,40 +167,44 @@ function buildCall(
       );
     }
 
-    const encodedArgs = args.map((arg, idx) => {
-      const param = fragment.inputs[idx];
-      if (isValue(arg)) {
-        if (arg.param.type !== param.type) {
-          // Todo: type casting rules
-          throw new Error(
-            `Cannot pass value of type ${arg.param.type} to input of type ${param.type}`
-          );
-        }
-        return arg;
-      } else if (arg instanceof Planner) {
-        return new SubplanValue(arg);
-      } else {
-        return abiEncodeSingle(param, arg);
-      }
-    });
+    const encodedArgs = args.map((arg, idx) =>
+      encodeArg(arg, fragment.inputs[idx])
+    );
 
-    return { contract, fragment, args: encodedArgs };
+    return new FunctionCall(
+      contract,
+      contract.commandflags,
+      fragment,
+      encodedArgs
+    );
   };
 }
 
 class BaseContract {
   readonly address: string;
+  readonly commandflags: CommandFlags;
   readonly interface: Interface;
   readonly functions: { [name: string]: ContractFunction };
 
-  constructor(address: string, contractInterface: ContractInterface) {
+  constructor(
+    address: string,
+    contractInterface: ContractInterface,
+    commandflags: CommandFlags
+  ) {
     this.interface = getStatic<
       (contractInterface: ContractInterface) => Interface
     >(
       new.target,
       'getInterface'
     )(contractInterface);
+    if ((commandflags & ~CommandFlags.CALLTYPE_MASK) !== 0) {
+      throw new Error(
+        'Only calltype flags may be supplied to BaseContract constructor'
+      );
+    }
+
     this.address = address;
+    this.commandflags = commandflags;
     this.functions = {};
 
     const uniqueNames: { [name: string]: Array<string> } = {};
@@ -178,8 +263,19 @@ class BaseContract {
     });
   }
 
-  static fromEthersContract(contract: EthersContract): Contract {
-    return new Contract(contract.address, contract.interface);
+  static createContract(
+    contract: EthersContract,
+    commandflags = CommandFlags.CALL
+  ): Contract {
+    return new Contract(contract.address, contract.interface, commandflags);
+  }
+
+  static createLibrary(contract: EthersContract): Contract {
+    return new Contract(
+      contract.address,
+      contract.interface,
+      CommandFlags.DELEGATECALL
+    );
   }
 
   static getInterface(contractInterface: ContractInterface): Interface {
@@ -226,6 +322,10 @@ interface PlannerState {
   state: Array<string>;
 }
 
+function padArray(a: Array<number>, len: number, value: number): Array<number> {
+  return a.concat(new Array<number>(len - a.length).fill(value));
+}
+
 export class Planner {
   readonly state: StateValue;
   commands: Command[];
@@ -247,6 +347,9 @@ export class Planner {
       }
     }
 
+    if (call.flags & CommandFlags.TUPLE_RETURN) {
+      return new ReturnValue(ParamType.fromString('bytes'), command);
+    }
     if (call.fragment.outputs?.length !== 1) {
       return null;
     }
@@ -269,6 +372,9 @@ export class Planner {
         }
         hasState = true;
       }
+    }
+    if (!hasSubplan || !hasState) {
+      throw new Error('Subplans must take planner and state arguments');
     }
     if (!hasSubplan || !hasState) {
       throw new Error('Subplans must take planner and state arguments');
@@ -317,7 +423,18 @@ export class Planner {
 
     // Build visibility maps
     for (let command of this.commands) {
-      for (let arg of command.call.args) {
+      let inargs = command.call.args;
+      if (
+        (command.call.flags & CommandFlags.CALLTYPE_MASK) ===
+        CommandFlags.CALL_WITH_VALUE
+      ) {
+        if (!command.call.callvalue) {
+          throw new Error('Call with value must have a value parameter');
+        }
+        inargs = [command.call.callvalue].concat(inargs);
+      }
+
+      for (let arg of inargs) {
         if (arg instanceof ReturnValue) {
           if (!seen.has(arg.command)) {
             throw new Error(
@@ -357,10 +474,21 @@ export class Planner {
     returnSlotMap: Map<Command, number>,
     literalSlotMap: Map<string, number>,
     state: Array<string>
-  ): string {
+  ): Array<number> {
     // Build a list of argument value indexes
-    const args = new Uint8Array(7).fill(0xff);
-    command.call.args.forEach((arg, j) => {
+    let inargs = command.call.args;
+    if (
+      (command.call.flags & CommandFlags.CALLTYPE_MASK) ===
+      CommandFlags.CALL_WITH_VALUE
+    ) {
+      if (!command.call.callvalue) {
+        throw new Error('Call with value must have a value parameter');
+      }
+      inargs = [command.call.callvalue].concat(inargs);
+    }
+
+    const args = new Array<number>();
+    inargs.forEach((arg) => {
       let slot: number;
       if (arg instanceof ReturnValue) {
         slot = returnSlotMap.get(arg.command) as number;
@@ -377,10 +505,10 @@ export class Planner {
       if (isDynamicType(arg.param)) {
         slot |= 0x80;
       }
-      args[j] = slot;
+      args.push(slot);
     });
 
-    return hexlify(args);
+    return args;
   }
 
   private buildCommands(ps: PlannerState): Array<string> {
@@ -404,12 +532,18 @@ export class Planner {
         ps.freeSlots.push(ps.state.length - 1);
       }
 
+      let flags = command.call.flags;
+
       const args = this.buildCommandArgs(
         command,
         ps.returnSlotMap,
         ps.literalSlotMap,
         ps.state
       );
+
+      if (args.length > 6) {
+        flags |= CommandFlags.EXTENDED_COMMAND;
+      }
 
       // Add any newly unused state slots to the list
       ps.freeSlots = ps.freeSlots.concat(
@@ -447,7 +581,10 @@ export class Planner {
           ps.state.push('0x');
         }
 
-        if (isDynamicType(command.call.fragment.outputs?.[0])) {
+        if (
+          isDynamicType(command.call.fragment.outputs?.[0]) ||
+          (command.call.flags & CommandFlags.TUPLE_RETURN) !== 0
+        ) {
           ret |= 0x80;
         }
       } else if (
@@ -462,14 +599,31 @@ export class Planner {
         }
       }
 
-      encodedCommands.push(
-        hexConcat([
-          command.call.contract.interface.getSighash(command.call.fragment),
-          args,
-          hexlify([ret]),
-          command.call.contract.address,
-        ])
-      );
+      if (
+        (flags & CommandFlags.EXTENDED_COMMAND) ===
+        CommandFlags.EXTENDED_COMMAND
+      ) {
+        // Extended command
+        encodedCommands.push(
+          hexConcat([
+            command.call.contract.interface.getSighash(command.call.fragment),
+            [flags, 0, 0, 0, 0, 0, 0, ret],
+            command.call.contract.address,
+          ])
+        );
+        encodedCommands.push(hexConcat([padArray(args, 32, 0xff)]));
+      } else {
+        // Standard command
+        encodedCommands.push(
+          hexConcat([
+            command.call.contract.interface.getSighash(command.call.fragment),
+            [flags],
+            padArray(args, 6, 0xff),
+            [ret],
+            command.call.contract.address,
+          ])
+        );
+      }
     }
     return encodedCommands;
   }
