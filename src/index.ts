@@ -1,7 +1,8 @@
 export {
+  CommandFlags,
   Contract,
   ContractFunction,
   FunctionCall,
-  Value,
   Planner,
+  Value,
 } from './planner';
