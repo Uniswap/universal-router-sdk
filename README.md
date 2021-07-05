@@ -1,6 +1,6 @@
 # weiroll.js
 
-[![CI](https://github.com/weiroll/weiroll.js/actions/workflows/main.yml/badge.svg)](https://github.com/weiroll/weiroll.js/actions/workflows/main.yml)[![size](https://github.com/weiroll/weiroll.js/actions/workflows/size.yml/badge.svg)](https://github.com/weiroll/weiroll.js/actions/workflows/size.yml)
+[![CI](https://github.com/weiroll/weiroll.js/actions/workflows/main.yml/badge.svg)](https://github.com/weiroll/weiroll.js/actions/workflows/main.yml)[![size](https://github.com/weiroll/weiroll.js/actions/workflows/size.yml/badge.svg)](https://github.com/weiroll/weiroll.js/actions/workflows/size.yml)[![Docs](https://github.com/weiroll/weiroll.js/actions/workflows/docs.yml/badge.svg)](https://weiroll.github.io/weiroll.js/)
 
 weiroll.js is a planner for the operation-chaining/scripting language [weiroll](https://github.com/weiroll/weiroll).
 
