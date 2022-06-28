@@ -546,7 +546,7 @@ describe('Planner', () => {
     planner.add(Test.acceptsBytes(ret));
     const { commands } = planner.plan();
     expect(commands).to.deep.equal([
-      '0x61a7e05e80ffffffffffff80eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      '0x61a7e05e80ffffffffffff00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       '0x3e9ef66a0080ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     ]);
   });
