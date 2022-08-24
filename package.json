@@ -1,7 +1,7 @@
 {
-  "name": "@weiroll/weiroll.js",
-  "version": "0.3.0",
-  "description": "The weiroll planner in JS",
+  "name": "@uniswap/narwhal-sdk",
+  "version": "0.0.1",
+  "description": "Fork of @weiroll/weiroll.js package to accomodate the narwhal contracts",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
@@ -12,27 +12,19 @@
     "node": ">=14"
   },
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/test_planner.ts'",
     "start": "tsdx watch",
     "build": "tsdx build",
     "tsdx-test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "husky install && tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "format": "prettier --write \"./src/*.{js,ts}\" \"tests/*.{js,ts}\"",
     "docs": "typedoc"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/weiroll/weiroll.js.git"
-  },
-  "author": "@weiroll",
+  "author": "@Uniswap",
   "module": "dist/weiroll.js.esm.js",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/weiroll/weiroll.js/issues"
-  },
   "peerDependencies": {},
   "prettier": {
     "printWidth": 120,
@@ -50,7 +42,6 @@
       "limit": "35 KB"
     }
   ],
-  "homepage": "https://github.com/weiroll/weiroll.js#readme",
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.12.0",
     "@types/chai": "^4.2.18",
@@ -58,7 +49,6 @@
     "@types/node": "^15.12.2",
     "chai": "^4.3.4",
     "eslint-plugin-prettier": "^3.4.0",
-    "husky": "^6.0.0",
     "mocha": "^9.0.0",
     "prettier": "^2.3.1",
     "size-limit": "^4.12.0",
