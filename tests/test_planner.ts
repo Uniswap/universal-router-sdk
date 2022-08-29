@@ -13,8 +13,8 @@ describe('RouterPlanner', () => {
     planner.add(new TransferCommand(SAMPLE_ADDRESS_F, SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_D, 55))
 
     const { commands, state } = planner.plan()
-    expect(commands[0]).to.equal('0x0100010203ffffff')
-    expect(commands[1]).to.equal('0x0102000103ffffff')
+    expect(commands.slice(2, 18)).to.equal('0100010203ffffff')
+    expect(commands.slice(18, 36)).to.equal('0102000103ffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
     expect(state[2]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
@@ -25,7 +25,7 @@ describe('RouterPlanner', () => {
     const planner = new RouterPlanner()
     planner.add(new V2SwapCommand(66, 1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
     const { commands, state } = planner.plan()
-    expect(commands[0]).to.equal('0x0300018203ffffff')
+    expect(commands.slice(2, 18)).to.equal('0300018203ffffff')
     expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000042')
     expect(state[1]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
     expect(state[2]).to.equal(

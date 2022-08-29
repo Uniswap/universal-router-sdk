@@ -262,7 +262,7 @@ export class RouterPlanner {
     return args
   }
 
-  private buildCommands(ps: RouterPlannerState): Array<string> {
+  private buildCommands(ps: RouterPlannerState): string {
     const encodedCommands = new Array<string>()
     // Build commands, and add state entries as needed
     for (let command of this.commands) {
@@ -331,7 +331,7 @@ export class RouterPlanner {
         encodedCommands.push(hexConcat([[flags], padArray(args, 6, 0xff), [ret]]))
       }
     }
-    return encodedCommands
+    return `0x${encodedCommands.join('').replaceAll('0x', '')}`
   }
 
   /**
@@ -339,7 +339,7 @@ export class RouterPlanner {
    * @returns `commands` and `state`, which can be passed directly to the weiroll executor
    *          to execute the plan.
    */
-  plan(): { commands: string[]; state: string[] } {
+  plan(): { commands: string; state: string[] } {
     // Tracks the last time a literal is used in the program
     const literalVisibility = new Map<string, RouterCommand>()
     // Tracks the last time a command's output is used in the program
