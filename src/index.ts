@@ -4,6 +4,6 @@ export {
   RouterCall,
   RouterCommand,
   TransferCommand,
-  V2SwapCommand,
+  V2ExactInputCommand,
   CheckAmountGTECommand,
 } from './router_types'
