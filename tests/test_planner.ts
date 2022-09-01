@@ -23,14 +23,13 @@ describe('RouterPlanner', () => {
 
   it('properly encodes V2SwapCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new V2SwapCommand(66, 1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
+    planner.add(new V2SwapCommand(1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('0300018203ffffff')
-    expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000042')
-    expect(state[1]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
-    expect(state[2]).to.equal(
+    expect(commands.slice(2, 18)).to.equal('03008102ffffffff')
+    expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
+    expect(state[1]).to.equal(
       '0x0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000dddddddddddddddddddddddddddddddddddddddd000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     )
-    expect(state[3]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+    expect(state[2]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
   })
 })

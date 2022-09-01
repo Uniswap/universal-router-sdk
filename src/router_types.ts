@@ -102,7 +102,7 @@ export class V2SwapCommand implements RouterCommand {
   constructor(...args: any[]) {
     const v2SwapFragment = {
       type: CommandType.V2_SWAP,
-      inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
+      inputs: [Uint256Param, AddressArrayParam, AddressParam],
       outputs: [Uint256Param],
     }
 
