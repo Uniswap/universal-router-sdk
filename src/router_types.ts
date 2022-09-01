@@ -114,6 +114,23 @@ export class V2ExactInputCommand implements RouterCommand {
   }
 }
 
+export class V2ExactOutputCommand implements RouterCommand {
+  readonly type: CommandType
+  readonly call: RouterCall
+
+  constructor(...args: any[]) {
+    const v2SwapFragment = {
+      type: CommandType.V2_SWAP_EXACT_OUT,
+      inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
+      outputs: [Uint256Param],
+    }
+
+    args = args.map((arg, idx) => encodeArg(arg, v2SwapFragment.inputs[idx]))
+    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP_EXACT_OUT)
+    this.type = v2SwapFragment.type
+  }
+}
+
 export class CheckAmountGTECommand implements RouterCommand {
   readonly type: CommandType
   readonly call: RouterCall
