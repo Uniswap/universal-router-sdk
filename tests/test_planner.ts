@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { TransferCommand, V2SwapCommand } from '../src/router_types'
+import { TransferCommand, V2ExactOutputCommand, V2ExactInputCommand } from '../src/router_types'
 import { RouterPlanner } from '../src/planner'
 
 const SAMPLE_ADDRESS_D = '0xdddddddddddddddddddddddddddddddddddddddd'
@@ -21,13 +21,25 @@ describe('RouterPlanner', () => {
     expect(state[3]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000037')
   })
 
-  it('properly encodes V2SwapCommand', () => {
+  it('properly encodes V2ExactInputCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new V2SwapCommand(66, 1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
+    planner.add(new V2ExactInputCommand(1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('0300018203ffffff')
-    expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000042')
-    expect(state[1]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
+    expect(commands.slice(2, 18)).to.equal('04008102ffffffff')
+    expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
+    expect(state[1]).to.equal(
+      '0x0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000dddddddddddddddddddddddddddddddddddddddd000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    )
+    expect(state[2]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+  })
+
+  it('properly encodes V2ExactOutputCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(new V2ExactOutputCommand(3, 100, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('0500018203ffffff')
+    expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000003')
+    expect(state[1]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000064')
     expect(state[2]).to.equal(
       '0x0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000dddddddddddddddddddddddddddddddddddddddd000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     )

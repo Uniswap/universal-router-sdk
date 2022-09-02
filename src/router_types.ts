@@ -6,14 +6,13 @@ import { encodeArg } from './planner'
  * @enum {number}
  */
 export enum CommandFlags {
-  /** Specifies that a call should be made using the DELEGATECALL opcode */
   PERMIT = 0x00,
-  /** Specifies that a call should be made using the CALL opcode */
   TRANSFER = 0x01,
-  /** Specifies that a call should be made using the STATICCALL opcode */
-  V2_SWAP = 0x03,
-  /** Specifies that a call should be made using the STATICCALL opcode */
-  CHECK_AMT = 0x04,
+  V3_SWAP_EXACT_IN = 0x02,
+  V3_SWAP_EXACT_OUT = 0x03,
+  V2_SWAP_EXACT_IN = 0x04,
+  V2_SWAP_EXACT_OUT = 0x05,
+  CHECK_AMT = 0x06,
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
   /** Specifies that this is an extended command, with an additional command word for indices. Internal use only. */
@@ -25,7 +24,10 @@ export enum CommandFlags {
 export enum CommandType {
   PERMIT,
   TRANSFER,
-  V2_SWAP,
+  V3_SWAP_EXACT_IN,
+  V3_SWAP_EXACT_OUT,
+  V2_SWAP_EXACT_IN,
+  V2_SWAP_EXACT_OUT,
   CHECK_AMT,
   SUBPLAN,
   RAWCALL,
@@ -95,19 +97,36 @@ export class TransferCommand implements RouterCommand {
   }
 }
 
-export class V2SwapCommand implements RouterCommand {
+export class V2ExactInputCommand implements RouterCommand {
   readonly type: CommandType
   readonly call: RouterCall
 
   constructor(...args: any[]) {
     const v2SwapFragment = {
-      type: CommandType.V2_SWAP,
+      type: CommandType.V2_SWAP_EXACT_IN,
+      inputs: [Uint256Param, AddressArrayParam, AddressParam],
+      outputs: [Uint256Param],
+    }
+
+    args = args.map((arg, idx) => encodeArg(arg, v2SwapFragment.inputs[idx]))
+    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP_EXACT_IN)
+    this.type = v2SwapFragment.type
+  }
+}
+
+export class V2ExactOutputCommand implements RouterCommand {
+  readonly type: CommandType
+  readonly call: RouterCall
+
+  constructor(...args: any[]) {
+    const v2SwapFragment = {
+      type: CommandType.V2_SWAP_EXACT_OUT,
       inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
       outputs: [Uint256Param],
     }
 
     args = args.map((arg, idx) => encodeArg(arg, v2SwapFragment.inputs[idx]))
-    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP)
+    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP_EXACT_OUT)
     this.type = v2SwapFragment.type
   }
 }
