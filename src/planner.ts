@@ -331,7 +331,7 @@ export class RouterPlanner {
         encodedCommands.push(hexConcat([[flags], padArray(args, 6, 0xff), [ret]]))
       }
     }
-    return `0x${encodedCommands.join('').replaceAll('0x', '')}`
+    return `0x${encodedCommands.join('').replace(/0x/g, '')}`
   }
 
   /**
