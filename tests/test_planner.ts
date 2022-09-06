@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { TransferCommand, V2ExactOutputCommand, V2ExactInputCommand } from '../src/router_types'
+import { TransferCommand, V2ExactOutputCommand, V2ExactInputCommand, V3ExactInputCommand } from '../src/router_types'
 import { RouterPlanner } from '../src/planner'
 
 const SAMPLE_ADDRESS_D = '0xdddddddddddddddddddddddddddddddddddddddd'
@@ -44,5 +44,17 @@ describe('RouterPlanner', () => {
       '0x0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000dddddddddddddddddddddddddddddddddddddddd000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     )
     expect(state[3]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+  })
+
+  it('properly encodes V3ExactInputCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(new V3ExactInputCommand(SAMPLE_ADDRESS_D, false, 1234, 4321, '0x1234567890abcdef'))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('020001020384ffff')
+    expect(state[0]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
+    expect(state[1]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000000')
+    expect(state[2]).to.equal('0x00000000000000000000000000000000000000000000000000000000000004d2')
+    expect(state[3]).to.equal('0x00000000000000000000000000000000000000000000000000000000000010e1')
+    expect(state[4]).to.equal('0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000')
   })
 })
