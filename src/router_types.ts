@@ -103,40 +103,30 @@ function newCommandType(fragment: RouterCallFragment): (...args: any[]) => Route
   return fn
 }
 
-export const TransferCommand = newCommandType(
-  {
-    type: CommandType.TRANSFER,
-    inputs: [AddressParam, AddressParam, AddressParam, Uint256Param],
-  }
-)
+export const TransferCommand = newCommandType({
+  type: CommandType.TRANSFER,
+  inputs: [AddressParam, AddressParam, AddressParam, Uint256Param],
+})
 
-export const V2ExactInputCommand = newCommandType(
-  {
-    type: CommandType.V2_SWAP_EXACT_IN,
-    inputs: [Uint256Param, AddressArrayParam, AddressParam],
-    outputs: [Uint256Param],
-  }
-)
+export const V2ExactInputCommand = newCommandType({
+  type: CommandType.V2_SWAP_EXACT_IN,
+  inputs: [Uint256Param, AddressArrayParam, AddressParam],
+  outputs: [Uint256Param],
+})
 
-export const V2ExactOutputCommand = newCommandType(
-  {
-    type: CommandType.V2_SWAP_EXACT_OUT,
-    inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
-    outputs: [Uint256Param],
-  }
-)
+export const V2ExactOutputCommand = newCommandType({
+  type: CommandType.V2_SWAP_EXACT_OUT,
+  inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
+  outputs: [Uint256Param],
+})
 
-export const V3ExactInputCommand = newCommandType(
-  {
-    type: CommandType.V3_SWAP_EXACT_IN,
-    inputs: [AddressParam, BooleanParam, Uint256Param, Uint256Param, BytesParam],
-    outputs: [Uint256Param],
-  }
-)
+export const V3ExactInputCommand = newCommandType({
+  type: CommandType.V3_SWAP_EXACT_IN,
+  inputs: [AddressParam, BooleanParam, Uint256Param, Uint256Param, BytesParam],
+  outputs: [Uint256Param],
+})
 
-export const CheckAmountGTECommand = newCommandType(
-  {
-    type: CommandType.CHECK_AMT,
-    inputs: [Uint256Param, Uint256Param],
-  }
-)
+export const CheckAmountGTECommand = newCommandType({
+  type: CommandType.CHECK_AMT,
+  inputs: [Uint256Param, Uint256Param],
+})
