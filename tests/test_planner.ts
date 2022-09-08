@@ -9,8 +9,8 @@ const SAMPLE_ADDRESS_F = '0xffffffffffffffffffffffffffffffffffffffff'
 describe('RouterPlanner', () => {
   it('properly encodes TransferCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new TransferCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_F, 55))
-    planner.add(new TransferCommand(SAMPLE_ADDRESS_F, SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_D, 55))
+    planner.add(TransferCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_F, 55))
+    planner.add(TransferCommand(SAMPLE_ADDRESS_F, SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_D, 55))
 
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('0100010203ffffff')
@@ -23,7 +23,7 @@ describe('RouterPlanner', () => {
 
   it('properly encodes V2ExactInputCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new V2ExactInputCommand(1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
+    planner.add(V2ExactInputCommand(1, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('04008102ffffffff')
     expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001')
@@ -35,7 +35,7 @@ describe('RouterPlanner', () => {
 
   it('properly encodes V2ExactOutputCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new V2ExactOutputCommand(3, 100, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
+    planner.add(V2ExactOutputCommand(3, 100, [SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E], SAMPLE_ADDRESS_F))
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('0500018203ffffff')
     expect(state[0]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000003')
@@ -48,7 +48,7 @@ describe('RouterPlanner', () => {
 
   it('properly encodes V3ExactInputCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(new V3ExactInputCommand(SAMPLE_ADDRESS_D, 1234, 4321, '0x1234567890abcdef'))
+    planner.add(V3ExactInputCommand(SAMPLE_ADDRESS_D, 1234, 4321, '0x1234567890abcdef'))
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('0200010283ffffff')
     expect(state[0]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')

@@ -33,6 +33,15 @@ export enum CommandType {
   RAWCALL,
 }
 
+const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
+  [CommandType.PERMIT]: CommandFlags.PERMIT,
+  [CommandType.TRANSFER]: CommandFlags.TRANSFER,
+  [CommandType.V3_SWAP_EXACT_IN]: CommandFlags.V3_SWAP_EXACT_IN,
+  [CommandType.V3_SWAP_EXACT_OUT]: CommandFlags.V3_SWAP_EXACT_OUT,
+  [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
+  [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
+}
+
 export class RouterParamType {
   // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
   readonly type: string
@@ -45,6 +54,11 @@ export class RouterParamType {
     this.baseType = baseType ?? _type
   }
 }
+
+const AddressParam = new RouterParamType('address')
+const Uint256Param = new RouterParamType('uint256')
+const BytesParam = new RouterParamType('bytes')
+const AddressArrayParam = new RouterParamType('address[]', 'array')
 
 export interface Value {
   readonly param: RouterParamType
@@ -78,88 +92,40 @@ export class RouterCommand {
   }
 }
 
-const AddressParam = { type: 'address', baseType: 'address' }
-const AddressArrayParam = { type: 'address[]', baseType: 'array' }
-const Uint256Param = { type: 'uint256', baseType: 'uint256' }
-const BytesParam = { type: 'bytes', baseType: 'bytes' }
-
-export class TransferCommand implements RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
-
-  constructor(...args: any[]) {
-    const transferFragment = {
-      type: CommandType.TRANSFER,
-      inputs: [AddressParam, AddressParam, AddressParam, Uint256Param],
-    }
-    args = args.map((arg, idx) => encodeArg(arg, transferFragment.inputs[idx]))
-    this.call = new RouterCall(transferFragment, args, CommandFlags.TRANSFER)
-    this.type = transferFragment.type
+function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) => RouterCommand {
+  function fn(...args: any[]): RouterCommand {
+    args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
+    const call = new RouterCall(fragment, args, COMMAND_MAP[fragment.type])
+    const type = fragment.type
+    return new RouterCommand(call, type)
   }
+  return fn
 }
 
-export class V2ExactInputCommand implements RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
+export const TransferCommand = initializeCommandType({
+  type: CommandType.TRANSFER,
+  inputs: [AddressParam, AddressParam, AddressParam, Uint256Param],
+})
 
-  constructor(...args: any[]) {
-    const v2SwapFragment = {
-      type: CommandType.V2_SWAP_EXACT_IN,
-      inputs: [Uint256Param, AddressArrayParam, AddressParam],
-      outputs: [Uint256Param],
-    }
+export const V2ExactInputCommand = initializeCommandType({
+  type: CommandType.V2_SWAP_EXACT_IN,
+  inputs: [Uint256Param, AddressArrayParam, AddressParam],
+  outputs: [Uint256Param],
+})
 
-    args = args.map((arg, idx) => encodeArg(arg, v2SwapFragment.inputs[idx]))
-    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP_EXACT_IN)
-    this.type = v2SwapFragment.type
-  }
-}
+export const V2ExactOutputCommand = initializeCommandType({
+  type: CommandType.V2_SWAP_EXACT_OUT,
+  inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
+  outputs: [Uint256Param],
+})
 
-export class V2ExactOutputCommand implements RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
+export const V3ExactInputCommand = initializeCommandType({
+  type: CommandType.V3_SWAP_EXACT_IN,
+  inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
+  outputs: [Uint256Param],
+})
 
-  constructor(...args: any[]) {
-    const v2SwapFragment = {
-      type: CommandType.V2_SWAP_EXACT_OUT,
-      inputs: [Uint256Param, Uint256Param, AddressArrayParam, AddressParam],
-      outputs: [Uint256Param],
-    }
-
-    args = args.map((arg, idx) => encodeArg(arg, v2SwapFragment.inputs[idx]))
-    this.call = new RouterCall(v2SwapFragment, args, CommandFlags.V2_SWAP_EXACT_OUT)
-    this.type = v2SwapFragment.type
-  }
-}
-
-export class V3ExactInputCommand implements RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
-
-  constructor(...args: any[]) {
-    const v3SwapFragment = {
-      type: CommandType.V3_SWAP_EXACT_IN,
-      inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
-      outputs: [Uint256Param],
-    }
-
-    args = args.map((arg, idx) => encodeArg(arg, v3SwapFragment.inputs[idx]))
-    this.call = new RouterCall(v3SwapFragment, args, CommandFlags.V3_SWAP_EXACT_IN)
-    this.type = v3SwapFragment.type
-  }
-}
-
-export class CheckAmountGTECommand implements RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
-
-  constructor(...args: any[]) {
-    const checkAmountGTEFragment = {
-      type: CommandType.CHECK_AMT,
-      inputs: [Uint256Param, Uint256Param],
-    }
-    args = args.map((arg, idx) => encodeArg(arg, checkAmountGTEFragment.inputs[idx]))
-    this.call = new RouterCall(checkAmountGTEFragment, args, CommandFlags.CHECK_AMT)
-    this.type = checkAmountGTEFragment.type
-  }
-}
+export const CheckAmountGTECommand = initializeCommandType({
+  type: CommandType.CHECK_AMT,
+  inputs: [Uint256Param, Uint256Param],
+})
