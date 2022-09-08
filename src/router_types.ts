@@ -58,7 +58,6 @@ export class RouterParamType {
 const AddressParam = new RouterParamType('address')
 const Uint256Param = new RouterParamType('uint256')
 const BytesParam = new RouterParamType('bytes')
-const BooleanParam = new RouterParamType('bool')
 const AddressArrayParam = new RouterParamType('address[]', 'array')
 
 export interface Value {
@@ -122,7 +121,7 @@ export const V2ExactOutputCommand = initializeCommandType({
 
 export const V3ExactInputCommand = initializeCommandType({
   type: CommandType.V3_SWAP_EXACT_IN,
-  inputs: [AddressParam, BooleanParam, Uint256Param, Uint256Param, BytesParam],
+  inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
   outputs: [Uint256Param],
 })
 
