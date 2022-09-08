@@ -82,7 +82,6 @@ const AddressParam = { type: 'address', baseType: 'address' }
 const AddressArrayParam = { type: 'address[]', baseType: 'array' }
 const Uint256Param = { type: 'uint256', baseType: 'uint256' }
 const BytesParam = { type: 'bytes', baseType: 'bytes' }
-const BooleanParam = { type: 'bool', baseType: 'bool' }
 
 export class TransferCommand implements RouterCommand {
   readonly type: CommandType
@@ -140,7 +139,7 @@ export class V3ExactInputCommand implements RouterCommand {
   constructor(...args: any[]) {
     const v3SwapFragment = {
       type: CommandType.V3_SWAP_EXACT_IN,
-      inputs: [AddressParam, BooleanParam, Uint256Param, Uint256Param, BytesParam],
+      inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
       outputs: [Uint256Param],
     }
 
