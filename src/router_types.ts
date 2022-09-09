@@ -125,6 +125,12 @@ export const V3ExactInputCommand = initializeCommandType({
   outputs: [Uint256Param],
 })
 
+export const V3ExactOutputCommand = initializeCommandType({
+  type: CommandType.V3_SWAP_EXACT_OUT,
+  inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
+  outputs: [Uint256Param],
+})
+
 export const CheckAmountGTECommand = initializeCommandType({
   type: CommandType.CHECK_AMT,
   inputs: [Uint256Param, Uint256Param],
