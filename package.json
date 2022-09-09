@@ -1,6 +1,6 @@
 {
   "name": "@uniswap/narwhal-sdk",
-  "version": "0.0.1",
+  "version": "1.0.0-beta.0",
   "description": "Fork of @weiroll/weiroll.js package to accomodate the narwhal contracts",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -61,5 +61,13 @@
   },
   "dependencies": {
     "ethers": "^5.3.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Uniswap/narwhal-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Uniswap/narwhal-sdk/issues"
+  },
+  "homepage": "https://github.com/Uniswap/narwhal-sdk#readme"
 }
