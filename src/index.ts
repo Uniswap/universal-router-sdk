@@ -7,5 +7,6 @@ export {
   V3ExactInputCommand,
   V2ExactInputCommand,
   V2ExactOutputCommand,
-  CheckAmountGTECommand,
+  WrapETHCommand,
+  UnwrapWETHCommand,
 } from './router_types'
