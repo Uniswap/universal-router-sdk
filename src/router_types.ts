@@ -14,6 +14,7 @@ export enum CommandFlags {
   V2_SWAP_EXACT_OUT = 0x05,
   WRAP_ETH = 0x06,
   UNWRAP_WETH = 0x07,
+  SWEEP = 0x08,
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
   /** Specifies that this is an extended command, with an additional command word for indices. Internal use only. */
@@ -25,6 +26,7 @@ export enum CommandFlags {
 export enum CommandType {
   PERMIT,
   TRANSFER,
+  SWEEP,
   V3_SWAP_EXACT_IN,
   V3_SWAP_EXACT_OUT,
   V2_SWAP_EXACT_IN,
@@ -38,6 +40,7 @@ export enum CommandType {
 const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.PERMIT]: CommandFlags.PERMIT,
   [CommandType.TRANSFER]: CommandFlags.TRANSFER,
+  [CommandType.SWEEP]: CommandFlags.SWEEP,
   [CommandType.V3_SWAP_EXACT_IN]: CommandFlags.V3_SWAP_EXACT_IN,
   [CommandType.V3_SWAP_EXACT_OUT]: CommandFlags.V3_SWAP_EXACT_OUT,
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
@@ -108,7 +111,12 @@ function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) =
 
 export const TransferCommand = initializeCommandType({
   type: CommandType.TRANSFER,
-  inputs: [AddressParam, AddressParam, Uint256Param, Uint256Param],
+  inputs: [AddressParam, AddressParam, Uint256Param],
+})
+
+export const SweepCommand = initializeCommandType({
+  type: CommandType.SWEEP,
+  inputs: [AddressParam, AddressParam, Uint256Param],
 })
 
 export const V2ExactInputCommand = initializeCommandType({
@@ -137,10 +145,10 @@ export const V3ExactOutputCommand = initializeCommandType({
 
 export const WrapETHCommand = initializeCommandType({
   type: CommandType.WRAP_ETH,
-  inputs: [AddressParam, Uint256Param, Uint256Param],
+  inputs: [AddressParam, Uint256Param],
 })
 
 export const UnwrapWETHCommand = initializeCommandType({
   type: CommandType.UNWRAP_WETH,
-  inputs: [AddressParam, Uint256Param, Uint256Param],
+  inputs: [AddressParam, Uint256Param],
 })
