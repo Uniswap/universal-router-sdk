@@ -9,17 +9,16 @@ const SAMPLE_ADDRESS_F = '0xffffffffffffffffffffffffffffffffffffffff'
 describe('RouterPlanner', () => {
   it('properly encodes TransferCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(TransferCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_F, 55, 0))
-    planner.add(TransferCommand(SAMPLE_ADDRESS_F, SAMPLE_ADDRESS_D, 55, 0))
+    planner.add(TransferCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_F, 55))
+    planner.add(TransferCommand(SAMPLE_ADDRESS_F, SAMPLE_ADDRESS_D, 55))
 
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('0100010203ffffff')
-    expect(commands.slice(18, 36)).to.equal('0101040203ffffff')
+    expect(commands.slice(2, 18)).to.equal('01000102ffffffff')
+    expect(commands.slice(18, 36)).to.equal('01010302ffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
     expect(state[2]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000037')
-    expect(state[3]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000000')
-    expect(state[4]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
+    expect(state[3]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
   })
 
   it('properly encodes V2ExactInputCommand', () => {
@@ -71,22 +70,20 @@ describe('RouterPlanner', () => {
 
   it('properly encodes WrapETHCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(WrapETHCommand(SAMPLE_ADDRESS_D, 10, 20))
+    planner.add(WrapETHCommand(SAMPLE_ADDRESS_D, 10))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('06000102ffffffff')
+    expect(commands.slice(2, 18)).to.equal('060001ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
-    expect(state[2]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000014')
   })
 
   it('properly encodes UnwrapWETHCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(UnwrapWETHCommand(SAMPLE_ADDRESS_E, 10, 20))
+    planner.add(UnwrapWETHCommand(SAMPLE_ADDRESS_E, 10))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('07000102ffffffff')
+    expect(commands.slice(2, 18)).to.equal('070001ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
-    expect(state[2]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000014')
   })
 
 })
