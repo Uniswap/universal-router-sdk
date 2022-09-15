@@ -12,9 +12,10 @@ export enum CommandFlags {
   V3_SWAP_EXACT_OUT = 0x03,
   V2_SWAP_EXACT_IN = 0x04,
   V2_SWAP_EXACT_OUT = 0x05,
-  WRAP_ETH = 0x06,
-  UNWRAP_WETH = 0x07,
-  SWEEP = 0x08,
+  SEAPORT = 0x06,
+  WRAP_ETH = 0x07,
+  UNWRAP_WETH = 0x08,
+  SWEEP = 0x09,
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
   /** Specifies that this is an extended command, with an additional command word for indices. Internal use only. */
@@ -31,6 +32,7 @@ export enum CommandType {
   V3_SWAP_EXACT_OUT,
   V2_SWAP_EXACT_IN,
   V2_SWAP_EXACT_OUT,
+  SEAPORT,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -45,6 +47,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V3_SWAP_EXACT_OUT]: CommandFlags.V3_SWAP_EXACT_OUT,
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
+  [CommandType.SEAPORT]: CommandFlags.SEAPORT,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -141,6 +144,11 @@ export const V3ExactOutputCommand = initializeCommandType({
   type: CommandType.V3_SWAP_EXACT_OUT,
   inputs: [AddressParam, Uint256Param, Uint256Param, BytesParam],
   outputs: [Uint256Param],
+})
+
+export const SeaportCommand = initializeCommandType({
+  type: CommandType.SEAPORT,
+  inputs: [Uint256Param, BytesParam],
 })
 
 export const WrapETHCommand = initializeCommandType({

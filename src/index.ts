@@ -8,6 +8,7 @@ export {
   V3ExactOutputCommand,
   V2ExactInputCommand,
   V2ExactOutputCommand,
+  SeaportCommand,
   WrapETHCommand,
   UnwrapWETHCommand,
   SweepCommand,
