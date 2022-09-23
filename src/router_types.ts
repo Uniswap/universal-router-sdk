@@ -12,7 +12,7 @@ export enum CommandFlags {
   V3_SWAP_EXACT_OUT = 0x03,
   V2_SWAP_EXACT_IN = 0x04,
   V2_SWAP_EXACT_OUT = 0x05,
-  SEAPORT = 0x06,
+  NFT_MARKETPLACE = 0x06,
   WRAP_ETH = 0x07,
   UNWRAP_WETH = 0x08,
   SWEEP = 0x09,
@@ -32,7 +32,7 @@ export enum CommandType {
   V3_SWAP_EXACT_OUT,
   V2_SWAP_EXACT_IN,
   V2_SWAP_EXACT_OUT,
-  SEAPORT,
+  NFT_MARKETPLACE,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -47,9 +47,14 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V3_SWAP_EXACT_OUT]: CommandFlags.V3_SWAP_EXACT_OUT,
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
-  [CommandType.SEAPORT]: CommandFlags.SEAPORT,
+  [CommandType.NFT_MARKETPLACE]: CommandFlags.NFT_MARKETPLACE,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
+}
+
+enum NFTMarketplaces {
+  SEAPORT = 0,
+  NFTX = 1,
 }
 
 export class RouterParamType {
@@ -104,12 +109,27 @@ export class RouterCommand {
 
 function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) => RouterCommand {
   function fn(...args: any[]): RouterCommand {
-    args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
-    const call = new RouterCall(fragment, args, COMMAND_MAP[fragment.type])
-    const type = fragment.type
-    return new RouterCommand(call, type)
+    return newRouterCommand(fragment, ...args)
   }
   return fn
+}
+
+function initializeNFTMarketplaceCommand(
+  marketplace: NFTMarketplaces,
+  fragment: RouterCallFragment
+): (...args: any[]) => RouterCommand {
+  function fn(...args: any[]): RouterCommand {
+    args.splice(1, 0, marketplace)
+    return newRouterCommand(fragment, ...args)
+  }
+  return fn
+}
+
+function newRouterCommand(fragment: RouterCallFragment, ...args: any[]): RouterCommand {
+  args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
+  const call = new RouterCall(fragment, args, COMMAND_MAP[fragment.type])
+  const type = fragment.type
+  return new RouterCommand(call, type)
 }
 
 export const TransferCommand = initializeCommandType({
@@ -146,9 +166,14 @@ export const V3ExactOutputCommand = initializeCommandType({
   outputs: [Uint256Param],
 })
 
-export const SeaportCommand = initializeCommandType({
-  type: CommandType.SEAPORT,
-  inputs: [Uint256Param, BytesParam],
+export const SeaportCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.SEAPORT, {
+  type: CommandType.NFT_MARKETPLACE,
+  inputs: [Uint256Param, Uint256Param, BytesParam],
+})
+
+export const NFTXCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.NFTX, {
+  type: CommandType.NFT_MARKETPLACE,
+  inputs: [Uint256Param, Uint256Param, BytesParam],
 })
 
 export const WrapETHCommand = initializeCommandType({
