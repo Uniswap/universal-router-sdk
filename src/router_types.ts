@@ -13,6 +13,7 @@ export enum CommandFlags {
   V2_SWAP_EXACT_IN = 0x04,
   V2_SWAP_EXACT_OUT = 0x05,
   SEAPORT = 0x06,
+  NFTX = 0x0a,
   WRAP_ETH = 0x07,
   UNWRAP_WETH = 0x08,
   SWEEP = 0x09,
@@ -33,6 +34,7 @@ export enum CommandType {
   V2_SWAP_EXACT_IN,
   V2_SWAP_EXACT_OUT,
   SEAPORT,
+  NFTX,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -48,6 +50,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
+  [CommandType.NFTX]: CommandFlags.NFTX,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -148,6 +151,11 @@ export const V3ExactOutputCommand = initializeCommandType({
 
 export const SeaportCommand = initializeCommandType({
   type: CommandType.SEAPORT,
+  inputs: [Uint256Param, BytesParam],
+})
+
+export const NFTXCommand = initializeCommandType({
+  type: CommandType.NFTX,
   inputs: [Uint256Param, BytesParam],
 })
 

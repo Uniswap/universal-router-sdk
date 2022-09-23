@@ -12,4 +12,5 @@ export {
   WrapETHCommand,
   UnwrapWETHCommand,
   SweepCommand,
+  NFTXCommand,
 } from './router_types'
