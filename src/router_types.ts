@@ -114,13 +114,17 @@ function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) =
   return fn
 }
 
-function initializeNFTMarketplaceCommand(
-  marketplace: NFTMarketplaces,
-  fragment: RouterCallFragment
-): (...args: any[]) => RouterCommand {
+function initializeNFTMarketplaceCommand(marketplace: NFTMarketplaces): (...args: any[]) => RouterCommand {
   function fn(...args: any[]): RouterCommand {
     args.splice(1, 0, marketplace)
-    return newRouterCommand(fragment, ...args)
+
+    return newRouterCommand(
+      {
+        type: CommandType.NFT_MARKETPLACE,
+        inputs: [Uint256Param, Uint256Param, BytesParam],
+      },
+      ...args
+    )
   }
   return fn
 }
@@ -166,16 +170,6 @@ export const V3ExactOutputCommand = initializeCommandType({
   outputs: [Uint256Param],
 })
 
-export const SeaportCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.SEAPORT, {
-  type: CommandType.NFT_MARKETPLACE,
-  inputs: [Uint256Param, Uint256Param, BytesParam],
-})
-
-export const NFTXCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.NFTX, {
-  type: CommandType.NFT_MARKETPLACE,
-  inputs: [Uint256Param, Uint256Param, BytesParam],
-})
-
 export const WrapETHCommand = initializeCommandType({
   type: CommandType.WRAP_ETH,
   inputs: [AddressParam, Uint256Param],
@@ -185,3 +179,7 @@ export const UnwrapWETHCommand = initializeCommandType({
   type: CommandType.UNWRAP_WETH,
   inputs: [AddressParam, Uint256Param],
 })
+
+export const SeaportCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.SEAPORT)
+
+export const NFTXCommand = initializeNFTMarketplaceCommand(NFTMarketplaces.NFTX)
