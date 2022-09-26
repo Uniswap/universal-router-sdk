@@ -84,7 +84,7 @@ describe('RouterPlanner', () => {
     const planner = new RouterPlanner()
     planner.add(NFTBuyAndWithdrawCommand(SAMPLE_ADDRESS_D, 666, '0x1234567890abcdef', SAMPLE_ADDRESS_E, 1016))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('0a0001820304ffff')
+    expect(commands.slice(2, 18)).to.equal('0b0001820304ffff')
     expect(state[0]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
     expect(state[2]).to.equal(
@@ -100,9 +100,10 @@ describe('RouterPlanner', () => {
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('0a0081ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
-    expect(state[1]).to.equal('0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000')
+    expect(state[1]).to.equal(
+      '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'
+    )
   })
-
 
   it('properly encodes WrapETHCommand', () => {
     const planner = new RouterPlanner()
