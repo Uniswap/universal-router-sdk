@@ -8,7 +8,7 @@ import {
   V3ExactInputCommand,
   WrapETHCommand,
   UnwrapWETHCommand,
-  NFTBuyAndWithdrawCommand,
+  LooksRareCommand,
 } from '../src/router_types'
 import { RouterPlanner } from '../src/planner'
 
@@ -80,18 +80,17 @@ describe('RouterPlanner', () => {
     )
   })
 
-  it('properly encodes NFTBuyAndWithdrawCommand', () => {
+  it('properly encodes LooksRareCommand', () => {
     const planner = new RouterPlanner()
-    planner.add(NFTBuyAndWithdrawCommand(SAMPLE_ADDRESS_D, 666, '0x1234567890abcdef', SAMPLE_ADDRESS_E, 1016))
+    planner.add(LooksRareCommand(666, '0x1234567890abcdef', SAMPLE_ADDRESS_E, 1016))
     const { commands, state } = planner.plan()
-    expect(commands.slice(2, 18)).to.equal('0b0001820304ffff')
-    expect(state[0]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
-    expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
-    expect(state[2]).to.equal(
+    expect(commands.slice(2, 18)).to.equal('0b00810203ffffff')
+    expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
+    expect(state[1]).to.equal(
       '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'
     )
-    expect(state[3]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-    expect(state[4]).to.equal('0x00000000000000000000000000000000000000000000000000000000000003f8')
+    expect(state[2]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[3]).to.equal('0x00000000000000000000000000000000000000000000000000000000000003f8')
   })
 
   it('properly encodes NFTXCommand', () => {

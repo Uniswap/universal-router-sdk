@@ -17,7 +17,7 @@ export enum CommandFlags {
   UNWRAP_WETH = 0x08,
   SWEEP = 0x09,
   NFTX = 0x0a,
-  NFT_BUY_AND_WITHDRAW = 0x0b,
+  LOOKS_RARE = 0x0b,
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
@@ -37,7 +37,7 @@ export enum CommandType {
   V2_SWAP_EXACT_OUT,
   SEAPORT,
   NFTX,
-  NFT_BUY_AND_WITHDRAW,
+  LOOKS_RARE,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -54,7 +54,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
   [CommandType.NFTX]: CommandFlags.NFTX,
-  [CommandType.NFT_BUY_AND_WITHDRAW]: CommandFlags.NFT_BUY_AND_WITHDRAW,
+  [CommandType.LOOKS_RARE]: CommandFlags.LOOKS_RARE,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -163,10 +163,10 @@ export const NFTXCommand = initializeCommandType({
   inputs: [Uint256Param, BytesParam],
 })
 
-export const NFTBuyAndWithdrawCommand = initializeCommandType({
-  type: CommandType.NFT_BUY_AND_WITHDRAW,
-  /// Protocol, Value, Data, then Recipient, token ID
-  inputs: [AddressParam, Uint256Param, BytesParam, AddressParam, Uint256Param],
+export const LooksRareCommand = initializeCommandType({
+  type: CommandType.LOOKS_RARE,
+  /// For call: Value, Data. Then for Transfer: Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, Uint256Param],
 })
 
 export const WrapETHCommand = initializeCommandType({
