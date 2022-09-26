@@ -9,6 +9,7 @@ export {
   V2ExactInputCommand,
   V2ExactOutputCommand,
   SeaportCommand,
+  NFTBuyAndWithdrawCommand,
   WrapETHCommand,
   UnwrapWETHCommand,
   SweepCommand,
