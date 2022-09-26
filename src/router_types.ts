@@ -165,8 +165,8 @@ export const NFTXCommand = initializeCommandType({
 
 export const LooksRareCommand = initializeCommandType({
   type: CommandType.LOOKS_RARE,
-  /// For call: Value, Data. Then for Transfer: Recipient, token ID
-  inputs: [Uint256Param, BytesParam, AddressParam, Uint256Param],
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
 export const WrapETHCommand = initializeCommandType({
