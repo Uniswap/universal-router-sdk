@@ -21,8 +21,6 @@ export enum CommandFlags {
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
-  /** Specifies that the return value of this call should be wrapped in a `bytes`. Internal use only. */
-  TUPLE_RETURN = 0x40,
   /** Specifies whether the command is allowed to revert. */
   ALLOW_REVERT = 0x80,
 }

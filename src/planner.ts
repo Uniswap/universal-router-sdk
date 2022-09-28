@@ -126,9 +126,6 @@ export class RouterPlanner {
       }
     }
 
-    if (command.getFlags() & CommandFlags.TUPLE_RETURN) {
-      return new ReturnValue(new RouterParamType('bytes'), command)
-    }
     if (command.fragment.outputs?.length !== 1) {
       return null
     }
@@ -237,9 +234,6 @@ export class RouterPlanner {
       } else {
         throw new Error(`Unknown function argument type '${typeof arg}'`)
       }
-      if (isDynamicType(arg.param)) {
-        slot |= CommandFlags.TUPLE_RETURN
-      }
       args.push(slot)
     })
 
@@ -293,9 +287,6 @@ export class RouterPlanner {
           ps.state.push('0x')
         }
 
-        if (isDynamicType(command.fragment.outputs?.[0])) {
-          ret |= CommandFlags.TUPLE_RETURN
-        }
       } else if (command.type === CommandType.RAWCALL || command.type === CommandType.SUBPLAN) {
         if (command.fragment.outputs && command.fragment.outputs.length === 1) {
           ret = 0xfe
