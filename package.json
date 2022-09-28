@@ -12,7 +12,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/test_planner.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/planner.test.ts'",
     "start": "tsdx watch",
     "build": "tsdx build",
     "tsdx-test": "tsdx test",

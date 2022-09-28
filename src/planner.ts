@@ -1,6 +1,6 @@
 import { ParamType, defaultAbiCoder } from '@ethersproject/abi'
 import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
-import { CommandFlags, CommandType, RouterCommand, RouterParamType } from './router_types'
+import { CommandFlags, CommandType, RouterCommand, RouterParamType } from './routerCommands'
 
 /**
  * Represents a value that can be passed to a function call.
@@ -126,7 +126,7 @@ export class RouterPlanner {
       }
     }
 
-    if (command.flags & CommandFlags.TUPLE_RETURN) {
+    if (command.getFlags() & CommandFlags.TUPLE_RETURN) {
       return new ReturnValue(new RouterParamType('bytes'), command)
     }
     if (command.fragment.outputs?.length !== 1) {
@@ -261,7 +261,7 @@ export class RouterPlanner {
         ps.freeSlots.push(ps.state.length - 1)
       }
 
-      let flags = command.flags
+      let flags = command.getFlags()
 
       const args = this.buildCommandArgs(command, ps.returnSlotMap, ps.literalSlotMap, ps.state)
 

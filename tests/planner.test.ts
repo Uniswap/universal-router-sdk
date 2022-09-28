@@ -10,7 +10,7 @@ import {
   WrapETHCommand,
   UnwrapWETHCommand,
   LooksRareCommand,
-} from '../src/router_types'
+} from '../src/routerCommands'
 import { RouterPlanner } from '../src/planner'
 
 const SAMPLE_ADDRESS_D = '0xdddddddddddddddddddddddddddddddddddddddd'
@@ -122,17 +122,5 @@ describe('RouterPlanner', () => {
     expect(commands.slice(2, 18)).to.equal('080001ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
-  })
-
-  it.only('enables allowRevert() for transactions that can revert', () => {
-    const command = SeaportCommand(666, '0x1234567890abcdef')
-    expect(command.call.flags).to.eq(CommandFlags.SEAPORT)
-
-    command.allowRevert()
-    expect(command.call.flags).to.eq(CommandFlags.SEAPORT + CommandFlags.ALLOW_REVERT)
-  })
-
-  it('reverts for transactions that cannot allow reverts', () => {
-
   })
 })

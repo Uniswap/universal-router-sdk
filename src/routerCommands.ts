@@ -98,13 +98,25 @@ export class RouterCommand {
   readonly fragment: RouterCallFragment
   readonly args: Value[]
   readonly type: CommandType
-  readonly flags: CommandFlags
+  private _flags: CommandFlags
 
   constructor(fragment: RouterCallFragment, args: Value[], type: CommandType, flags?: CommandFlags) {
     this.type = type
     this.fragment = fragment
     this.args = args
-    this.flags = flags ?? 0
+    this._flags = flags ?? 0
+  }
+
+  getFlags(): CommandFlags {
+    return this._flags
+  }
+
+  allowRevert(): RouterCommand {
+    if (!REVERTABLE_COMMANDS.has(this.type)) {
+      throw new Error(`command type: ${CommandType[this.type]} cannot be allowed to revert`)
+    }
+    this._flags = this._flags | CommandFlags.ALLOW_REVERT
+    return this
   }
 }
 
