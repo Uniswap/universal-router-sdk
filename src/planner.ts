@@ -254,7 +254,7 @@ export class RouterPlanner {
         throw new Error(`Unknown function argument type '${typeof arg}'`)
       }
       if (isDynamicType(arg.param)) {
-        slot |= 0x80
+        slot |= CommandFlags.TUPLE_RETURN
       }
       args.push(slot)
     })
@@ -280,10 +280,6 @@ export class RouterPlanner {
       let flags = command.call.flags
 
       const args = this.buildCommandArgs(command, ps.returnSlotMap, ps.literalSlotMap, ps.state)
-
-      if (args.length > 6) {
-        flags |= CommandFlags.EXTENDED_COMMAND
-      }
 
       // Add any newly unused state slots to the list
       ps.freeSlots = ps.freeSlots.concat(ps.stateExpirations.get(command) || [])
@@ -314,7 +310,7 @@ export class RouterPlanner {
         }
 
         if (isDynamicType(command.call.fragment.outputs?.[0])) {
-          ret |= 0x80
+          ret |= CommandFlags.TUPLE_RETURN
         }
       } else if (command.type === CommandType.RAWCALL || command.type === CommandType.SUBPLAN) {
         if (command.call.fragment.outputs && command.call.fragment.outputs.length === 1) {
@@ -322,14 +318,7 @@ export class RouterPlanner {
         }
       }
 
-      if ((flags & CommandFlags.EXTENDED_COMMAND) === CommandFlags.EXTENDED_COMMAND) {
-        // Extended command
-        encodedCommands.push(hexConcat([[flags, 0, 0, 0, 0, 0, 0, ret]]))
-        encodedCommands.push(hexConcat([padArray(args, 8, 0xff)]))
-      } else {
-        // Standard command
-        encodedCommands.push(hexConcat([[flags], padArray(args, 6, 0xff), [ret]]))
-      }
+      encodedCommands.push(hexConcat([[flags], padArray(args, 6, 0xff), [ret]]))
     }
     return `0x${encodedCommands.join('').replaceAll('0x', '')}`
   }
