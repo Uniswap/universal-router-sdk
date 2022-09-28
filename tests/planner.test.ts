@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import {
-  CommandFlags,
   NFTXCommand,
   SeaportCommand,
   TransferCommand,

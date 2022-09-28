@@ -1,6 +1,6 @@
 import { ParamType, defaultAbiCoder } from '@ethersproject/abi'
 import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
-import { CommandFlags, CommandType, RouterCommand, RouterParamType } from './routerCommands'
+import { CommandType, RouterCommand, RouterParamType } from './routerCommands'
 
 /**
  * Represents a value that can be passed to a function call.
