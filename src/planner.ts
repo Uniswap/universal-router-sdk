@@ -1,6 +1,6 @@
 import { ParamType, defaultAbiCoder } from '@ethersproject/abi'
 import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
-import { CommandFlags, CommandType, RouterCall, RouterCommand, RouterParamType } from './router_types'
+import { CommandFlags, CommandType, RouterCommand, RouterParamType } from './router_types'
 
 /**
  * Represents a value that can be passed to a function call.
@@ -118,28 +118,27 @@ export class RouterPlanner {
   }
 
   add(command: RouterCommand): ReturnValue | null {
-    let call = command.call
     this.commands.push(command)
 
-    for (const arg of call.args) {
+    for (const arg of command.args) {
       if (arg instanceof SubplanValue) {
         throw new Error('Only subplans can have arguments of type SubplanValue')
       }
     }
 
-    if (call.flags & CommandFlags.TUPLE_RETURN) {
+    if (command.flags & CommandFlags.TUPLE_RETURN) {
       return new ReturnValue(new RouterParamType('bytes'), command)
     }
-    if (call.fragment.outputs?.length !== 1) {
+    if (command.fragment.outputs?.length !== 1) {
       return null
     }
-    return new ReturnValue(call.fragment.outputs[0], command)
+    return new ReturnValue(command.fragment.outputs[0], command)
   }
 
-  addSubplan(call: RouterCall) {
+  addSubplan(command: RouterCommand) {
     let hasSubplan = false
     let hasState = false
-    for (const arg of call.args) {
+    for (const arg of command.args) {
       if (arg instanceof SubplanValue) {
         if (hasSubplan) {
           throw new Error('Subplans can only take one planner argument')
@@ -160,26 +159,11 @@ export class RouterPlanner {
       throw new Error('Subplans must take planner and state arguments')
     }
 
-    if (call.fragment.outputs?.length === 1 && call.fragment.outputs[0].type !== 'bytes[]') {
+    if (command.fragment.outputs?.length === 1 && command.fragment.outputs[0].type !== 'bytes[]') {
       throw new Error('Subplans must return a bytes[] replacement state or nothing')
     }
 
-    this.commands.push(new RouterCommand(call, CommandType.SUBPLAN))
-  }
-
-  /**
-   * Executes a [[FunctionCall]], and replaces the planner state with the value it
-   * returns. This can be used to execute functions that make arbitrary changes to
-   * the planner state. Note that the planner library is not aware of these changes -
-   * so it may produce invalid plans if you don't know what you're doing.
-   * @param call The [[FunctionCall]] to execute
-   */
-  replaceState(call: RouterCall) {
-    if (call.fragment.outputs?.length !== 1 || call.fragment.outputs[0].type !== 'bytes[]') {
-      throw new Error('Function replacing state must return a bytes[]')
-    }
-
-    this.commands.push(new RouterCommand(call, CommandType.RAWCALL))
+    this.commands.push(command)
   }
 
   private preplan(
@@ -202,19 +186,19 @@ export class RouterPlanner {
 
     // Build visibility maps
     for (let command of this.commands) {
-      let inargs = command.call.args
+      let inargs = command.args
 
       for (let arg of inargs) {
         if (arg instanceof ReturnValue) {
           if (!seen.has(arg.command)) {
-            throw new Error(`Return value from "${arg.command.call.fragment.type}" is not visible here`)
+            throw new Error(`Return value from "${arg.command.fragment.type}" is not visible here`)
           }
           commandVisibility.set(arg.command, command)
         } else if (arg instanceof LiteralValue) {
           literalVisibility.set(arg.value, command)
         } else if (arg instanceof SubplanValue) {
           let subplanSeen = seen
-          if (!command.call.fragment.outputs || command.call.fragment.outputs.length === 0) {
+          if (!command.fragment.outputs || command.fragment.outputs.length === 0) {
             // Read-only subplan; return values aren't visible externally
             subplanSeen = new Set<RouterCommand>(seen)
           }
@@ -236,7 +220,7 @@ export class RouterPlanner {
     state: Array<string>
   ): Array<number> {
     // Build a list of argument value indexes
-    let inargs = command.call.args
+    let inargs = command.args
 
     const args = new Array<number>()
     inargs.forEach((arg) => {
@@ -268,7 +252,7 @@ export class RouterPlanner {
     for (let command of this.commands) {
       if (command.type === CommandType.SUBPLAN) {
         // Find the subplan
-        const subplanner = (command.call.args.find((arg) => arg instanceof SubplanValue) as SubplanValue).planner
+        const subplanner = (command.args.find((arg) => arg instanceof SubplanValue) as SubplanValue).planner
         // Build a list of commands
         const subcommands = subplanner.buildCommands(ps)
         // Encode them and push them to a new state slot
@@ -277,7 +261,7 @@ export class RouterPlanner {
         ps.freeSlots.push(ps.state.length - 1)
       }
 
-      let flags = command.call.flags
+      let flags = command.flags
 
       const args = this.buildCommandArgs(command, ps.returnSlotMap, ps.literalSlotMap, ps.state)
 
@@ -289,7 +273,7 @@ export class RouterPlanner {
       if (ps.commandVisibility.has(command)) {
         if (command.type === CommandType.RAWCALL || command.type === CommandType.SUBPLAN) {
           throw new Error(
-            `Return value of ${command.call.fragment.type} cannot be used to replace state and in another function`
+            `Return value of ${command.fragment.type} cannot be used to replace state and in another function`
           )
         }
         ret = ps.state.length
@@ -309,11 +293,11 @@ export class RouterPlanner {
           ps.state.push('0x')
         }
 
-        if (isDynamicType(command.call.fragment.outputs?.[0])) {
+        if (isDynamicType(command.fragment.outputs?.[0])) {
           ret |= CommandFlags.TUPLE_RETURN
         }
       } else if (command.type === CommandType.RAWCALL || command.type === CommandType.SUBPLAN) {
-        if (command.call.fragment.outputs && command.call.fragment.outputs.length === 1) {
+        if (command.fragment.outputs && command.fragment.outputs.length === 1) {
           ret = 0xfe
         }
       }

@@ -60,10 +60,10 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
 }
 
 const REVERTABLE_COMMANDS = new Set<CommandType>([
-  SEAPORT,
-  NFTX,
-  LOOKS_RARE,
-  SUBPLAN,
+  CommandType.SEAPORT,
+  CommandType.NFTX,
+  CommandType.LOOKS_RARE,
+  CommandType.SUBPLAN,
 ])
 
 export class RouterParamType {
@@ -94,47 +94,24 @@ export interface RouterCallFragment {
   readonly outputs?: ReadonlyArray<RouterParamType>
 }
 
-export class RouterCall {
+export class RouterCommand {
   readonly fragment: RouterCallFragment
   readonly args: Value[]
-  private _flags: CommandFlags
+  readonly type: CommandType
+  readonly flags: CommandFlags
 
-  constructor(fragment: RouterCallFragment, args: Value[], flags?: CommandFlags) {
+  constructor(fragment: RouterCallFragment, args: Value[], type: CommandType, flags?: CommandFlags) {
+    this.type = type
     this.fragment = fragment
     this.args = args
     this.flags = flags ?? 0
-  }
-
-  allowRevert() {
-    this._flags = this._flags | CommandFlags.ALLOW_REVERT
-  }
-
-  getFlags() {
-    return this.flags
-  }
-}
-
-export class RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
-
-  constructor(call: RouterCall, type: CommandType) {
-    this.call = call
-    this.type = type
-  }
-
-  allowRevert(): RouterCommand {
-    this.call.allowRevert()
-    return this
   }
 }
 
 function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) => RouterCommand {
   function fn(...args: any[]): RouterCommand {
     args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
-    const call = new RouterCall(fragment, args, COMMAND_MAP[fragment.type])
-    const type = fragment.type
-    return new RouterCommand(call, type)
+    return new RouterCommand(fragment, args, fragment.type, COMMAND_MAP[fragment.type])
   }
   return fn
 }
