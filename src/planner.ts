@@ -2,6 +2,8 @@ import { ParamType, defaultAbiCoder } from '@ethersproject/abi'
 import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
 import { CommandType, RouterCommand, RouterParamType } from './routerCommands'
 
+const IDX_VARIABLE_LENGTH = 0x80
+
 /**
  * Represents a value that can be passed to a function call.
  *
@@ -29,7 +31,7 @@ class LiteralValue implements Value {
 
 class ReturnValue implements Value {
   readonly param: RouterParamType
-  readonly command: RouterCommand // Function call we want the return value of
+  readonly command: RouterCommand // Command call we want the return value of
 
   constructor(param: RouterParamType, command: RouterCommand) {
     this.param = param
@@ -233,6 +235,9 @@ export class RouterPlanner {
         slot = state.length - 1
       } else {
         throw new Error(`Unknown function argument type '${typeof arg}'`)
+      }
+      if (isDynamicType(arg.param)) {
+        slot |= IDX_VARIABLE_LENGTH
       }
       args.push(slot)
     })
