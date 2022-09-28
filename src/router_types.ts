@@ -16,6 +16,9 @@ export enum CommandFlags {
   WRAP_ETH = 0x07,
   UNWRAP_WETH = 0x08,
   SWEEP = 0x09,
+  NFTX = 0x0a,
+  LOOKS_RARE = 0x0b,
+
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
   /** Specifies that this is an extended command, with an additional command word for indices. Internal use only. */
@@ -33,6 +36,8 @@ export enum CommandType {
   V2_SWAP_EXACT_IN,
   V2_SWAP_EXACT_OUT,
   SEAPORT,
+  NFTX,
+  LOOKS_RARE,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -48,6 +53,8 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
+  [CommandType.NFTX]: CommandFlags.NFTX,
+  [CommandType.LOOKS_RARE]: CommandFlags.LOOKS_RARE,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -149,6 +156,17 @@ export const V3ExactOutputCommand = initializeCommandType({
 export const SeaportCommand = initializeCommandType({
   type: CommandType.SEAPORT,
   inputs: [Uint256Param, BytesParam],
+})
+
+export const NFTXCommand = initializeCommandType({
+  type: CommandType.NFTX,
+  inputs: [Uint256Param, BytesParam],
+})
+
+export const LooksRareCommand = initializeCommandType({
+  type: CommandType.LOOKS_RARE,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
 export const WrapETHCommand = initializeCommandType({
