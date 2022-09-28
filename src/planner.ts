@@ -286,7 +286,6 @@ export class RouterPlanner {
         if (ret === ps.state.length) {
           ps.state.push('0x')
         }
-
       } else if (command.type === CommandType.RAWCALL || command.type === CommandType.SUBPLAN) {
         if (command.fragment.outputs && command.fragment.outputs.length === 1) {
           ret = 0xfe
