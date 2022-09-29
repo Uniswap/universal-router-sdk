@@ -98,11 +98,11 @@ export class RouterCommand {
   readonly type: CommandType
   private _flags: CommandFlags
 
-  constructor(fragment: RouterCallFragment, args: Value[], type: CommandType, flags?: CommandFlags) {
+  constructor(fragment: RouterCallFragment, args: Value[], type: CommandType) {
     this.type = type
     this.fragment = fragment
     this.args = args
-    this._flags = flags ?? 0
+    this._flags = COMMAND_MAP[type]!
   }
 
   getFlags(): CommandFlags {
@@ -121,7 +121,7 @@ export class RouterCommand {
 function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) => RouterCommand {
   function fn(...args: any[]): RouterCommand {
     args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
-    return new RouterCommand(fragment, args, fragment.type, COMMAND_MAP[fragment.type])
+    return new RouterCommand(fragment, args, fragment.type)
   }
   return fn
 }
