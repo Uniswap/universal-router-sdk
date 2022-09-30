@@ -10,6 +10,7 @@ export {
   V2ExactOutputCommand,
   SeaportCommand,
   LooksRareCommand,
+  PermitCommand,
   WrapETHCommand,
   UnwrapWETHCommand,
   SweepCommand,

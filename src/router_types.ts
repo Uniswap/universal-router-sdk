@@ -169,6 +169,11 @@ export const LooksRareCommand = initializeCommandType({
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
+export const PermitCommand = initializeCommandType({
+  type: CommandType.PERMIT,
+  inputs: [BytesParam],
+})
+
 export const WrapETHCommand = initializeCommandType({
   type: CommandType.WRAP_ETH,
   inputs: [AddressParam, Uint256Param],
