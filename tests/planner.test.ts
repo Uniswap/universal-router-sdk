@@ -10,7 +10,7 @@ import {
   UnwrapWETHCommand,
   LooksRareCommand,
   X2Y2Command,
-} from '../src/router_types'
+} from '../src/routerCommands'
 import { RouterPlanner } from '../src/planner'
 
 const SAMPLE_ADDRESS_D = '0xdddddddddddddddddddddddddddddddddddddddd'
