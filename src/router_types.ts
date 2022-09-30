@@ -18,6 +18,7 @@ export enum CommandFlags {
   SWEEP = 0x09,
   NFTX = 0x0a,
   LOOKS_RARE = 0x0b,
+  X2Y2 = 0x0c,
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
@@ -38,6 +39,7 @@ export enum CommandType {
   SEAPORT,
   NFTX,
   LOOKS_RARE,
+  X2Y2,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -55,6 +57,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
   [CommandType.NFTX]: CommandFlags.NFTX,
   [CommandType.LOOKS_RARE]: CommandFlags.LOOKS_RARE,
+  [CommandType.X2Y2]: CommandFlags.X2Y2,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -165,6 +168,12 @@ export const NFTXCommand = initializeCommandType({
 
 export const LooksRareCommand = initializeCommandType({
   type: CommandType.LOOKS_RARE,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
+})
+
+export const X2Y2Command = initializeCommandType({
+  type: CommandType.X2Y2,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
