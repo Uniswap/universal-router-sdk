@@ -18,13 +18,12 @@ export enum CommandFlags {
   SWEEP = 0x09,
   NFTX = 0x0a,
   LOOKS_RARE = 0x0b,
+  X2Y2 = 0x0c,
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
-  /** Specifies that this is an extended command, with an additional command word for indices. Internal use only. */
-  EXTENDED_COMMAND = 0x40,
-  /** Specifies that the return value of this call should be wrapped in a `bytes`. Internal use only. */
-  TUPLE_RETURN = 0x80,
+  /** Specifies whether the command is allowed to revert. */
+  ALLOW_REVERT = 0x80,
 }
 
 export enum CommandType {
@@ -38,6 +37,7 @@ export enum CommandType {
   SEAPORT,
   NFTX,
   LOOKS_RARE,
+  X2Y2,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -55,9 +55,17 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
   [CommandType.NFTX]: CommandFlags.NFTX,
   [CommandType.LOOKS_RARE]: CommandFlags.LOOKS_RARE,
+  [CommandType.X2Y2]: CommandFlags.X2Y2,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
+
+const REVERTABLE_COMMANDS = new Set<CommandType>([
+  CommandType.SEAPORT,
+  CommandType.NFTX,
+  CommandType.LOOKS_RARE,
+  CommandType.SUBPLAN,
+])
 
 export class RouterParamType {
   // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
@@ -87,34 +95,36 @@ export interface RouterCallFragment {
   readonly outputs?: ReadonlyArray<RouterParamType>
 }
 
-export class RouterCall {
+export class RouterCommand {
   readonly fragment: RouterCallFragment
   readonly args: Value[]
-  readonly flags: CommandFlags
+  readonly type: CommandType
+  private _flags: CommandFlags
 
-  constructor(fragment: RouterCallFragment, args: Value[], flags?: CommandFlags) {
+  constructor(fragment: RouterCallFragment, args: Value[], type: CommandType) {
+    this.type = type
     this.fragment = fragment
     this.args = args
-    this.flags = flags ?? 0
+    this._flags = COMMAND_MAP[type]!
   }
-}
 
-export class RouterCommand {
-  readonly type: CommandType
-  readonly call: RouterCall
+  getFlags(): CommandFlags {
+    return this._flags
+  }
 
-  constructor(call: RouterCall, type: CommandType) {
-    this.call = call
-    this.type = type
+  allowRevert(): RouterCommand {
+    if (!REVERTABLE_COMMANDS.has(this.type)) {
+      throw new Error(`command type: ${CommandType[this.type]} cannot be allowed to revert`)
+    }
+    this._flags = this._flags | CommandFlags.ALLOW_REVERT
+    return this
   }
 }
 
 function initializeCommandType(fragment: RouterCallFragment): (...args: any[]) => RouterCommand {
   function fn(...args: any[]): RouterCommand {
     args = args.map((arg: any, idx: any) => encodeArg(arg, fragment.inputs![idx]))
-    const call = new RouterCall(fragment, args, COMMAND_MAP[fragment.type])
-    const type = fragment.type
-    return new RouterCommand(call, type)
+    return new RouterCommand(fragment, args, fragment.type)
   }
   return fn
 }
@@ -165,6 +175,12 @@ export const NFTXCommand = initializeCommandType({
 
 export const LooksRareCommand = initializeCommandType({
   type: CommandType.LOOKS_RARE,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
+})
+
+export const X2Y2Command = initializeCommandType({
+  type: CommandType.X2Y2,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })

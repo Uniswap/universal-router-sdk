@@ -9,8 +9,9 @@ import {
   WrapETHCommand,
   UnwrapWETHCommand,
   LooksRareCommand,
+  X2Y2Command,
   PermitCommand,
-} from '../src/router_types'
+} from '../src/routerCommands'
 import { RouterPlanner } from '../src/planner'
 
 const SAMPLE_ADDRESS_D = '0xdddddddddddddddddddddddddddddddddddddddd'
@@ -86,6 +87,20 @@ describe('RouterPlanner', () => {
     planner.add(LooksRareCommand(666, '0x1234567890abcdef', SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E, 1016))
     const { commands, state } = planner.plan()
     expect(commands.slice(2, 18)).to.equal('0b0081020304ffff')
+    expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
+    expect(state[1]).to.equal(
+      '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'
+    )
+    expect(state[2]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
+    expect(state[3]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[4]).to.equal('0x00000000000000000000000000000000000000000000000000000000000003f8')
+  })
+
+  it('properly encodes X2Y2Command', () => {
+    const planner = new RouterPlanner()
+    planner.add(X2Y2Command(666, '0x1234567890abcdef', SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E, 1016))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('0c0081020304ffff')
     expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
     expect(state[1]).to.equal(
       '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'

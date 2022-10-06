@@ -1,7 +1,6 @@
 export { RouterPlanner } from './planner'
 export {
   CommandFlags,
-  RouterCall,
   RouterCommand,
   TransferCommand,
   V3ExactInputCommand,
@@ -11,8 +10,9 @@ export {
   SeaportCommand,
   LooksRareCommand,
   PermitCommand,
+  X2Y2Command,
   WrapETHCommand,
   UnwrapWETHCommand,
   SweepCommand,
   NFTXCommand,
-} from './router_types'
+} from './routerCommands'
