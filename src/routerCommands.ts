@@ -194,6 +194,11 @@ export const X2Y2Command721 = initializeCommandType({
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
+export const PermitCommand = initializeCommandType({
+  type: CommandType.PERMIT,
+  inputs: [BytesParam],
+})
+
 export const LooksRareCommand1155 = initializeCommandType({
   type: CommandType.LOOKS_RARE_1155,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID

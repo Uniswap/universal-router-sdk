@@ -8,6 +8,7 @@ export {
   V2ExactInputCommand,
   V2ExactOutputCommand,
   SeaportCommand,
+  PermitCommand,
   LooksRareCommand721,
   X2Y2Command721,
   LooksRareCommand1155,
