@@ -17,8 +17,10 @@ export enum CommandFlags {
   UNWRAP_WETH = 0x08,
   SWEEP = 0x09,
   NFTX = 0x0a,
-  LOOKS_RARE = 0x0b,
-  X2Y2 = 0x0c,
+  LOOKS_RARE_721 = 0x0b,
+  X2Y2_721 = 0x0c,
+  LOOKS_RARE_1155 = 0x0d,
+  X2Y2_1155 = 0x0e,
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
@@ -36,8 +38,10 @@ export enum CommandType {
   V2_SWAP_EXACT_OUT,
   SEAPORT,
   NFTX,
-  LOOKS_RARE,
-  X2Y2,
+  LOOKS_RARE_721,
+  X2Y2_721,
+  LOOKS_RARE_1155,
+  X2Y2_1155,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -54,8 +58,10 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.V2_SWAP_EXACT_OUT]: CommandFlags.V2_SWAP_EXACT_OUT,
   [CommandType.SEAPORT]: CommandFlags.SEAPORT,
   [CommandType.NFTX]: CommandFlags.NFTX,
-  [CommandType.LOOKS_RARE]: CommandFlags.LOOKS_RARE,
-  [CommandType.X2Y2]: CommandFlags.X2Y2,
+  [CommandType.LOOKS_RARE_721]: CommandFlags.LOOKS_RARE_721,
+  [CommandType.X2Y2_721]: CommandFlags.X2Y2_721,
+  [CommandType.LOOKS_RARE_1155]: CommandFlags.LOOKS_RARE_1155,
+  [CommandType.X2Y2_1155]: CommandFlags.X2Y2_1155,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -63,7 +69,10 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
 const REVERTABLE_COMMANDS = new Set<CommandType>([
   CommandType.SEAPORT,
   CommandType.NFTX,
-  CommandType.LOOKS_RARE,
+  CommandType.LOOKS_RARE_721,
+  CommandType.LOOKS_RARE_1155,
+  CommandType.X2Y2_721,
+  CommandType.X2Y2_1155,
   CommandType.SUBPLAN,
 ])
 
@@ -173,14 +182,14 @@ export const NFTXCommand = initializeCommandType({
   inputs: [Uint256Param, BytesParam],
 })
 
-export const LooksRareCommand = initializeCommandType({
-  type: CommandType.LOOKS_RARE,
+export const LooksRareCommand721 = initializeCommandType({
+  type: CommandType.LOOKS_RARE_721,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
-export const X2Y2Command = initializeCommandType({
-  type: CommandType.X2Y2,
+export const X2Y2Command721 = initializeCommandType({
+  type: CommandType.X2Y2_721,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
@@ -188,6 +197,18 @@ export const X2Y2Command = initializeCommandType({
 export const PermitCommand = initializeCommandType({
   type: CommandType.PERMIT,
   inputs: [BytesParam],
+})
+
+export const LooksRareCommand1155 = initializeCommandType({
+  type: CommandType.LOOKS_RARE_1155,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param, Uint256Param],
+})
+
+export const X2Y2Command1155 = initializeCommandType({
+  type: CommandType.X2Y2_1155,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param, Uint256Param],
 })
 
 export const WrapETHCommand = initializeCommandType({
