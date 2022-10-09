@@ -1,0 +1,21 @@
+{
+  "name": "narwhal-planner",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": "./build/main/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn build && node ./build/main/index.js",
+    "build": "tsc -p tsconfig.json",
+    "tsdx-test": "tsdx test",
+    "lint": "tsdx lint",
+    "size": "size-limit",
+    "analyze": "size-limit --why",
+    "format": "prettier --write \"./src/*.{js,ts}\" \"tests/*.{js,ts}\"",
+    "docs": "typedoc"
+  },
+  "dependencies": {
+    "@uniswap/narwhal-sdk": "..",
+    "commander": "^9.4.1"
+  }
+}
