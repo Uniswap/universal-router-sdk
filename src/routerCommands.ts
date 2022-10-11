@@ -21,6 +21,7 @@ export enum CommandFlags {
   X2Y2_721 = 0x0c,
   LOOKS_RARE_1155 = 0x0d,
   X2Y2_1155 = 0x0e,
+  FOUNDATION = 0x0f,
 
   /** A bitmask that selects calltype flags */
   CALLTYPE_MASK = 0x0f,
@@ -42,6 +43,7 @@ export enum CommandType {
   X2Y2_721,
   LOOKS_RARE_1155,
   X2Y2_1155,
+  FOUNDATION,
   WRAP_ETH,
   UNWRAP_WETH,
   SUBPLAN,
@@ -62,6 +64,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.X2Y2_721]: CommandFlags.X2Y2_721,
   [CommandType.LOOKS_RARE_1155]: CommandFlags.LOOKS_RARE_1155,
   [CommandType.X2Y2_1155]: CommandFlags.X2Y2_1155,
+  [CommandType.FOUNDATION]: CommandFlags.FOUNDATION,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
 }
@@ -73,6 +76,7 @@ const REVERTABLE_COMMANDS = new Set<CommandType>([
   CommandType.LOOKS_RARE_1155,
   CommandType.X2Y2_721,
   CommandType.X2Y2_1155,
+  CommandType.FOUNDATION,
   CommandType.SUBPLAN,
 ])
 
@@ -209,6 +213,12 @@ export const X2Y2Command1155 = initializeCommandType({
   type: CommandType.X2Y2_1155,
   /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param, Uint256Param],
+})
+
+export const FoundationCommand = initializeCommandType({
+  type: CommandType.FOUNDATION,
+  /// For call: Value, Data. Then for Transfer: Token, Recipient, token ID
+  inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
 export const WrapETHCommand = initializeCommandType({
