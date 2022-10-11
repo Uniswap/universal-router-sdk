@@ -23,8 +23,6 @@ export enum CommandFlags {
   X2Y2_1155 = 0x0e,
   FOUNDATION = 0x0f,
 
-  /** A bitmask that selects calltype flags */
-  CALLTYPE_MASK = 0x0f,
   /** Specifies whether the command is allowed to revert. */
   ALLOW_REVERT = 0x80,
 }
