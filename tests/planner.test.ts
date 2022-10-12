@@ -13,6 +13,7 @@ import {
   LooksRareCommand1155,
   X2Y2Command1155,
   PermitCommand,
+  FoundationCommand,
 } from '../src/routerCommands'
 import { RouterPlanner } from '../src/planner'
 
@@ -189,5 +190,19 @@ describe('RouterPlanner', () => {
     expect(commands.slice(2, 18)).to.equal('080001ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
+  })
+
+  it ('properly encodes FoundationCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(FoundationCommand(666, '0x1234567890abcdef', SAMPLE_ADDRESS_D, SAMPLE_ADDRESS_E, 1016))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('0f0081020304ffff')
+    expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
+    expect(state[1]).to.equal(
+        '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'
+    )
+    expect(state[2]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
+    expect(state[3]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[4]).to.equal('0x00000000000000000000000000000000000000000000000000000000000003f8')
   })
 })
