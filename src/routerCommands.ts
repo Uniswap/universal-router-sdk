@@ -228,7 +228,7 @@ export const SweepCommand = initializeCommandType({
 export const SweepWithFeeCommand = initializeCommandType({
   type: CommandType.SWEEP_WITH_FEE,
   // token, recipient, minValue, feeBips, feeRecipient
-  inputs: [AddressParam, AddressParam, Uint256Param, Uint256Param, AddressParam ],
+  inputs: [AddressParam, AddressParam, Uint256Param, Uint256Param, AddressParam],
 })
 
 export const WrapETHCommand = initializeCommandType({
