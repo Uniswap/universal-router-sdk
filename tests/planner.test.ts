@@ -8,6 +8,9 @@ import {
   V3ExactInputCommand,
   WrapETHCommand,
   UnwrapWETHCommand,
+  UnwrapWETHWithFeeCommand,
+  SweepWithFeeCommand,
+  SweepCommand,
   LooksRareCommand721,
   X2Y2Command721,
   LooksRareCommand1155,
@@ -190,6 +193,39 @@ describe('RouterPlanner', () => {
     expect(commands.slice(2, 18)).to.equal('080001ffffffffff')
     expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
+  })
+
+  it('properly encodes UnwrapWETHWithFeeCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(UnwrapWETHWithFeeCommand(SAMPLE_ADDRESS_E, 10, 100, SAMPLE_ADDRESS_F))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('1100010203ffffff')
+    expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[1]).to.equal('0x000000000000000000000000000000000000000000000000000000000000000a')
+    expect(state[2]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000064')
+    expect(state[3]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+  })
+
+  it('properly encodes SweepCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(SweepCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_F, 123))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('09000102ffffffff')
+    expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[1]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+    expect(state[2]).to.equal('0x000000000000000000000000000000000000000000000000000000000000007b')
+  })
+
+  it('properly encodes SweepWithFeeCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(SweepWithFeeCommand(SAMPLE_ADDRESS_E, SAMPLE_ADDRESS_F, 123, 99, SAMPLE_ADDRESS_D))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('100001020304ffff')
+    expect(state[0]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+    expect(state[1]).to.equal('0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff')
+    expect(state[2]).to.equal('0x000000000000000000000000000000000000000000000000000000000000007b')
+    expect(state[3]).to.equal('0x0000000000000000000000000000000000000000000000000000000000000063')
+    expect(state[4]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
   })
 
   it ('properly encodes FoundationCommand', () => {
