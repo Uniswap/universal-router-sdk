@@ -24,6 +24,7 @@ export enum CommandFlags {
   FOUNDATION = 0x0f,
   SWEEP_WITH_FEE = 0x10,
   UNWRAP_WETH_WITH_FEE = 0x11,
+  SUDOSWAP = 0x12,
 
   /** Specifies whether the command is allowed to revert. */
   ALLOW_REVERT = 0x80,
@@ -43,6 +44,7 @@ export enum CommandType {
   LOOKS_RARE_1155,
   X2Y2_1155,
   FOUNDATION,
+  SUDOSWAP,
   SWEEP,
   SWEEP_WITH_FEE,
   WRAP_ETH,
@@ -71,6 +73,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
   [CommandType.UNWRAP_WETH_WITH_FEE]: CommandFlags.UNWRAP_WETH_WITH_FEE,
+  [CommandType.SUDOSWAP]: CommandFlags.SUDOSWAP,
 }
 
 const REVERTABLE_COMMANDS = new Set<CommandType>([
@@ -82,6 +85,7 @@ const REVERTABLE_COMMANDS = new Set<CommandType>([
   CommandType.X2Y2_1155,
   CommandType.FOUNDATION,
   CommandType.SUBPLAN,
+  CommandType.SUDOSWAP,
 ])
 
 export class RouterParamType {
@@ -245,4 +249,9 @@ export const UnwrapWETHWithFeeCommand = initializeCommandType({
   type: CommandType.UNWRAP_WETH_WITH_FEE,
   // recipient, minValue, feeBips, feeRecipient
   inputs: [AddressParam, Uint256Param, Uint256Param, AddressParam],
+})
+
+export const SudoswapCommand = initializeCommandType({
+  type: CommandType.SUDOSWAP,
+  inputs: [Uint256Param, BytesParam],
 })

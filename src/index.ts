@@ -20,4 +20,5 @@ export {
   SweepWithFeeCommand,
   NFTXCommand,
   FoundationCommand,
+  SudoswapCommand,
 } from './routerCommands'
