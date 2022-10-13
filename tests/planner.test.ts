@@ -17,6 +17,7 @@ import {
   X2Y2Command1155,
   PermitCommand,
   FoundationCommand,
+  SudoswapCommand,
 } from '../src/routerCommands'
 import { RouterPlanner } from '../src/planner'
 
@@ -240,5 +241,16 @@ describe('RouterPlanner', () => {
     expect(state[2]).to.equal('0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd')
     expect(state[3]).to.equal('0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
     expect(state[4]).to.equal('0x00000000000000000000000000000000000000000000000000000000000003f8')
+  })
+
+  it('properly encodes SudoswapCommand', () => {
+    const planner = new RouterPlanner()
+    planner.add(SudoswapCommand(666, '0x1234567890abcdef'))
+    const { commands, state } = planner.plan()
+    expect(commands.slice(2, 18)).to.equal('120081ffffffffff')
+    expect(state[0]).to.equal('0x000000000000000000000000000000000000000000000000000000000000029a')
+    expect(state[1]).to.equal(
+        '0x00000000000000000000000000000000000000000000000000000000000000081234567890abcdef000000000000000000000000000000000000000000000000'
+    )
   })
 })
