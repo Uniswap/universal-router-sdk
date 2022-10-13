@@ -22,6 +22,8 @@ export enum CommandFlags {
   LOOKS_RARE_1155 = 0x0d,
   X2Y2_1155 = 0x0e,
   FOUNDATION = 0x0f,
+  SWEEP_WITH_FEE = 0x10,
+  UNWRAP_WETH_WITH_FEE = 0x11,
 
   /** Specifies whether the command is allowed to revert. */
   ALLOW_REVERT = 0x80,
@@ -30,7 +32,6 @@ export enum CommandFlags {
 export enum CommandType {
   PERMIT,
   TRANSFER,
-  SWEEP,
   V3_SWAP_EXACT_IN,
   V3_SWAP_EXACT_OUT,
   V2_SWAP_EXACT_IN,
@@ -42,8 +43,11 @@ export enum CommandType {
   LOOKS_RARE_1155,
   X2Y2_1155,
   FOUNDATION,
+  SWEEP,
+  SWEEP_WITH_FEE,
   WRAP_ETH,
   UNWRAP_WETH,
+  UNWRAP_WETH_WITH_FEE,
   SUBPLAN,
   RAWCALL,
 }
@@ -52,6 +56,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.PERMIT]: CommandFlags.PERMIT,
   [CommandType.TRANSFER]: CommandFlags.TRANSFER,
   [CommandType.SWEEP]: CommandFlags.SWEEP,
+  [CommandType.SWEEP_WITH_FEE]: CommandFlags.SWEEP_WITH_FEE,
   [CommandType.V3_SWAP_EXACT_IN]: CommandFlags.V3_SWAP_EXACT_IN,
   [CommandType.V3_SWAP_EXACT_OUT]: CommandFlags.V3_SWAP_EXACT_OUT,
   [CommandType.V2_SWAP_EXACT_IN]: CommandFlags.V2_SWAP_EXACT_IN,
@@ -65,6 +70,7 @@ const COMMAND_MAP: { [key in CommandType]?: CommandFlags } = {
   [CommandType.FOUNDATION]: CommandFlags.FOUNDATION,
   [CommandType.WRAP_ETH]: CommandFlags.WRAP_ETH,
   [CommandType.UNWRAP_WETH]: CommandFlags.UNWRAP_WETH,
+  [CommandType.UNWRAP_WETH_WITH_FEE]: CommandFlags.UNWRAP_WETH_WITH_FEE,
 }
 
 const REVERTABLE_COMMANDS = new Set<CommandType>([
@@ -145,11 +151,6 @@ export const TransferCommand = initializeCommandType({
   inputs: [AddressParam, AddressParam, Uint256Param],
 })
 
-export const SweepCommand = initializeCommandType({
-  type: CommandType.SWEEP,
-  inputs: [AddressParam, AddressParam, Uint256Param],
-})
-
 export const V2ExactInputCommand = initializeCommandType({
   type: CommandType.V2_SWAP_EXACT_IN,
   inputs: [Uint256Param, AddressArrayParam, AddressParam],
@@ -219,6 +220,17 @@ export const FoundationCommand = initializeCommandType({
   inputs: [Uint256Param, BytesParam, AddressParam, AddressParam, Uint256Param],
 })
 
+export const SweepCommand = initializeCommandType({
+  type: CommandType.SWEEP,
+  inputs: [AddressParam, AddressParam, Uint256Param],
+})
+
+export const SweepWithFeeCommand = initializeCommandType({
+  type: CommandType.SWEEP_WITH_FEE,
+  // token, recipient, minValue, feeBips, feeRecipient
+  inputs: [AddressParam, AddressParam, Uint256Param, Uint256Param, AddressParam],
+})
+
 export const WrapETHCommand = initializeCommandType({
   type: CommandType.WRAP_ETH,
   inputs: [AddressParam, Uint256Param],
@@ -227,4 +239,10 @@ export const WrapETHCommand = initializeCommandType({
 export const UnwrapWETHCommand = initializeCommandType({
   type: CommandType.UNWRAP_WETH,
   inputs: [AddressParam, Uint256Param],
+})
+
+export const UnwrapWETHWithFeeCommand = initializeCommandType({
+  type: CommandType.UNWRAP_WETH_WITH_FEE,
+  // recipient, minValue, feeBips, feeRecipient
+  inputs: [AddressParam, Uint256Param, Uint256Param, AddressParam],
 })

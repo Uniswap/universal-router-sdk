@@ -15,7 +15,9 @@ export {
   X2Y2Command1155,
   WrapETHCommand,
   UnwrapWETHCommand,
+  UnwrapWETHWithFeeCommand,
   SweepCommand,
+  SweepWithFeeCommand,
   NFTXCommand,
   FoundationCommand,
 } from './routerCommands'
