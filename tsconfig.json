@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "lib": ["esnext.string"],
+    "typeRoots": ["./typechain", "./node_modules/@types"],
+    "types": ["@types/mocha", "node"]
+  },
+  "include": ["src", "test"]
+}
