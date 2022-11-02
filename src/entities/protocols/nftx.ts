@@ -12,7 +12,7 @@ export type NFTXData = {
 
 type NFTXVaultPurchase = {
   vaultAddress: string
-  tokenIds: string[]
+  tokenIds: BigNumberish[]
 }
 
 export class NFTXTrade extends NFTTrade<NFTXData> {
@@ -25,12 +25,14 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
   encode(planner: RoutePlanner): void {
     let vaultPurchases: { [keys: string]: NFTXVaultPurchase } = {}
     for (const item of this.buyItems) {
-      if (!vaultPurchases[item.data.vaultId.toString()])
-        vaultPurchases[item.data.vaultId.toString()] = {
+      const vaultId = item.data.vaultId.toString()
+      if (!vaultPurchases[vaultId]) {
+        vaultPurchases[vaultId] = {
           vaultAddress: item.data.vaultAddress,
           tokenIds: [],
         }
-      vaultPurchases[item.data.vaultId.toString()].tokenIds.push(item.tokenId.toString())
+      }
+      vaultPurchases[vaultId].tokenIds.push(item.tokenId)
     }
 
     for (const vaultId of Object.keys(vaultPurchases)) {
