@@ -9,7 +9,6 @@ import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 const ETHER = Ether.onChain(1)
 const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
-
 describe('SwapRouter', () => {
   describe('Foundation', () => {
     const foundationData: FoundationData = {

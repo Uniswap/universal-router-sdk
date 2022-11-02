@@ -7,14 +7,10 @@ export function getNativeCurrencyValue(currencyValues: CurrencyAmount<Currency>[
       const nativeCurrency = value.currency
       const zero = CurrencyAmount.fromRawAmount(nativeCurrency, 0)
 
-      return currencyValues.reduce(function (
-        prevValue: CurrencyAmount<Currency>,
-        currValue: CurrencyAmount<Currency>
-      ) {
+      return currencyValues.reduce(function (prevValue: CurrencyAmount<Currency>, currValue: CurrencyAmount<Currency>) {
         const value = currValue.currency.isNative ? currValue : zero
         return prevValue.add(value)
-      },
-      zero)
+      }, zero)
     }
   }
   return CurrencyAmount.fromRawAmount(Ether.onChain(1), 0)

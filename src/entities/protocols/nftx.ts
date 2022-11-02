@@ -27,12 +27,13 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
   }
 
   encode(planner: RoutePlanner): void {
-    let vaultPurchases: {[keys: string]: NFTXVaultPurchase} = {}
+    let vaultPurchases: { [keys: string]: NFTXVaultPurchase } = {}
     for (const item of this.buyItems) {
-      if (!vaultPurchases[item.data.vaultId.toString()]) vaultPurchases[item.data.vaultId.toString()] = {
-        vaultAddress: item.data.vaultAddress,
-        tokenIds: []
-      }
+      if (!vaultPurchases[item.data.vaultId.toString()])
+        vaultPurchases[item.data.vaultId.toString()] = {
+          vaultAddress: item.data.vaultAddress,
+          tokenIds: [],
+        }
       vaultPurchases[item.data.vaultId.toString()].tokenIds.push(item.tokenId.toString())
     }
 
@@ -40,9 +41,10 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
       const vault = vaultPurchases[vaultId]
       const calldata = NFTXTrade.INTERFACE.encodeFunctionData('buyAndRedeem', [
         vaultId,
-        vault.tokenIds.length, vault.tokenIds,
+        vault.tokenIds.length,
+        vault.tokenIds,
         [this.nativeCurrencyValue.currency.wrapped.address, vault.vaultAddress],
-        this.recipient
+        this.recipient,
       ])
       planner.addCommand(CommandType.NFTX, [this.nativeCurrencyValue.quotient.toString(), calldata])
     }
