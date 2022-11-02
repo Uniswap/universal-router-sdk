@@ -13,7 +13,7 @@ export type FoundationData = {
 export class FoundationTrade extends NFTTrade<FoundationData> {
   readonly recipient: string //address
   readonly buyItems: BuyItem<FoundationData>[]
-  readonly nativeCurrencyValue: BigNumber
+  readonly nativeCurrencyValue: CurrencyAmount<Currency>
 
   constructor(recipient: string, buyItems: BuyItem<FoundationData>[]) {
     super(recipient, buyItems)
