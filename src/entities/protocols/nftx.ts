@@ -18,10 +18,6 @@ type NFTXVaultPurchase = {
 export class NFTXTrade extends NFTTrade<NFTXData> {
   public static INTERFACE: Interface = new Interface(abi)
 
-  readonly recipient: string //address
-  readonly buyItems: BuyItem<NFTXData>[]
-  readonly nativeCurrencyValue: CurrencyAmount<Currency>
-
   constructor(recipient: string, buyItems: BuyItem<NFTXData>[]) {
     super(recipient, buyItems)
   }
