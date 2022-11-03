@@ -39,6 +39,25 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
-        assertEq(from.balance, balance - 0.01 ether);
+        assertLe(from.balance, balance - 0.01 ether);
+    }
+
+    function testNftxBuyItems() public {
+        MethodParameters memory params = readFixture(json, "._NFTX_BUY_ITEMS");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 15360000);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        uint256 balance = 10 ** 18;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 2);
+        assertEq(from.balance, 0);
     }
 }

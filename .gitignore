@@ -3,6 +3,5 @@
 node_modules
 dist
 docs
-interop.json
 cache
 out
