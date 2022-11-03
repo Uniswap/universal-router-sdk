@@ -1,11 +1,15 @@
 import abi from '../../../abis/NFTXZap.json'
 import { Interface } from '@ethersproject/abi'
-import { NFTTrade, BuyItem } from '../NFTTrade'
+import { NFTTrade, BuyItem, Market, TokenType } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Ether } from '@uniswap/sdk-core'
 
 export type NFTXData = {
+  recipient: string
+  tokenAddress: string
+  price: BigNumberish
+  tokenId: BigNumberish
   vaultId: BigNumberish
   vaultAddress: string
 }
@@ -18,8 +22,8 @@ type NFTXVaultPurchase = {
 export class NFTXTrade extends NFTTrade<NFTXData> {
   public static INTERFACE: Interface = new Interface(abi)
 
-  constructor(recipient: string, buyItems: BuyItem<NFTXData>[]) {
-    super(recipient, buyItems)
+  constructor(orders: NFTXData[]) {
+    super(Market.NFTX, orders)
   }
 
   encode(planner: RoutePlanner): void {
@@ -46,5 +50,18 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
       ])
       planner.addCommand(CommandType.NFTX, [this.nativeCurrencyValue.quotient.toString(), calldata])
     }
+  }
+
+  getBuyItems(): BuyItem[] {
+    let buyItems: BuyItem[] = []
+    for (const item of this.orders) {
+      buyItems.push({
+        tokenAddress: item.tokenAddress,
+        tokenId: item.tokenId,
+        priceInfo: CurrencyAmount.fromRawAmount(Ether, item.price),
+        tokenType: TokenType.ERC721
+      })
+    }
+    return buyItems
   }
 }
