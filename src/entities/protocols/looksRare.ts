@@ -6,29 +6,29 @@ import { ethers, BigNumber, BigNumberish } from 'ethers'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type MakerOrder = {
-  collection: string
-  tokenId: BigNumber
+  collectionAddress: string
+  tokenId: BigNumberish
   isOrderAsk: true
   signer: string
   strategy: string
-  currency: string
-  amount: BigNumber
-  price: BigNumber
-  minPercentageToAsk: BigNumber
-  nonce: BigNumber
-  startTime: BigNumber
-  endTime: BigNumber
-  v: BigNumber
+  currencyAddress: string
+  amount: BigNumberish
+  price: BigNumberish
+  minPercentageToAsk: BigNumberish
+  nonce: BigNumberish
+  startTime: BigNumberish
+  endTime: BigNumberish
+  v: BigNumberish
   r: string
   s: string
   params: string
 }
 
 export type TakerOrder = {
-  minPercentageToAsk: BigNumber
-  price: BigNumber
+  minPercentageToAsk: BigNumberish
+  price: BigNumberish
   taker: string
-  tokenId: BigNumber
+  tokenId: BigNumberish
   isOrderAsk: boolean
   params: string
 }
@@ -57,7 +57,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
         item.makerOrder.price,
         calldata,
         item.recipient,
-        item.makerOrder.collection,
+        item.makerOrder.collectionAddress,
         item.makerOrder.tokenId,
       ])
     }
@@ -67,7 +67,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
     let buyItems: BuyItem[] = []
     for (const item of this.orders) {
       buyItems.push({
-        tokenAddress: item.makerOrder.collection,
+        tokenAddress: item.makerOrder.collectionAddress,
         tokenId: item.makerOrder.tokenId,
         priceInfo: item.makerOrder.price,
         tokenType: TokenType.ERC721,
