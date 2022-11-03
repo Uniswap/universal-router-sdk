@@ -28,7 +28,13 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
         item.price,
         item.referrer,
       ])
-      planner.addCommand(CommandType.FOUNDATION, [item.price, calldata, item.recipient, item.tokenAddress, item.tokenId])
+      planner.addCommand(CommandType.FOUNDATION, [
+        item.price,
+        calldata,
+        item.recipient,
+        item.tokenAddress,
+        item.tokenId,
+      ])
     }
   }
 
@@ -39,10 +45,9 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
         tokenAddress: item.tokenAddress,
         tokenId: item.tokenId,
         priceInfo: CurrencyAmount.fromRawAmount(Ether.onChain(1), item.price),
-        tokenType: TokenType.ERC721
+        tokenType: TokenType.ERC721,
       })
     }
     return buyItems
   }
-
 }
