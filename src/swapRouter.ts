@@ -4,7 +4,7 @@ import { Interface } from '@ethersproject/abi'
 import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { CurrencyAmount, WETH9, Ether, Currency } from '@uniswap/sdk-core'
-import { NFTTrade, Markets, SupportedProtocolsData } from './entities/NFTTrade'
+import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
 import { RoutePlanner } from './utils/routerCommands'
 
 export type SwapRouterConfig = {
@@ -23,11 +23,11 @@ export abstract class SwapRouter {
     config: SwapRouterConfig = {}
   ): MethodParameters {
     let planner = new RoutePlanner()
-    let nativeCurrencyValue = CurrencyAmount.fromRawAmount(trades[0].buyItems[0]!.priceInfo.currency, 0)
+    let nativeCurrencyValue = CurrencyAmount.fromRawAmount(trades[0].getBuyItems()[0]!.priceInfo.currency, 0)
 
     for (const trade of trades) {
       trade.encode(planner)
-      nativeCurrencyValue = nativeCurrencyValue.add(trade.nativeCurrencyValue)
+      nativeCurrencyValue = nativeCurrencyValue.add(trade.getTotalPrice())
     }
     const { commands, inputs } = planner
 

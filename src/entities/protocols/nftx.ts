@@ -71,4 +71,12 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
     }
     return buyItems
   }
+
+  getTotalPrice(): CurrencyAmount<Currency> {
+    let total = BigNumber.from(0)
+    for (const item of this.orders) {
+      total.add(item.price)
+    }
+    return CurrencyAmount.fromRawAmount(Ether.onChain(1), total)
+  }
 }

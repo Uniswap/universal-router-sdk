@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { expandTo18Decimals } from '../src/utils/expandTo18Decimals'
 import { SwapRouter } from '../src/swapRouter'
-import { TokenTypes, Markets } from '../src/entities/NFTTrade'
+import { TokenTypes, Market } from '../src/entities/NFTTrade'
 import { CurrencyAmount, Currency, Ether } from '@uniswap/sdk-core'
 import { FoundationTrade, FoundationData } from '../src/entities/protocols/foundation'
 import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'

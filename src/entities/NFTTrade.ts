@@ -22,6 +22,9 @@ export abstract class NFTTrade<T> {
   abstract encode(planner: RoutePlanner): void
 
   abstract getBuyItems(): BuyItem[]
+
+  abstract getTotalPrice(): CurrencyAmount
+
 }
 
 export type BuyItem = {
