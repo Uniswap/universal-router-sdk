@@ -5,6 +5,7 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
 import { Currency, CurrencyAmount, Ether } from '@uniswap/sdk-core'
 import { assert } from 'console'
+import JSBI from 'jsbi'
 
 export type NFTXData = {
   recipient: string
@@ -18,7 +19,7 @@ export type NFTXData = {
 type NFTXVaultPurchase = {
   vaultAddress: string
   recipient: string
-  price: BigNumberish
+  price: BigNumber
   tokenIds: BigNumberish[]
 }
 
@@ -37,7 +38,7 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
         vaultPurchases[vaultId] = {
           vaultAddress: item.vaultAddress,
           recipient: item.recipient,
-          price: 0,
+          price: BigNumber.from(0),
           tokenIds: [],
         }
       }
@@ -65,18 +66,18 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
       buyItems.push({
         tokenAddress: item.tokenAddress,
         tokenId: item.tokenId,
-        priceInfo: CurrencyAmount.fromRawAmount(Ether, item.price),
+        priceInfo: item.price,
         tokenType: TokenType.ERC721,
       })
     }
     return buyItems
   }
 
-  getTotalPrice(): CurrencyAmount<Currency> {
+  getTotalPrice(): BigNumberish {
     let total = BigNumber.from(0)
     for (const item of this.orders) {
-      total.add(item.price)
+      total = total.add(item.price)
     }
-    return CurrencyAmount.fromRawAmount(Ether.onChain(1), total)
+    return total
   }
 }

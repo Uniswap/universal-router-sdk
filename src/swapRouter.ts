@@ -23,17 +23,18 @@ export abstract class SwapRouter {
     config: SwapRouterConfig = {}
   ): MethodParameters {
     let planner = new RoutePlanner()
-    let nativeCurrencyValue = CurrencyAmount.fromRawAmount(trades[0].getBuyItems()[0]!.priceInfo.currency, 0)
+    let totalPrice = BigNumber.from(0)
 
     for (const trade of trades) {
       trade.encode(planner)
-      nativeCurrencyValue = nativeCurrencyValue.add(trade.getTotalPrice())
+      totalPrice = totalPrice.add(trade.getTotalPrice())
     }
+
     const { commands, inputs } = planner
 
     const functionSignature = !!config.deadline ? 'execute(bytes,bytes[],uint256)' : 'execute(bytes,bytes[])'
     const parameters = !!config.deadline ? [commands, inputs, config.deadline] : [commands, inputs]
     const calldata = SwapRouter.INTERFACE.encodeFunctionData(functionSignature, parameters)
-    return { calldata, value: nativeCurrencyValue.quotient.toString() }
+    return { calldata, value: totalPrice.toString() }
   }
 }

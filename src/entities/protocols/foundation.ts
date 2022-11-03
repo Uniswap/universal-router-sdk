@@ -2,8 +2,9 @@ import abi from '../../../abis/Foundation.json'
 import { Interface } from '@ethersproject/abi'
 import { NFTTrade, Market, TokenType, BuyItem } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { ethers, BigNumber, BigNumberish } from 'ethers'
-import { CurrencyAmount, Ether } from '@uniswap/sdk-core'
+import { BigNumber, BigNumberish } from 'ethers'
+import { CurrencyAmount, Currency, Ether } from '@uniswap/sdk-core'
+import JSBI from 'jsbi'
 
 export type FoundationData = {
   recipient: string
@@ -44,18 +45,18 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
       buyItems.push({
         tokenAddress: item.tokenAddress,
         tokenId: item.tokenId,
-        priceInfo: CurrencyAmount.fromRawAmount(Ether.onChain(1), item.price),
+        priceInfo: item.price,
         tokenType: TokenType.ERC721,
       })
     }
     return buyItems
   }
 
-  getTotalPrice(): CurrencyAmount<Currency> {
+  getTotalPrice(): BigNumberish {
     let total = BigNumber.from(0)
     for (const item of this.orders) {
-      total.add(item.price)
+      total = total.add(item.price)
     }
-    return CurrencyAmount.fromRawAmount(Ether.onChain(1), total)
+    return total
   }
 }

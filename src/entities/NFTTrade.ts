@@ -23,13 +23,13 @@ export abstract class NFTTrade<T> {
 
   abstract getBuyItems(): BuyItem[]
 
-  abstract getTotalPrice(): CurrencyAmount
+  abstract getTotalPrice(): BigNumberish
 }
 
 export type BuyItem = {
   tokenAddress: string
   tokenId: BigNumberish
-  priceInfo: CurrencyAmount<Currency>
+  priceInfo: BigNumberish
   tokenType: TokenType
   amount?: BigNumberish // for 1155
 }
