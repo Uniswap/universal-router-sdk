@@ -5,6 +5,7 @@ import { SeaportData } from './protocols/seaport'
 import { FoundationData } from './protocols/foundation'
 import { NFTXData } from './protocols/nftx'
 import { RoutePlanner } from '../utils/routerCommands'
+import { getNativeCurrencyValue } from '../utils/getNativeCurrencyValue'
 
 export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData
 

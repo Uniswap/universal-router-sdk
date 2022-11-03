@@ -4,6 +4,7 @@ import { NFTTrade, BuyItem, Market, TokenType } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
 import { Currency, CurrencyAmount, Ether } from '@uniswap/sdk-core'
+import { assert } from 'console'
 
 export type NFTXData = {
   recipient: string
@@ -16,6 +17,8 @@ export type NFTXData = {
 
 type NFTXVaultPurchase = {
   vaultAddress: string
+  recipient: string
+  price: BigNumberish
   tokenIds: BigNumberish[]
 }
 
@@ -28,27 +31,31 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
 
   encode(planner: RoutePlanner): void {
     let vaultPurchases: { [keys: string]: NFTXVaultPurchase } = {}
-    for (const item of this.buyItems) {
-      const vaultId = item.data.vaultId.toString()
+    for (const item of this.orders) {
+      const vaultId = item.vaultId.toString()
       if (!vaultPurchases[vaultId]) {
         vaultPurchases[vaultId] = {
-          vaultAddress: item.data.vaultAddress,
+          vaultAddress: item.vaultAddress,
+          recipient: item.recipient,
+          price: 0,
           tokenIds: [],
         }
       }
+      assert(vaultPurchases[vaultId].recipient == item.recipient)
       vaultPurchases[vaultId].tokenIds.push(item.tokenId)
+      vaultPurchases[vaultId].price.add(item.price)
     }
 
     for (const vaultId of Object.keys(vaultPurchases)) {
-      const vault = vaultPurchases[vaultId]
+      const purchase = vaultPurchases[vaultId]
       const calldata = NFTXTrade.INTERFACE.encodeFunctionData('buyAndRedeem', [
         vaultId,
-        vault.tokenIds.length,
-        vault.tokenIds,
-        [this.nativeCurrencyValue.currency.wrapped.address, vault.vaultAddress],
-        this.recipient,
+        purchase.tokenIds.length,
+        purchase.tokenIds,
+        [Ether.onChain(1).wrapped.address, purchase.vaultAddress],
+        purchase.recipient,
       ])
-      planner.addCommand(CommandType.NFTX, [this.nativeCurrencyValue.quotient.toString(), calldata])
+      planner.addCommand(CommandType.NFTX, [purchase.price, calldata])
     }
   }
 
