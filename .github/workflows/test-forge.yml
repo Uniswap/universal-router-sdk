@@ -16,14 +16,16 @@ jobs:
           submodules: recursive
           token: '${{ secrets.NARWHAL_TOKEN }}'
 
-      - name: Set up node
+      - name: Setup node
         uses: actions/setup-node@v2
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.NPM_AUTH_TOKEN }}" \
+          && yarn install --frozen-lockfile
 
       - name: Build
         run: yarn build
@@ -37,6 +39,6 @@ jobs:
           version: nightly
 
       - name: Run tests
-        run: forge test
+        run: yarn test:forge
         env:
           FORK_URL: '${{ secrets.FORK_URL }}'

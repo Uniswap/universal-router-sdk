@@ -14,7 +14,8 @@
   "scripts": {
     "test:all": "yarn test && yarn test:forge",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
-    "test:forge": "yarn interop && forge test",
+    "test:forge": "yarn install:narwhal && yarn interop && forge test",
+    "install:narwhal": "cd node_modules/@uniswap/narwhal && forge install",
     "interop": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' yarn ts-node tests/forge/writeInterop.ts",
     "build": "tsdx build",
     "prettier:fix": "prettier --write '**/*.ts' && prettier --write '**/*.json'",
@@ -49,7 +50,8 @@
     "@uniswap/sdk-core": "^3.1.0",
     "@uniswap/v3-sdk": "^3.9.0",
     "bignumber.js": "^9.0.2",
-    "ethers": "^5.3.1"
+    "ethers": "^5.3.1",
+    "openzeppelin-contracts": "^4.0.0"
   },
   "repository": {
     "type": "git",
