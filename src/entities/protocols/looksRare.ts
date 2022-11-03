@@ -5,12 +5,12 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
 
 export type MakerOrder = {
-  collectionAddress: string
+  collection: string
   tokenId: BigNumberish
   isOrderAsk: true
   signer: string
   strategy: string
-  currencyAddress: string
+  currency: string
   amount: BigNumberish
   price: BigNumberish
   minPercentageToAsk: BigNumberish
@@ -56,7 +56,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
         item.makerOrder.price,
         calldata,
         item.recipient,
-        item.makerOrder.collectionAddress,
+        item.makerOrder.collection,
         item.makerOrder.tokenId,
       ])
     }
@@ -66,7 +66,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
     let buyItems: BuyItem[] = []
     for (const item of this.orders) {
       buyItems.push({
-        tokenAddress: item.makerOrder.collectionAddress,
+        tokenAddress: item.makerOrder.collection,
         tokenId: item.makerOrder.tokenId,
         priceInfo: item.makerOrder.price,
         tokenType: TokenType.ERC721,
