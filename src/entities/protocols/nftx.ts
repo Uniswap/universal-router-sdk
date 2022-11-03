@@ -44,7 +44,7 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
       }
       assert(vaultPurchases[vaultId].recipient == item.recipient)
       vaultPurchases[vaultId].tokenIds.push(item.tokenId)
-      vaultPurchases[vaultId].price.add(item.price)
+      vaultPurchases[vaultId].price = vaultPurchases[vaultId].price.add(item.price)
     }
 
     for (const vaultId of Object.keys(vaultPurchases)) {
