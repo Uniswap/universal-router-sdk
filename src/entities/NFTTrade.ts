@@ -1,13 +1,14 @@
 import { BigNumber, BigNumberish } from 'ethers'
-import { CurrencyAmount, WETH9, Ether, Currency } from '@uniswap/sdk-core'
+import { CurrencyAmount, Currency } from '@uniswap/sdk-core'
 import { SeaportData } from './protocols/seaport'
 import { FoundationData } from './protocols/foundation'
 import { RoutePlanner } from '../utils/routerCommands'
 import { getNativeCurrencyValue } from '../utils/getNativeCurrencyValue'
+import { Command } from './Command'
 
 export type SupportedProtocolsData = SeaportData | FoundationData
 
-export abstract class NFTTrade<T> {
+export abstract class NFTTrade<T> implements Command {
   readonly recipient: string //address
   readonly buyItems: BuyItem<T>[]
   readonly nativeCurrencyValue: BigNumber
