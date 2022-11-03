@@ -12,7 +12,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register --reporter-option maxDiffSize=10000 'tests/**/*.ts'",
     "build": "tsdx build",
     "prettier:fix": "prettier --write '**/*.ts' && prettier --write '**/*.json'",
     "prettier": "prettier --check '**/*.ts' && prettier --check '**/*.json'",

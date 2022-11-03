@@ -4,6 +4,7 @@ import { Interface } from '@ethersproject/abi'
 import { NFTTrade, BuyItem } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import { AdvancedOrder, ConsiderationItem, FulfillmentComponent, OfferItem, } from './external_types/seaport'
 
 export type SeaportData = {
   parameters: {
@@ -65,45 +66,6 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     }
     planner.addCommand(CommandType.SEAPORT, [this.nativeCurrencyValue.quotient.toString(), calldata])
   }
-}
-
-type FulfillmentComponent = {
-  orderIndex: BigNumberish
-  itemIndex: BigNumberish
-}
-
-type OfferItem = {
-  itemType: BigNumberish // enum
-  token: string // address
-  identifierOrCriteria: BigNumberish
-  startAmount: BigNumberish
-  endAmount: BigNumberish
-}
-
-type ConsiderationItem = OfferItem & {
-  recipient: string
-}
-
-export type Order = {
-  parameters: {
-    offerer: string // address,
-    offer: OfferItem[]
-    consideration: ConsiderationItem[]
-    orderType: BigNumberish // enum
-    startTime: BigNumberish
-    endTime: BigNumberish
-    zoneHash: string // bytes32
-    salt: BigNumberish
-    conduitKey: string // bytes32,
-    totalOriginalConsiderationItems: BigNumberish
-  }
-  signature: string
-}
-
-export type AdvancedOrder = Order & {
-  numerator: BigNumber // uint120
-  denominator: BigNumber // uint120
-  extraData: string // bytes
 }
 
 function getAdvancedOrderParams(data: SeaportData): { advancedOrder: AdvancedOrder; value: BigNumber } {
