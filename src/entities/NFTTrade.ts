@@ -32,7 +32,7 @@ export type BuyItem = {
   tokenId: BigNumberish
   priceInfo: CurrencyAmount<Currency>
   tokenType: TokenType
-  amount?: BigNumberish
+  amount?: BigNumberish // for 1155
 }
 
 export enum Market {

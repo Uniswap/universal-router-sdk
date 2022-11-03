@@ -8,8 +8,8 @@ import { CurrencyAmount, Ether } from '@uniswap/sdk-core'
 export type FoundationData = {
   recipient: string
   tokenAddress: string
-  price: BigNumberish
   tokenId: BigNumberish
+  price: BigNumberish
   referrer: string // address
 }
 
