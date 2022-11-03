@@ -3,7 +3,6 @@ import { Interface } from '@ethersproject/abi'
 import { NFTTrade, Market, BuyItem, TokenType } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type MakerOrder = {
   collectionAddress: string
