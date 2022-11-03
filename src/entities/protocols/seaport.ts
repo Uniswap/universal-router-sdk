@@ -4,7 +4,7 @@ import { Interface } from '@ethersproject/abi'
 import { NFTTrade, BuyItem } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { AdvancedOrder, ConsiderationItem, FulfillmentComponent, OfferItem } from './external_types/seaport'
+import { AdvancedOrder, ConsiderationItem, FulfillmentComponent, OfferItem } from './external_types/seaportTypes'
 
 export type SeaportData = {
   parameters: {
