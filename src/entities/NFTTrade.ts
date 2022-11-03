@@ -24,7 +24,6 @@ export abstract class NFTTrade<T> {
   abstract getBuyItems(): BuyItem[]
 
   abstract getTotalPrice(): CurrencyAmount
-
 }
 
 export type BuyItem = {
