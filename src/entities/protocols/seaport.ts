@@ -6,20 +6,20 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type SeaportData = {
-    parameters: {
-      offerer: string // address
-      offer: OfferItem[]
-      consideration: ConsiderationItem[]
-      orderType: BigNumberish // enum
-      startTime: BigNumberish
-      endTime: BigNumberish
-      zone: string //address
-      zoneHash: string // bytes32
-      salt: BigNumberish
-      conduitKey: string // bytes32,
-      totalOriginalConsiderationItems: BigNumberish
-    }
-    signature: string
+  parameters: {
+    offerer: string // address
+    offer: OfferItem[]
+    consideration: ConsiderationItem[]
+    orderType: BigNumberish // enum
+    startTime: BigNumberish
+    endTime: BigNumberish
+    zone: string //address
+    zoneHash: string // bytes32
+    salt: BigNumberish
+    conduitKey: string // bytes32,
+    totalOriginalConsiderationItems: BigNumberish
+  }
+  signature: string
 }
 
 export class SeaportTrade extends NFTTrade<SeaportData> {
@@ -32,7 +32,12 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
   encode(planner: RoutePlanner): void {
     let advancedOrders: AdvancedOrder[] = []
-    let considerationFulFillments: FulfillmentComponent[][] = getConsiderationFulfillments(this.buyItems.map(i => i.data))
+    let orderFulfillments: FulfillmentComponent[][] = this.buyItems.map((x, index) => [
+      { orderIndex: index, itemIndex: 0 },
+    ])
+    let considerationFulFillments: FulfillmentComponent[][] = getConsiderationFulfillments(
+      this.buyItems.map((i) => i.data)
+    )
 
     for (const item of this.buyItems) {
       const { advancedOrder } = getAdvancedOrderParams(item.data)
@@ -51,7 +56,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAvailableAdvancedOrders', [
         advancedOrders,
         [],
-        [[[0, 0]], [[1, 0]]],
+        orderFulfillments,
         considerationFulFillments,
         SeaportTrade.OPENSEA_CONDUIT_KEY,
         this.recipient,
@@ -63,8 +68,8 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 }
 
 type FulfillmentComponent = {
-   orderIndex: number
-   itemIndex: number
+  orderIndex: BigNumberish
+  itemIndex: BigNumberish
 }
 
 type OfferItem = {
@@ -119,27 +124,6 @@ function calculateValue(considerations: ConsiderationItem[]): BigNumber {
     BigNumber.from(0)
   )
 }
-//
-// export type SeaportData = {
-//   protocol_data: {
-//     parameters: {
-//       offerer: string // address
-//       offer: OfferItem[]
-//       consideration: ConsiderationItem[]
-//       orderType: BigNumber // enum
-//       startTime: BigNumber
-//       endTime: BigNumber
-//       zone: string //address
-//       zoneHash: string // bytes32
-//       salt: BigNumber
-//       conduitKey: string // bytes32,
-//       totalOriginalConsiderationItems: BigNumber
-//       counter: number
-//     }
-//     signature: string
-//   }
-// }
-
 
 function getConsiderationFulfillments(protocolDatas: SeaportData[]): FulfillmentComponent[][] {
   let considerationFulfillments: FulfillmentComponent[][] = []
@@ -147,28 +131,30 @@ function getConsiderationFulfillments(protocolDatas: SeaportData[]): Fulfillment
 
   for (const i in protocolDatas) {
     const protocolData = protocolDatas[i]
+
     for (const j in protocolData.parameters.consideration) {
       const item = protocolData.parameters.consideration[j]
 
       if (considerationRecipients.findIndex((x) => x === item.recipient) === -1) {
-        considerationRecipients.push(item.recipient);
+        considerationRecipients.push(item.recipient)
       }
 
-      const recipientIndex = considerationRecipients.findIndex(
-        (x) => x === item.recipient
-      );
+      const recipientIndex = considerationRecipients.findIndex((x) => x === item.recipient)
 
       if (!considerationFulfillments[recipientIndex]) {
-        considerationFulfillments.push([{
-          orderIndex, itemIndex
-        }]);
+        considerationFulfillments.push([
+          {
+            orderIndex: i,
+            itemIndex: j,
+          },
+        ])
       } else {
         considerationFulfillments[recipientIndex].push({
-          orderIndex,
-          itemIndex,
-        });
+          orderIndex: i,
+          itemIndex: j,
+        })
       }
     }
   }
-  return []
+  return considerationFulfillments
 }
