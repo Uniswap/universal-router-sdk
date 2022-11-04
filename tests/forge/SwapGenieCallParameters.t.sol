@@ -31,7 +31,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0xEf96021Af16BD04918b0d87cE045d7984ad6c38c);
-        uint256 balance = 5 ether;
+        uint256 balance = 1 ether;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
@@ -50,7 +50,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
-        uint256 balance = 5 ether;
+        uint256 balance = 1 ether;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
@@ -69,7 +69,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
-        uint256 balance = 56 * 10 ** 18;
+        uint256 balance = 55 * 10 ** 18;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
