@@ -5,9 +5,10 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { CurrencyAmount, WETH9, Ether, Currency } from '@uniswap/sdk-core'
 import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
-import { RoutePlanner } from './utils/routerCommands'
+import { CommandType, RoutePlanner } from './utils/routerCommands'
 
 export type SwapRouterConfig = {
+  sender: string // address
   deadline?: BigNumberish
 }
 
@@ -20,7 +21,7 @@ export abstract class SwapRouter {
    */
   public static swapGenieCallParameters(
     trades: NFTTrade<SupportedProtocolsData>[],
-    config: SwapRouterConfig = {}
+    config: SwapRouterConfig,
   ): MethodParameters {
     let planner = new RoutePlanner()
     let totalPrice = BigNumber.from(0)
@@ -29,6 +30,7 @@ export abstract class SwapRouter {
       trade.encode(planner)
       totalPrice = totalPrice.add(trade.getTotalPrice())
     }
+    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, config.sender, 0])
 
     const { commands, inputs } = planner
 
