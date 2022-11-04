@@ -1,7 +1,7 @@
 import abi from '../../../abis/Seaport.json'
 import { BigNumber, BigNumberish, ethers } from 'ethers'
 import { Interface } from '@ethersproject/abi'
-import { NFTTrade, BuyItem } from '../NFTTrade'
+import { NFTTrade, BuyItem, Market, TokenType } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { AdvancedOrder, ConsiderationItem, FulfillmentComponent, OfferItem } from './external_types/seaportTypes'
@@ -21,27 +21,26 @@ export type SeaportData = {
     totalOriginalConsiderationItems: BigNumberish
   }
   signature: string
+  recipient: string // address
 }
 
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
 
-  constructor(recipient: string, buyItems: BuyItem<SeaportData>[]) {
-    super(recipient, buyItems)
+  constructor(orders: SeaportData[]) {
+    super(Market.Seaport, orders)
   }
 
   encode(planner: RoutePlanner): void {
     let advancedOrders: AdvancedOrder[] = []
-    let orderFulfillments: FulfillmentComponent[][] = this.buyItems.map((x, index) => [
+    let orderFulfillments: FulfillmentComponent[][] = this.orders.map((x, index) => [
       { orderIndex: index, itemIndex: 0 },
     ])
-    let considerationFulFillments: FulfillmentComponent[][] = getConsiderationFulfillments(
-      this.buyItems.map((i) => i.data)
-    )
+    let considerationFulFillments: FulfillmentComponent[][] = getConsiderationFulfillments(this.orders)
 
-    for (const item of this.buyItems) {
-      const { advancedOrder } = getAdvancedOrderParams(item.data)
+    for (const item of this.orders) {
+      const { advancedOrder } = getAdvancedOrderParams(item)
       advancedOrders.push(advancedOrder)
     }
 
@@ -51,7 +50,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         advancedOrders[0],
         [],
         SeaportTrade.OPENSEA_CONDUIT_KEY,
-        this.recipient,
+        this.orders[0].recipient,
       ])
     } else {
       calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAvailableAdvancedOrders', [
@@ -60,11 +59,33 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         orderFulfillments,
         considerationFulFillments,
         SeaportTrade.OPENSEA_CONDUIT_KEY,
-        this.recipient,
+        this.orders[0].recipient,
         100,
       ])
     }
-    planner.addCommand(CommandType.SEAPORT, [this.nativeCurrencyValue.quotient.toString(), calldata])
+    planner.addCommand(CommandType.SEAPORT, [this.getTotalPrice().toString(), calldata])
+  }
+
+  getBuyItems(): BuyItem[] {
+    let buyItems: BuyItem[] = []
+    for (const order of this.orders) {
+      for (const item of order.parameters.offer) {
+        buyItems.push({
+          tokenAddress: item.token,
+          tokenId: item.identifierOrCriteria,
+          priceInfo: calculateValue(order.parameters.consideration),
+          tokenType: TokenType.ERC721,
+        })
+      }
+    }
+    return buyItems
+  }
+
+  getTotalPrice(): BigNumber {
+    return this.orders.reduce(
+      (prevAmt, order) => prevAmt.add(calculateValue(order.parameters.consideration)),
+      BigNumber.from(0)
+    )
   }
 }
 

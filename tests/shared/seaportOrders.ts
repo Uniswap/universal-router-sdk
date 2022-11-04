@@ -1,5 +1,7 @@
 import { SeaportData } from '../../src/entities/protocols/seaport'
 
+const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
 export const seaportDataCoven1: SeaportData = {
   parameters: {
     offerer: '0x0f1fcc9da5db6753c90fbeb46024c056516fbc17',
@@ -47,6 +49,7 @@ export const seaportDataCoven1: SeaportData = {
     conduitKey: '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000',
     totalOriginalConsiderationItems: 3,
   },
+  recipient: SAMPLE_ADDR,
   signature:
     '0x58073c305ffa6daf8b6279050d9837d88040350a004efe3028fd6cda8aef41cd0819bb209b6ef3b3d6df717180677a3916c15ea669f8251471d3d39ee6abdac31b',
 }
@@ -98,6 +101,7 @@ export const seaportDataCoven2: SeaportData = {
     conduitKey: '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000',
     totalOriginalConsiderationItems: 3,
   },
+  recipient: SAMPLE_ADDR,
   signature:
     '0x81237739418cadbfd0875476c1d343550166e7099f0430ad581e98245e03db303480cbfda1e2c9aa6f3663d7f5ab86800b72ddeaaf81998179a651eef627e5f81b',
 }
