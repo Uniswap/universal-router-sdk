@@ -73,7 +73,7 @@ export abstract class SwapRouter {
       ? BigNumber.from(trade.trade.inputAmount.quotient.toString())
       : BigNumber.from(0)
 
-    trade.encode(planner)
+    trade.encode(planner, { allowRevert: false })
     return SwapRouter.encodePlan(planner, nativeCurrencyValue, {
       deadline: options.deadlineOrPreviousBlockhash ? BigNumber.from(options.deadlineOrPreviousBlockhash) : undefined,
     })
