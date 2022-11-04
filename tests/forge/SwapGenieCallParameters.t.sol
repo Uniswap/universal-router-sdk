@@ -6,6 +6,7 @@ import {ERC721} from "solmate/tokens/ERC721.sol";
 import {Router} from "narwhal/Router.sol";
 import {DeployRouter} from "./utils/DeployRouter.sol";
 import {MethodParameters, Interop} from "./utils/Interop.sol";
+import {ICryptoPunksMarket} from "./utils/ICryptoPunksMarket.sol";
 
 contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
     using stdJson for string;
@@ -101,5 +102,24 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 2);
         assertEq(from.balance, balance - params.value);
+    }
+
+    function testCryptopunkBuyItems() public {
+        MethodParameters memory params = readFixture(json, "._CRYPTOPUNK_BUY_ITEM");
+        vm.createSelectFork(vm.envString("FORK_URL"), 15360000);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        ICryptoPunksMarket token = ICryptoPunksMarket(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        uint256 balance = 78 ether;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 1);
+        assertEq(token.punkIndexToAddress(2976), RECIPIENT);
+        assertEq(from.balance, 0);
     }
 }
