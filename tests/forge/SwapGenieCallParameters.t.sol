@@ -11,6 +11,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
     using stdJson for string;
 
     address private constant RECIPIENT = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
+    address private constant ROUTER_ADDRESS = 0x4a873bdD49F7F9CC0A5458416A12973fAB208f8D;
 
     address from;
     uint256 fromPrivateKey;
@@ -61,6 +62,28 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         assertEq(from.balance, balance - params.value);
     }
 
+    function testLooksRareBuyItems() public {
+        MethodParameters memory params = readFixture(json, "._LOOKSRARE_BUY_ITEM");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 15360000);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        assertEq(address(router), ROUTER_ADDRESS); // to ensure the router address in sdk is correct
+
+        ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        uint256 balance = 32 ether;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 1);
+        assertEq(from.balance, 0);
+    }
+
     function testSeaportBuyItems() public {
         MethodParameters memory params = readFixture(json, "._SEAPORT_BUY_ITEMS");
 
@@ -79,5 +102,4 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         assertEq(token.balanceOf(RECIPIENT), 2);
         assertEq(from.balance, balance - params.value);
     }
-
 }

@@ -111,7 +111,6 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         buyItems.push({
           tokenAddress: item.token,
           tokenId: item.identifierOrCriteria,
-          priceInfo: this.calculateValue(order.parameters.consideration),
           tokenType: TokenType.ERC721,
         })
       }
