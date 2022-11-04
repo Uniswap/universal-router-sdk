@@ -4,7 +4,6 @@ import { Interface } from '@ethersproject/abi'
 import { NFTTrade, BuyItem, Market, TokenType } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { AdvancedOrder, ConsiderationItem, FulfillmentComponent, OfferItem } from './external_types/seaportTypes'
 
 export type SeaportData = {
   parameters: {
@@ -24,6 +23,45 @@ export type SeaportData = {
   recipient: string // address
 }
 
+export type FulfillmentComponent = {
+  orderIndex: BigNumberish
+  itemIndex: BigNumberish
+}
+
+export type OfferItem = {
+  itemType: BigNumberish // enum
+  token: string // address
+  identifierOrCriteria: BigNumberish
+  startAmount: BigNumberish
+  endAmount: BigNumberish
+}
+
+export type ConsiderationItem = OfferItem & {
+  recipient: string
+}
+
+export type Order = {
+  parameters: {
+    offerer: string // address,
+    offer: OfferItem[]
+    consideration: ConsiderationItem[]
+    orderType: BigNumberish // enum
+    startTime: BigNumberish
+    endTime: BigNumberish
+    zoneHash: string // bytes32
+    salt: BigNumberish
+    conduitKey: string // bytes32,
+    totalOriginalConsiderationItems: BigNumberish
+  }
+  signature: string
+}
+
+export type AdvancedOrder = Order & {
+  numerator: BigNumber // uint120
+  denominator: BigNumber // uint120
+  extraData: string // bytes
+}
+
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
@@ -37,7 +75,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     let orderFulfillments: FulfillmentComponent[][] = this.orders.map((x, index) => [
       { orderIndex: index, itemIndex: 0 },
     ])
-    let considerationFulFillments: FulfillmentComponent[][] = getConsiderationFulfillments(this.orders)
+    let considerationFulFillments: FulfillmentComponent[][] = this.getConsiderationFulfillments(this.orders)
 
     for (const item of this.orders) {
       const { advancedOrder } = getAdvancedOrderParams(item)
@@ -73,7 +111,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         buyItems.push({
           tokenAddress: item.token,
           tokenId: item.identifierOrCriteria,
-          priceInfo: calculateValue(order.parameters.consideration),
+          priceInfo: this.calculateValue(order.parameters.consideration),
           tokenType: TokenType.ERC721,
         })
       }
@@ -87,57 +125,57 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       BigNumber.from(0)
     )
   }
-}
 
-function getAdvancedOrderParams(data: SeaportData): { advancedOrder: AdvancedOrder; value: BigNumber } {
-  const advancedOrder = {
-    parameters: data.parameters,
-    numerator: BigNumber.from('1'),
-    denominator: BigNumber.from('1'),
-    signature: data.signature,
-    extraData: '0x00',
-  }
-  const value = calculateValue(data.parameters.consideration)
-  return { advancedOrder, value }
-}
+  private getConsiderationFulfillments(protocolDatas: SeaportData[]): FulfillmentComponent[][] {
+    let considerationFulfillments: FulfillmentComponent[][] = []
+    const considerationRecipients: string[] = []
 
-function calculateValue(considerations: ConsiderationItem[]): BigNumber {
-  return considerations.reduce(
-    (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
-    BigNumber.from(0)
-  )
-}
+    for (const i in protocolDatas) {
+      const protocolData = protocolDatas[i]
 
-function getConsiderationFulfillments(protocolDatas: SeaportData[]): FulfillmentComponent[][] {
-  let considerationFulfillments: FulfillmentComponent[][] = []
-  const considerationRecipients: string[] = []
+      for (const j in protocolData.parameters.consideration) {
+        const item = protocolData.parameters.consideration[j]
 
-  for (const i in protocolDatas) {
-    const protocolData = protocolDatas[i]
+        if (considerationRecipients.findIndex((x) => x === item.recipient) === -1) {
+          considerationRecipients.push(item.recipient)
+        }
 
-    for (const j in protocolData.parameters.consideration) {
-      const item = protocolData.parameters.consideration[j]
+        const recipientIndex = considerationRecipients.findIndex((x) => x === item.recipient)
 
-      if (considerationRecipients.findIndex((x) => x === item.recipient) === -1) {
-        considerationRecipients.push(item.recipient)
-      }
-
-      const recipientIndex = considerationRecipients.findIndex((x) => x === item.recipient)
-
-      if (!considerationFulfillments[recipientIndex]) {
-        considerationFulfillments.push([
-          {
+        if (!considerationFulfillments[recipientIndex]) {
+          considerationFulfillments.push([
+            {
+              orderIndex: i,
+              itemIndex: j,
+            },
+          ])
+        } else {
+          considerationFulfillments[recipientIndex].push({
             orderIndex: i,
             itemIndex: j,
-          },
-        ])
-      } else {
-        considerationFulfillments[recipientIndex].push({
-          orderIndex: i,
-          itemIndex: j,
-        })
+          })
+        }
       }
     }
+    return considerationFulfillments
   }
-  return considerationFulfillments
+
+  private getAdvancedOrderParams(data: SeaportData): { advancedOrder: AdvancedOrder; value: BigNumber } {
+    const advancedOrder = {
+      parameters: data.parameters,
+      numerator: BigNumber.from('1'),
+      denominator: BigNumber.from('1'),
+      signature: data.signature,
+      extraData: '0x00',
+    }
+    const value = calculateValue(data.parameters.consideration)
+    return { advancedOrder, value }
+  }
+
+  private calculateValue(considerations: ConsiderationItem[]): BigNumber {
+    return considerations.reduce(
+      (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
+      BigNumber.from(0)
+    )
+  }
 }
