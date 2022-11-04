@@ -68,7 +68,6 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
       buyItems.push({
         tokenAddress: item.makerOrder.collection,
         tokenId: item.makerOrder.tokenId,
-        priceInfo: item.makerOrder.price,
         tokenType: TokenType.ERC721,
       })
     }
