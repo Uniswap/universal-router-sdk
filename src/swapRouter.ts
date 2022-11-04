@@ -7,7 +7,7 @@ import { Trade as V2Trade } from '@uniswap/v2-sdk'
 import { Trade as RouterTrade, MixedRouteTrade, SwapOptions } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
-import { RoutePlanner } from './utils/routerCommands'
+import { RoutePlanner, CommandType } from './utils/routerCommands'
 import { UniswapTrade } from './entities/protocols/uniswap'
 
 export type SwapRouterConfig = {
@@ -54,8 +54,8 @@ export abstract class SwapRouter {
         )[],
     options: SwapOptions
   ): MethodParameters {
+    // TODO: use permit if signature included in options
     const planner = new RoutePlanner()
-    const nativeCurrencyValue = BigNumber.from(0)
 
     const trade: UniswapTrade =
       trades instanceof RouterTrade
@@ -64,9 +64,13 @@ export abstract class SwapRouter {
         ? UniswapTrade.from(trades, options)
         : UniswapTrade.from([trades], options)
 
+    const nativeCurrencyValue = trade.trade.inputAmount.currency.isNative
+      ? BigNumber.from(trade.trade.inputAmount.quotient.toString())
+      : BigNumber.from(0)
+
     trade.encode(planner)
     return SwapRouter.encodePlan(planner, nativeCurrencyValue, {
-      deadline: BigNumber.from(options.deadlineOrPreviousBlockhash),
+      deadline: options.deadlineOrPreviousBlockhash ? BigNumber.from(options.deadlineOrPreviousBlockhash) : undefined,
     })
   }
 
