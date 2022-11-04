@@ -5,6 +5,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
+import { ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
   sender: string // address

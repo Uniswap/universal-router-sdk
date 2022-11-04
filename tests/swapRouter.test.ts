@@ -25,7 +25,7 @@ describe('SwapRouter', () => {
 
     it('encodes a single foundation trade', async () => {
       const foundationTrade = new FoundationTrade([foundationData])
-      const methodParameters = SwapRouter.swapGenieCallParameters([foundationTrade])
+      const methodParameters = SwapRouter.swapGenieCallParameters([foundationTrade], { sender: SAMPLE_ADDR })
       registerFixture('_FOUNDATION_BUY_ITEM', methodParameters)
       expect(methodParameters.value).to.eq(foundationData.price.toString())
       expect(methodParameters.calldata).to.eq(
@@ -55,7 +55,7 @@ describe('SwapRouter', () => {
 
     it('encodes buying two NFTs from a single NFTX vault', async () => {
       const nftxTrade = new NFTXTrade([nftxBuyItemCoven1, nftxBuyItemCoven2])
-      const methodParameters = SwapRouter.swapGenieCallParameters([nftxTrade])
+      const methodParameters = SwapRouter.swapGenieCallParameters([nftxTrade], { sender: SAMPLE_ADDR })
       registerFixture('_NFTX_BUY_ITEMS', methodParameters)
       expect(methodParameters.value).to.eq(expandTo18DecimalsBN(1).toString())
       expect(methodParameters.calldata).to.eq(
@@ -87,7 +87,7 @@ describe('SwapRouter', () => {
 
     it('encodes buying one NFTs from LooksRare', async () => {
       const looksRareTrade = new LooksRareTrade([looksRareData])
-      const methodParameters = SwapRouter.swapGenieCallParameters([looksRareTrade])
+      const methodParameters = SwapRouter.swapGenieCallParameters([looksRareTrade], { sender: SAMPLE_ADDR })
       registerFixture('_LOOKSRARE_BUY_ITEM', methodParameters)
       expect(methodParameters.value).to.eq(looksRareOrder.price)
       expect(methodParameters.calldata).to.eq(
