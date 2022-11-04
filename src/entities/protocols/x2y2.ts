@@ -24,13 +24,7 @@ export class X2Y2Trade extends NFTTrade<X2Y2Data> {
       const functionSelector = X2Y2Trade.INTERFACE.getSighash(X2Y2Trade.INTERFACE.getFunction('run'))
       const calldata = functionSelector + item.signedInput.slice(2)
 
-      planner.addCommand(CommandType.X2Y2_721, [
-        item.price,
-        calldata,
-        item.recipient,
-        item.tokenAddress,
-        item.tokenId,
-      ])
+      planner.addCommand(CommandType.X2Y2_721, [item.price, calldata, item.recipient, item.tokenAddress, item.tokenId])
     }
   }
 
