@@ -124,7 +124,7 @@ describe('SwapRouter', () => {
       value: BigNumber.from('76950000000000000000'),
     }
 
-    it.only('encodes a single cryptopunk trade', async () => {
+    it('encodes a single cryptopunk trade', async () => {
       const cryptopunkTrade = new CryptopunkTrade([cryptopunk])
       const methodParameters = SwapRouter.swapGenieCallParameters([cryptopunkTrade])
       registerFixture('_CRYPTOPUNK_BUY_ITEM', methodParameters)
