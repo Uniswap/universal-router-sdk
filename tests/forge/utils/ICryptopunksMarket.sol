@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 /// @title Interface for CryptoPunksMarket
-interface ICryptoPunksMarket {
+interface ICryptopunksMarket {
     function balanceOf(address) external returns (uint256);
 
     function punkIndexToAddress(uint256) external returns (address);
