@@ -66,23 +66,14 @@ describe('SwapRouter', () => {
   })
 
   describe('Seaport', () => {
-    // buyItems from block 15360000
-    // const seaportBuyItemCoven1 = {
-    //   address: '0x5180db8f5c931aae63c74266b211f580155ecac8',
-    //   tokenId: 8271,
-    //   priceInfo: CurrencyAmount.fromRawAmount(ETHER, expandTo18Decimals(0.5)),
-    //   tokenType: TokenTypes.ERC721,
-    //   data: seaportDataCoven1,
-    // }
-    // const seaportBuyItemCoven2 = {
-    //   address: '0x5180db8f5c931aae63c74266b211f580155ecac8',
-    //   tokenId: 6366,
-    //   priceInfo: CurrencyAmount.fromRawAmount(ETHER, expandTo18Decimals(0.5)),
-    //   tokenType: TokenTypes.ERC721,
-    //   data: seaportDataCoven2,
-    // }
-
     it('encodes buying two NFTs from Seaport', async () => {
+      function calculateValue(considerations: ConsiderationItem[]): BigNumber {
+        return considerations.reduce(
+          (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
+          BigNumber.from(0)
+        )
+      }
+
       const value = calculateValue(seaportDataCoven1.parameters.consideration).add(
         calculateValue(seaportDataCoven2.parameters.consideration)
       )
@@ -96,10 +87,3 @@ describe('SwapRouter', () => {
     })
   })
 })
-
-function calculateValue(considerations: ConsiderationItem[]): BigNumber {
-  return considerations.reduce(
-    (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
-    BigNumber.from(0)
-  )
-}
