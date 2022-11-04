@@ -33,7 +33,7 @@ export abstract class SwapRouter {
       totalPrice = totalPrice.add(trade.getTotalPrice())
     }
 
-    return SwapRouter.encodePlan(planner, totalPrice.toString(), config)
+    return SwapRouter.encodePlan(planner, totalPrice, config)
   }
 
   /**
@@ -55,6 +55,7 @@ export abstract class SwapRouter {
     options: SwapOptions
   ): MethodParameters {
     const planner = new RoutePlanner()
+    const nativeCurrencyValue = BigNumber.from(0)
 
     const trade: UniswapTrade =
       trades instanceof RouterTrade
@@ -64,7 +65,9 @@ export abstract class SwapRouter {
         : UniswapTrade.from([trades], options)
 
     trade.encode(planner)
-    return SwapRouter.encodePlan(planner, nativeCurrencyValue, config)
+    return SwapRouter.encodePlan(planner, nativeCurrencyValue, {
+      deadline: BigNumber.from(options.deadlineOrPreviousBlockhash),
+    })
   }
 
   /**
