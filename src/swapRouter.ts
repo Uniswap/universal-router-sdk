@@ -6,7 +6,7 @@ import { MethodParameters, Trade as V3Trade } from '@uniswap/v3-sdk'
 import { Trade as V2Trade } from '@uniswap/v2-sdk'
 import { Trade as RouterTrade, MixedRouteTrade, SwapOptions } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
+import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
 import { RoutePlanner } from './utils/routerCommands'
 import { UniswapTrade } from './entities/protocols/uniswap'
 

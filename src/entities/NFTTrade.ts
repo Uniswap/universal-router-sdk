@@ -7,8 +7,9 @@ import { NFTXData } from './protocols/nftx'
 import { RoutePlanner } from '../utils/routerCommands'
 import { getNativeCurrencyValue } from '../utils/getNativeCurrencyValue'
 import { Command } from './Command'
+import { LooksRareData } from './protocols/looksRare'
 
-export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData
+export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData
 
 export abstract class NFTTrade<T> implements Command {
   readonly orders: T[]
@@ -30,7 +31,6 @@ export abstract class NFTTrade<T> implements Command {
 export type BuyItem = {
   tokenAddress: string
   tokenId: BigNumberish
-  priceInfo: BigNumberish
   tokenType: TokenType
   amount?: BigNumberish // for 1155
 }
