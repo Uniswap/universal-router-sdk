@@ -80,8 +80,8 @@ export class UniswapTrade implements Command {
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {}
 
   encode(planner: RoutePlanner): void {
-    // TODO: handle slippage tolerance, i.e. only for last trade?
     // TODO: handle recipient, i.e. keep custody if continuing?
+    // TODO: handle payerIsUser
     for (const swap of this.trade.swaps) {
       switch (swap.route.protocol) {
         case Protocol.V2:
