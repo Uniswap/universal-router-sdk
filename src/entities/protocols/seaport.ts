@@ -53,6 +53,8 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         this.orders[0].recipient,
       ])
     } else {
+      console.log('two orders!')
+      console.log(advancedOrders)
       calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAvailableAdvancedOrders', [
         advancedOrders,
         [],
