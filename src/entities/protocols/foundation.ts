@@ -29,13 +29,11 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
         item.price,
         item.referrer,
       ])
-      planner.addCommand(CommandType.FOUNDATION, [
-        item.price,
-        calldata,
-        item.recipient,
-        item.tokenAddress,
-        item.tokenId,
-      ], config.allowRevert)
+      planner.addCommand(
+        CommandType.FOUNDATION,
+        [item.price, calldata, item.recipient, item.tokenAddress, item.tokenId],
+        config.allowRevert
+      )
     }
   }
 

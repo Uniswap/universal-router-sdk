@@ -52,13 +52,11 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
         item.makerOrder,
       ])
 
-      planner.addCommand(CommandType.LOOKS_RARE_721, [
-        item.makerOrder.price,
-        calldata,
-        item.recipient,
-        item.makerOrder.collection,
-        item.makerOrder.tokenId,
-      ], config.allowRevert)
+      planner.addCommand(
+        CommandType.LOOKS_RARE_721,
+        [item.makerOrder.price, calldata, item.recipient, item.makerOrder.collection, item.makerOrder.tokenId],
+        config.allowRevert
+      )
     }
   }
 
