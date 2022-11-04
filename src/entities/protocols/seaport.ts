@@ -78,7 +78,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     let considerationFulFillments: FulfillmentComponent[][] = this.getConsiderationFulfillments(this.orders)
 
     for (const item of this.orders) {
-      const { advancedOrder } = getAdvancedOrderParams(item)
+      const { advancedOrder } = this.getAdvancedOrderParams(item)
       advancedOrders.push(advancedOrder)
     }
 
@@ -121,7 +121,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
   getTotalPrice(): BigNumber {
     return this.orders.reduce(
-      (prevAmt, order) => prevAmt.add(calculateValue(order.parameters.consideration)),
+      (prevAmt, order) => prevAmt.add(this.calculateValue(order.parameters.consideration)),
       BigNumber.from(0)
     )
   }
@@ -168,7 +168,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       signature: data.signature,
       extraData: '0x00',
     }
-    const value = calculateValue(data.parameters.consideration)
+    const value = this.calculateValue(data.parameters.consideration)
     return { advancedOrder, value }
   }
 
