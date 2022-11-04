@@ -39,7 +39,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
-        assertLe(from.balance, balance - params.value);
+        assertEq(from.balance, balance - params.value);
     }
 
     function testNftxBuyItems() public {
@@ -69,7 +69,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
-        uint256 balance = 55 * 10 ** 18;
+        uint256 balance = 55 ether;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
