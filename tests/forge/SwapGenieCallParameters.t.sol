@@ -20,6 +20,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
     function setUp() public {
         fromPrivateKey = 0x1234;
         from = vm.addr(fromPrivateKey);
+        console2.log(from);
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
     }
@@ -32,7 +33,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0xEf96021Af16BD04918b0d87cE045d7984ad6c38c);
-        uint256 balance = 10 ** 18;
+        uint256 balance = 1 ether;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
@@ -40,7 +41,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
-        assertLe(from.balance, balance - 0.01 ether);
+        assertEq(from.balance, balance - params.value);
     }
 
     function testNftxBuyItems() public {
@@ -51,7 +52,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         Router router = deployRouterMainnetConfig();
         ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
-        uint256 balance = 10 ** 18;
+        uint256 balance = 1 ether;
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
@@ -59,7 +60,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 2);
-        assertEq(from.balance, 0);
+        assertEq(from.balance, balance - params.value);
     }
 
     function testLooksRareBuyItems() public {
@@ -82,5 +83,24 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
         assertEq(from.balance, 0);
+    }
+
+    function testSeaportBuyItems() public {
+        MethodParameters memory params = readFixture(json, "._SEAPORT_BUY_ITEMS");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 15360000);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        uint256 balance = 55 ether;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 2);
+        assertEq(from.balance, balance - params.value);
     }
 }
