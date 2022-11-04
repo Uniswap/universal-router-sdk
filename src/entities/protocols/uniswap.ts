@@ -174,7 +174,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   if (tradeType == TradeType.EXACT_INPUT) {
     // (address recipient, uint256 amountIn, uint256 amountOutMin, bytes memory path, bool payerIsUser)
     planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-      options.recipient,
+      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_INPUT),
@@ -183,7 +183,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     // (address recipient, uint256 amountOut, uint256 amountInMax, bytes memory path, bool payerIsUser)
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
-      options.recipient,
+      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_OUTPUT),

@@ -50,8 +50,8 @@ const REVERTABLE_COMMANDS = new Set<CommandType>([
 const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.PERMIT]: ['bytes'],
   [CommandType.TRANSFER]: ['address', 'address', 'uint256'],
-  [CommandType.V3_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'bytes'],
-  [CommandType.V3_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'bytes'],
+  [CommandType.V3_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
+  [CommandType.V3_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
   [CommandType.V2_SWAP_EXACT_IN]: ['uint256', 'address[]', 'address'],
   [CommandType.V2_SWAP_EXACT_OUT]: ['uint256', 'uint256', 'address[]', 'address', 'bool'],
   [CommandType.SEAPORT]: ['uint256', 'bytes'],
