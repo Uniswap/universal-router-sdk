@@ -17,7 +17,7 @@ import {
   partitionMixedRouteByProtocol,
 } from '@uniswap/router-sdk'
 import { Currency, TradeType, CurrencyAmount } from '@uniswap/sdk-core'
-import { Command } from '../Command'
+import { Command, TradeConfig } from '../Command'
 import { NARWHAL_ADDRESS } from '../../utils/constants'
 
 const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -78,7 +78,7 @@ export class UniswapTrade implements Command {
 
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {}
 
-  encode(planner: RoutePlanner): void {
+  encode(planner: RoutePlanner, _config: TradeConfig): void {
     let payerIsUser = true
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: opti if only one pool we can directly send this to the pool

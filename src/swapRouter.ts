@@ -7,10 +7,12 @@ import { Trade as V2Trade } from '@uniswap/v2-sdk'
 import { Trade as RouterTrade, MixedRouteTrade, SwapOptions } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { NFTTrade, Market, SupportedProtocolsData } from './entities/NFTTrade'
-import { RoutePlanner, CommandType } from './utils/routerCommands'
 import { UniswapTrade } from './entities/protocols/uniswap'
+import { CommandType, RoutePlanner } from './utils/routerCommands'
+import { ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
+  sender?: string // address
   deadline?: BigNumberish
 }
 
@@ -23,16 +25,19 @@ export abstract class SwapRouter {
    */
   public static swapGenieCallParameters(
     trades: NFTTrade<SupportedProtocolsData>[],
-    config: SwapRouterConfig = {}
+    config: SwapRouterConfig
   ): MethodParameters {
     let planner = new RoutePlanner()
     let totalPrice = BigNumber.from(0)
 
+    const allowRevert = trades.length > 1 ? true : false
+
     for (const trade of trades) {
-      trade.encode(planner)
+      trade.encode(planner, { allowRevert })
       totalPrice = totalPrice.add(trade.getTotalPrice())
     }
 
+    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, config.sender, 0])
     return SwapRouter.encodePlan(planner, totalPrice, config)
   }
 

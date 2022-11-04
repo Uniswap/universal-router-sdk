@@ -6,10 +6,11 @@ import { FoundationData } from './protocols/foundation'
 import { NFTXData } from './protocols/nftx'
 import { RoutePlanner } from '../utils/routerCommands'
 import { getNativeCurrencyValue } from '../utils/getNativeCurrencyValue'
-import { Command } from './Command'
+import { Command, TradeConfig } from './Command'
 import { LooksRareData } from './protocols/looksRare'
+import { X2Y2Data } from './protocols/x2y2'
 
-export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData
+export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData | X2Y2Data
 
 export abstract class NFTTrade<T> implements Command {
   readonly orders: T[]
@@ -21,7 +22,7 @@ export abstract class NFTTrade<T> implements Command {
     this.orders = orders
   }
 
-  abstract encode(planner: RoutePlanner): void
+  abstract encode(planner: RoutePlanner, config: TradeConfig): void
 
   abstract getBuyItems(): BuyItem[]
 
