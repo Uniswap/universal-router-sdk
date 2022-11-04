@@ -20,7 +20,6 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
     function setUp() public {
         fromPrivateKey = 0x1234;
         from = vm.addr(fromPrivateKey);
-        console2.log(from);
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
     }
