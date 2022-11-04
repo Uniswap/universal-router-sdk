@@ -1,3 +1,4 @@
+import invariant from 'tiny-invariant'
 import { abi } from '@uniswap/narwhal/artifacts/contracts/Router.sol/Router.json'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber, BigNumberish } from 'ethers'
@@ -25,14 +26,14 @@ export abstract class SwapRouter {
     config: SwapRouterConfig = {}
   ): MethodParameters {
     let planner = new RoutePlanner()
-    let nativeCurrencyValue: BigNumber = BigNumber.from(0)
+    let totalPrice = BigNumber.from(0)
 
     for (const trade of trades) {
       trade.encode(planner)
-      nativeCurrencyValue = nativeCurrencyValue.add(trade.nativeCurrencyValue)
+      totalPrice = totalPrice.add(trade.getTotalPrice())
     }
 
-    return SwapRouter.encodePlan(planner, nativeCurrencyValue, config)
+    return SwapRouter.encodePlan(planner, totalPrice.toString(), config)
   }
 
   /**
@@ -57,10 +58,10 @@ export abstract class SwapRouter {
 
     const trade: UniswapTrade =
       trades instanceof RouterTrade
-        ? new UniswapTrade(trades)
+        ? new UniswapTrade(trades, options)
         : Array.isArray(trades)
-        ? UniswapTrade.from(trades)
-        : UniswapTrade.from([trades])
+        ? UniswapTrade.from(trades, options)
+        : UniswapTrade.from([trades], options)
 
     trade.encode(planner)
     return SwapRouter.encodePlan(planner, nativeCurrencyValue, config)
@@ -79,17 +80,9 @@ export abstract class SwapRouter {
   ): MethodParameters {
     const { commands, inputs } = planner
 
-    let calldata: string
-    if (config.deadline) {
-      calldata = SwapRouter.INTERFACE.encodeFunctionData('execute(bytes,bytes[],uint256)', [
-        commands,
-        inputs,
-        config.deadline,
-      ])
-    } else {
-      calldata = SwapRouter.INTERFACE.encodeFunctionData('execute(bytes,bytes[])', [commands, inputs])
-    }
-
+    const functionSignature = !!config.deadline ? 'execute(bytes,bytes[],uint256)' : 'execute(bytes,bytes[])'
+    const parameters = !!config.deadline ? [commands, inputs, config.deadline] : [commands, inputs]
+    const calldata = SwapRouter.INTERFACE.encodeFunctionData(functionSignature, parameters)
     return { calldata, value: nativeCurrencyValue.toString() }
   }
 }
