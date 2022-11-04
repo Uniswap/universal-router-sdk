@@ -1,6 +1,6 @@
 import abi from '../../../abis/Foundation.json'
 import { Interface } from '@ethersproject/abi'
-import { NFTTrade, Market, TokenType, BuyItem } from '../NFTTrade'
+import { BuyItem, Market, NFTTrade, TokenType, TradeConfig } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { BigNumber, BigNumberish } from 'ethers'
 import { CurrencyAmount, Currency, Ether } from '@uniswap/sdk-core'
@@ -21,7 +21,7 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
     super(Market.Foundation, orders)
   }
 
-  encode(planner: RoutePlanner): void {
+  encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
       const calldata = FoundationTrade.INTERFACE.encodeFunctionData('buyV2', [
         item.tokenAddress,
@@ -35,7 +35,7 @@ export class FoundationTrade extends NFTTrade<FoundationData> {
         item.recipient,
         item.tokenAddress,
         item.tokenId,
-      ])
+      ], config.allowRevert)
     }
   }
 

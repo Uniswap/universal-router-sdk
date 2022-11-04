@@ -10,6 +10,10 @@ import { LooksRareData } from './protocols/looksRare'
 
 export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData
 
+export type TradeConfig = {
+  allowRevert: boolean
+}
+
 export abstract class NFTTrade<T> {
   readonly orders: T[]
   readonly market: Market
@@ -20,7 +24,7 @@ export abstract class NFTTrade<T> {
     this.orders = orders
   }
 
-  abstract encode(planner: RoutePlanner): void
+  abstract encode(planner: RoutePlanner, config: TradeConfig): void
 
   abstract getBuyItems(): BuyItem[]
 

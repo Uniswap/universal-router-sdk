@@ -1,6 +1,6 @@
 import abi from '../../../abis/LooksRare.json'
 import { Interface } from '@ethersproject/abi'
-import { NFTTrade, Market, BuyItem, TokenType } from '../NFTTrade'
+import { BuyItem, Market, NFTTrade, TokenType, TradeConfig } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
 
@@ -45,7 +45,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
     super(Market.LooksRare, orders)
   }
 
-  encode(planner: RoutePlanner): void {
+  encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
       const calldata = LooksRareTrade.INTERFACE.encodeFunctionData('matchAskWithTakerBidUsingETHAndWETH', [
         item.takerOrder,
@@ -58,7 +58,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
         item.recipient,
         item.makerOrder.collection,
         item.makerOrder.tokenId,
-      ])
+      ], config.allowRevert)
     }
   }
 
