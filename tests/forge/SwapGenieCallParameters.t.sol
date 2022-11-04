@@ -122,7 +122,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
-        assertEq(from.balance, balance-params.value);
+        assertEq(from.balance, balance - params.value);
     }
 
     function testPartialFill() public {

@@ -1,7 +1,7 @@
 import abi from '../../../abis/LooksRare.json'
 import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
-import { TradeConfig } from '../Command';
+import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { ethers, BigNumber, BigNumberish } from 'ethers'
 

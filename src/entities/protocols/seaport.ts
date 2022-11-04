@@ -2,7 +2,7 @@ import abi from '../../../abis/Seaport.json'
 import { BigNumber, BigNumberish, ethers } from 'ethers'
 import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
-import { TradeConfig } from '../Command';
+import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
