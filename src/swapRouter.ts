@@ -70,7 +70,7 @@ export abstract class SwapRouter {
         : UniswapTrade.from([trades], options)
 
     const nativeCurrencyValue = trade.trade.inputAmount.currency.isNative
-      ? BigNumber.from(trade.trade.inputAmount.quotient.toString())
+      ? BigNumber.from(trade.trade.maximumAmountIn(options.slippageTolerance).quotient.toString())
       : BigNumber.from(0)
 
     trade.encode(planner, { allowRevert: false })

@@ -20,8 +20,6 @@ import { Currency, TradeType, CurrencyAmount } from '@uniswap/sdk-core'
 import { Command, TradeConfig } from '../Command'
 import { NARWHAL_ADDRESS } from '../../utils/constants'
 
-const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-
 interface Swap<TInput extends Currency, TOutput extends Currency> {
   route: IRoute<TInput, TOutput, Pair | Pool>
   inputAmount: CurrencyAmount<TInput>
@@ -82,7 +80,10 @@ export class UniswapTrade implements Command {
     let payerIsUser = true
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: opti if only one pool we can directly send this to the pool
-      planner.addCommand(CommandType.WRAP_ETH, [NARWHAL_ADDRESS, this.trade.inputAmount.quotient.toString()])
+      planner.addCommand(CommandType.WRAP_ETH, [
+        NARWHAL_ADDRESS,
+        this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
+      ])
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
@@ -104,7 +105,10 @@ export class UniswapTrade implements Command {
     }
 
     if (this.trade.outputAmount.currency.isNative) {
-      planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, this.trade.outputAmount.quotient.toString()])
+      planner.addCommand(CommandType.UNWRAP_WETH, [
+        this.options.recipient,
+        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
+      ])
     }
   }
 }
@@ -171,22 +175,21 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
     tradeType,
   })
 
+  const path = encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_OUTPUT)
   if (tradeType == TradeType.EXACT_INPUT) {
-    // (address recipient, uint256 amountIn, uint256 amountOutMin, bytes memory path, bool payerIsUser)
     planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
       trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
-      encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_INPUT),
+      path,
       payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
-    // (address recipient, uint256 amountOut, uint256 amountInMax, bytes memory path, bool payerIsUser)
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
       trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
-      encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_OUTPUT),
+      path,
       payerIsUser,
     ])
   }

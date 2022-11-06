@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import JSBI from 'jsbi'
-import { BigNumber, utils } from 'ethers'
-import { SwapRouter, UniswapTrade } from '../src'
+import { utils } from 'ethers'
+import { SwapRouter } from '../src'
 import { SwapOptions } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
 import {
@@ -24,6 +24,8 @@ const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI'
 const USDC = new Token(1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6, 'USDC', 'USD Coin')
 const feeAmount = FeeAmount.MEDIUM
 
+// note: these tests aren't testing much but registering calldata to interop file
+// for use in forge fork tests
 describe('Uniswap', () => {
   describe('v2', () => {
     const WETH_USDC = new Pair(
@@ -49,7 +51,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(inputEther)
     })
 
-    it('encodes a single exactInput ETH->USDC->DAI swap', async () => {
+    it('encodes an exactInput ETH->USDC->DAI swap', async () => {
       const inputEther = utils.parseEther('1').toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC, USDC_DAI], ETHER, DAI),
@@ -75,7 +77,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq('0')
     })
 
-    it('encodes a single exactInput DAI->USDC->ETH swap', async () => {
+    it('encodes an exactInput DAI->USDC->ETH swap', async () => {
       const inputDAI = utils.parseEther('10').toString()
       const trade = new V2Trade(
         new RouteV2([USDC_DAI, WETH_USDC], DAI, ETHER),
@@ -90,7 +92,6 @@ describe('Uniswap', () => {
 
     it('encodes a single exactOutput ETH->USDC swap', async () => {
       const outputUSDC = utils.parseUnits('1000', 6).toString()
-      const inputETH = BigNumber.from('619416665686539617').toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC], ETHER, USDC),
         CurrencyAmount.fromRawAmount(USDC, outputUSDC),
@@ -99,7 +100,7 @@ describe('Uniswap', () => {
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
       registerFixture('_UNISWAP_V2_EXACT_OUTPUT_SINGLE_NATIVE', methodParameters)
-      expect(methodParameters.value).to.eq(inputETH)
+      expect(methodParameters.value).to.not.equal('0')
     })
 
     it('encodes a single exactOutput USDC->ETH swap', async () => {
@@ -117,7 +118,19 @@ describe('Uniswap', () => {
   })
 
   describe('v3', () => {
-    const WETH_USDC = makePool(WETH, USDC, '1000000', encodeSqrtRatioX96(1, 1))
+    // live values from the fork block
+    const WETH_USDC = makePool(
+      WETH,
+      USDC,
+      JSBI.BigInt('11976143461059551550'),
+      JSBI.BigInt('1968793223998213381892723903222886')
+    )
+    const USDC_DAI = makePool(
+      USDC,
+      DAI,
+      JSBI.BigInt('332156389980718567434966'),
+      JSBI.BigInt('79222186890124025850669')
+    )
 
     it('encodes a single exactInput ETH->USDC swap', async () => {
       const inputEther = utils.parseEther('1').toString()
@@ -131,6 +144,84 @@ describe('Uniswap', () => {
       registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_NATIVE', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
+
+    it('encodes a single exactInput USDC->ETH swap', async () => {
+      const inputUSDC = utils.parseUnits('1000', 6).toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(USDC, inputUSDC),
+        TradeType.EXACT_INPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
+    it('encodes a single exactInput ETH->USDC->DAI swap', async () => {
+      const inputEther = utils.parseEther('1').toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC, USDC_DAI], ETHER, DAI),
+        CurrencyAmount.fromRawAmount(ETHER, inputEther),
+        TradeType.EXACT_INPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_INPUT_ERC20', methodParameters)
+      expect(methodParameters.value).to.eq(inputEther)
+    })
+
+    it('encodes a single exactOutput ETH->USDC swap', async () => {
+      const outputUSDC = utils.parseUnits('1000', 6).toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC], ETHER, USDC),
+        CurrencyAmount.fromRawAmount(USDC, outputUSDC),
+        TradeType.EXACT_OUTPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_SINGLE_NATIVE', methodParameters)
+      expect(methodParameters.value).to.not.equal('0')
+    })
+
+    it('encodes a single exactOutput USDC->ETH swap', async () => {
+      const outputEther = utils.parseEther('1').toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(ETHER, outputEther),
+        TradeType.EXACT_OUTPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_SINGLE_ERC20', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
+    it('encodes an exactOutput ETH->USDC->DAI swap', async () => {
+      const outputDai = utils.parseEther('1000').toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC, USDC_DAI], ETHER, DAI),
+        CurrencyAmount.fromRawAmount(DAI, outputDai),
+        TradeType.EXACT_OUTPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_NATIVE', methodParameters)
+      expect(methodParameters.value).to.not.equal('0')
+    })
+
+    it('encodes an exactOutput DAI->USDC->ETH swap', async () => {
+      const outputEther = utils.parseEther('1').toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([USDC_DAI, WETH_USDC], DAI, ETHER),
+        CurrencyAmount.fromRawAmount(ETHER, outputEther),
+        TradeType.EXACT_OUTPUT
+      )
+      const opts = swapOptions({})
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_ERC20', methodParameters)
+      expect(methodParameters.value).to.equal('0')
+    })
   })
 })
 
@@ -142,7 +233,7 @@ function swapOptions(options: Partial<SwapOptions>): SwapOptions {
   })
 }
 
-function makePool(token0: Token, token1: Token, liquidity: string, sqrtRatioX96: JSBI) {
+function makePool(token0: Token, token1: Token, liquidity: JSBI, sqrtRatioX96: JSBI) {
   return new Pool(token0, token1, feeAmount, sqrtRatioX96, liquidity, TickMath.getTickAtSqrtRatio(sqrtRatioX96), [
     {
       index: nearestUsableTick(TickMath.MIN_TICK, TICK_SPACINGS[feeAmount]),
@@ -151,7 +242,7 @@ function makePool(token0: Token, token1: Token, liquidity: string, sqrtRatioX96:
     },
     {
       index: nearestUsableTick(TickMath.MAX_TICK, TICK_SPACINGS[feeAmount]),
-      liquidityNet: -liquidity,
+      liquidityNet: JSBI.multiply(liquidity, JSBI.BigInt('-1')),
       liquidityGross: liquidity,
     },
   ])
