@@ -266,9 +266,25 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         payerIsUser, // payerIsUser
       ])
     } else {
+      // need to explicitly transfer input tokens to the pool as narwhal doesnt handle this for us
+      if (payerIsUser && i === 0) {
+        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
+          newRoute.path[0].wrapped.address,
+          (newRoute.pools[0] as Pair).liquidityToken.address,
+          trade.inputAmount.quotient.toString(),
+        ])
+      } else {
+        // need to transfer whatever we got from the last trade to the first v2 pool
+        planner.addCommand(CommandType.SWEEP, [
+          newRoute.path[0].wrapped.address,
+          (newRoute.pools[0] as Pair).liquidityToken.address,
+          0,
+        ])
+      }
+
       planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
-        route.path.map((pool) => pool.address), // path
+        newRoute.path.map((pool) => pool.address), // path
         isLastSectionInRoute(i) ? options.recipient : NARWHAL_ADDRESS, // recipient
       ])
     }

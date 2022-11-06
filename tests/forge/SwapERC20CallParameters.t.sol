@@ -213,6 +213,54 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertGe(RECIPIENT.balance, startingRecipientBalance + 1 ether);
     }
 
+    function testMixedExactInputNative() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_MIXED_EXACT_INPUT_NATIVE");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(DAI.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(DAI.balanceOf(RECIPIENT), 10000000);
+    }
+
+    function testMixedExactInputNativeV2First() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_MIXED_EXACT_INPUT_NATIVE_V2_FIRST");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(DAI.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(DAI.balanceOf(RECIPIENT), 10000000);
+    }
+
+    function testMixedExactInputNativeV2Only() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_MIXED_EXACT_INPUT_NATIVE_V2_ONLY");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(DAI.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(DAI.balanceOf(RECIPIENT), 10000000);
+    }
+
+    function testMixedExactInputNativeV3Only() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_MIXED_EXACT_INPUT_NATIVE_V3_ONLY");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(DAI.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(DAI.balanceOf(RECIPIENT), 10000000);
+    }
+
     function forkAndDeploy(uint256 forkBlock) private returns (Router _router, Permit2 _permit2) {
         vm.createSelectFork(vm.envString("FORK_URL"), forkBlock);
         vm.startPrank(from);
