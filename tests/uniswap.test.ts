@@ -41,12 +41,7 @@ const WETH_USDC_V3 = makePool(
   JSBI.BigInt('1968793223998213381892723903222886')
 )
 
-const USDC_DAI_V3 = makePool(
-  USDC,
-  DAI,
-  JSBI.BigInt('332156389980718567434966'),
-  JSBI.BigInt('79222186890124025850669')
-)
+const USDC_DAI_V3 = makePool(USDC, DAI, JSBI.BigInt('332156389980718567434966'), JSBI.BigInt('79222186890124025850669'))
 
 // note: these tests aren't testing much but registering calldata to interop file
 // for use in forge fork tests
@@ -276,7 +271,7 @@ describe('Uniswap', () => {
       registerFixture('_UNISWAP_MIXED_EXACT_INPUT_NATIVE_V3_ONLY', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
-  });
+  })
 })
 
 // use some sane defaults
