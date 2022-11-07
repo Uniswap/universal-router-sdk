@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant'
+import JSBI from 'jsbi'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Trade as V2Trade, Pair } from '@uniswap/v2-sdk'
 import { Trade as V3Trade, Pool, encodeRouteToPath } from '@uniswap/v3-sdk'
@@ -16,9 +17,11 @@ import {
   encodeMixedRouteToPath,
   partitionMixedRouteByProtocol,
 } from '@uniswap/router-sdk'
-import { Currency, TradeType, CurrencyAmount } from '@uniswap/sdk-core'
+import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, TradeConfig } from '../Command'
 import { NARWHAL_ADDRESS } from '../../utils/constants'
+
+const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(JSBI.BigInt(50), JSBI.BigInt(100))
 
 interface Swap<TInput extends Currency, TOutput extends Currency> {
   route: IRoute<TInput, TOutput, Pair | Pool>
@@ -109,13 +112,13 @@ export class UniswapTrade implements Command {
         this.options.recipient,
         this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
       ])
-    } else if (this.trade.inputAmount.currency.isNative && this.trade.tradeType === TradeType.EXACT_OUTPUT) {
+    } else if (
+      this.trade.inputAmount.currency.isNative &&
+      (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))
+    ) {
       // for exactOutput swaps that take native currency as input
       // we need to send back the change to the user
-      planner.addCommand(CommandType.UNWRAP_WETH, [
-        this.options.recipient,
-        0,
-      ])
+      planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
     }
   }
 }
@@ -296,4 +299,9 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
       ])
     }
   }
+}
+
+// if price impact is very high, there's a chance of hitting max/min prices resulting in a partial fill of the swap
+function riskOfPartialFill(trade: RouterTrade<Currency, Currency, TradeType>): boolean {
+  return trade.priceImpact.greaterThan(REFUND_ETH_PRICE_IMPACT_THRESHOLD)
 }

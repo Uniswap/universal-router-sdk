@@ -162,7 +162,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_INPUT_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V3_EXACT_INPUT_NATIVE', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 

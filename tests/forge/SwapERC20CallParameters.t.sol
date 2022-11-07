@@ -149,7 +149,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     }
 
     function testV3ExactInputNative() public {
-        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_EXACT_INPUT_ERC20");
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_EXACT_INPUT_NATIVE");
 
         assertEq(from.balance, BALANCE);
         assertEq(DAI.balanceOf(RECIPIENT), 0);

@@ -27,6 +27,7 @@ export abstract class SwapRouter {
     trades: NFTTrade<SupportedProtocolsData>[],
     config: SwapRouterConfig
   ): MethodParameters {
+    invariant(!!config.sender, 'SENDER_REQUIRED')
     let planner = new RoutePlanner()
     let totalPrice = BigNumber.from(0)
 
