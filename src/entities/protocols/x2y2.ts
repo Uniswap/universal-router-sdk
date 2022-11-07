@@ -1,36 +1,31 @@
-import abi from '../../../abis/Foundation.json'
+import abi from '../../../abis/X2Y2.json'
 import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType, TradeConfig } from '../NFTTrade'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { BigNumber, BigNumberish } from 'ethers'
-import { CurrencyAmount, Currency, Ether } from '@uniswap/sdk-core'
-import JSBI from 'jsbi'
 
-export type FoundationData = {
+export type X2Y2Data = {
+  signedInput: string
   recipient: string
   tokenAddress: string
   tokenId: BigNumberish
   price: BigNumberish
-  referrer: string // address
 }
 
-export class FoundationTrade extends NFTTrade<FoundationData> {
+export class X2Y2Trade extends NFTTrade<X2Y2Data> {
   public static INTERFACE: Interface = new Interface(abi)
 
-  constructor(orders: FoundationData[]) {
-    super(Market.Foundation, orders)
+  constructor(orders: X2Y2Data[]) {
+    super(Market.X2Y2, orders)
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
-      const calldata = FoundationTrade.INTERFACE.encodeFunctionData('buyV2', [
-        item.tokenAddress,
-        item.tokenId,
-        item.price,
-        item.referrer,
-      ])
+      const functionSelector = X2Y2Trade.INTERFACE.getSighash(X2Y2Trade.INTERFACE.getFunction('run'))
+      const calldata = functionSelector + item.signedInput.slice(2)
+
       planner.addCommand(
-        CommandType.FOUNDATION,
+        CommandType.X2Y2_721,
         [item.price, calldata, item.recipient, item.tokenAddress, item.tokenId],
         config.allowRevert
       )
