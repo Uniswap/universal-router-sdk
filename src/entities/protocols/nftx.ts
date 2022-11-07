@@ -14,14 +14,7 @@ export type NFTXData = {
   vaultId: BigNumberish
   tokenAddress: string
   tokenIds: BigNumberish[]
-  price: BigNumber
-}
-
-type NFTXVaultPurchase = {
-  recipient: string
-  price: BigNumber
-  vaultAddress: string
-  tokenIds: BigNumberish[]
+  value: BigNumber
 }
 
 export class NFTXTrade extends NFTTrade<NFTXData> {
@@ -40,7 +33,7 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
         [Ether.onChain(1).wrapped.address, order.vaultAddress],
         order.recipient,
       ])
-      planner.addCommand(CommandType.NFTX, [order.price, calldata], config.allowRevert)
+      planner.addCommand(CommandType.NFTX, [order.value, calldata], config.allowRevert)
     }
   }
 
@@ -61,7 +54,7 @@ export class NFTXTrade extends NFTTrade<NFTXData> {
   getTotalPrice(): BigNumberish {
     let total = BigNumber.from(0)
     for (const item of this.orders) {
-      total = total.add(item.price)
+      total = total.add(item.value)
     }
     return total
   }

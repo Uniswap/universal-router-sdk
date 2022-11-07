@@ -148,6 +148,50 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         assertEq(from.balance, balance - params.value);
     }
 
+    function testNFT20BuyItems() public {
+        MethodParameters memory params = readFixture(json, "._NFT20_BUY_ITEM");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 15770228);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        assertEq(address(router), ROUTER_ADDRESS); // to ensure the router address in sdk is correct
+
+        ERC721 token = ERC721(0x6d05064fe99e40F1C3464E7310A23FFADed56E20);
+        uint256 balance = 20583701229648230;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 3);
+        assertEq(from.balance, balance-params.value);
+    }
+
+    function testSudoswapBuyItems() public {
+        MethodParameters memory params = readFixture(json, "._SUDOSWAP_BUY_ITEM");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 15740629);
+        vm.startPrank(from);
+
+        Router router = deployRouterMainnetConfig();
+        assertEq(address(router), ROUTER_ADDRESS); // to ensure the router address in sdk is correct
+
+        ERC721 token = ERC721(0xfA9937555Dc20A020A161232de4D2B109C62Aa9c);
+        uint256 balance = 73337152777777783;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT), 3);
+        assertEq(from.balance, balance-params.value);
+    }
+
     function testPartialFill() public {
         MethodParameters memory params = readFixture(json, "._PARTIAL_FILL");
 
