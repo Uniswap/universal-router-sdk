@@ -6,20 +6,7 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type SeaportData = {
-  parameters: {
-    offerer: string // address
-    offer: OfferItem[]
-    consideration: ConsiderationItem[]
-    orderType: BigNumberish // enum
-    startTime: BigNumberish
-    endTime: BigNumberish
-    zone: string //address
-    zoneHash: string // bytes32
-    salt: BigNumberish
-    conduitKey: string // bytes32,
-    totalOriginalConsiderationItems: BigNumberish
-  }
-  signature: string
+  items: OrderWithZone[],
   recipient: string // address
 }
 
@@ -41,19 +28,30 @@ export type ConsiderationItem = OfferItem & {
 }
 
 export type Order = {
-  parameters: {
-    offerer: string // address,
-    offer: OfferItem[]
-    consideration: ConsiderationItem[]
-    orderType: BigNumberish // enum
-    startTime: BigNumberish
-    endTime: BigNumberish
-    zoneHash: string // bytes32
-    salt: BigNumberish
-    conduitKey: string // bytes32,
-    totalOriginalConsiderationItems: BigNumberish
-  }
+  parameters: OrderParameters
   signature: string
+}
+
+type OrderWithZone = {
+  parameters: OrderParametersWithZone,
+  signature: string
+}
+
+type OrderParameters = {
+  offerer: string // address,
+  offer: OfferItem[]
+  consideration: ConsiderationItem[]
+  orderType: BigNumberish // enum
+  startTime: BigNumberish
+  endTime: BigNumberish
+  zoneHash: string // bytes32
+  salt: BigNumberish
+  conduitKey: string // bytes32,
+  totalOriginalConsiderationItems: BigNumberish
+}
+
+type OrderParametersWithZone = OrderParameters & {
+  zone: string // address
 }
 
 export type AdvancedOrder = Order & {
@@ -71,61 +69,71 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
-    let advancedOrders: AdvancedOrder[] = []
-    let orderFulfillments: FulfillmentComponent[][] = this.orders.map((x, index) => [
-      { orderIndex: index, itemIndex: 0 },
-    ])
-    let considerationFulFillments: FulfillmentComponent[][] = this.getConsiderationFulfillments(this.orders)
+    for (const order of this.orders) {
+      let advancedOrders: AdvancedOrder[] = []
+      let orderFulfillments: FulfillmentComponent[][] = order.items.map((x, index) => [
+        { orderIndex: index, itemIndex: 0 },
+      ])
+      let considerationFulFillments: FulfillmentComponent[][] = this.getConsiderationFulfillments(order.items)
 
-    for (const item of this.orders) {
-      const { advancedOrder } = this.getAdvancedOrderParams(item)
-      advancedOrders.push(advancedOrder)
+      for (const item of order.items) {
+        const { advancedOrder } = this.getAdvancedOrderParams(item)
+        advancedOrders.push(advancedOrder)
+      }
+
+      let calldata: string
+      if (advancedOrders.length == 1) {
+        calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAdvancedOrder', [
+          advancedOrders[0],
+          [],
+          SeaportTrade.OPENSEA_CONDUIT_KEY,
+          order.recipient,
+        ])
+      } else {
+        calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAvailableAdvancedOrders', [
+          advancedOrders,
+          [],
+          orderFulfillments,
+          considerationFulFillments,
+          SeaportTrade.OPENSEA_CONDUIT_KEY,
+          order.recipient,
+          100, // TODO: look into making this a better number
+        ])
+      }
+      planner.addCommand(CommandType.SEAPORT, [this.getTotalPrice().toString(), calldata])
     }
 
-    let calldata: string
-    if (advancedOrders.length == 1) {
-      calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAdvancedOrder', [
-        advancedOrders[0],
-        [],
-        SeaportTrade.OPENSEA_CONDUIT_KEY,
-        this.orders[0].recipient,
-      ])
-    } else {
-      calldata = SeaportTrade.INTERFACE.encodeFunctionData('fulfillAvailableAdvancedOrders', [
-        advancedOrders,
-        [],
-        orderFulfillments,
-        considerationFulFillments,
-        SeaportTrade.OPENSEA_CONDUIT_KEY,
-        this.orders[0].recipient,
-        100,
-      ])
-    }
-    planner.addCommand(CommandType.SEAPORT, [this.getTotalPrice().toString(), calldata])
+
   }
 
   getBuyItems(): BuyItem[] {
     let buyItems: BuyItem[] = []
     for (const order of this.orders) {
-      for (const item of order.parameters.offer) {
-        buyItems.push({
-          tokenAddress: item.token,
-          tokenId: item.identifierOrCriteria,
-          tokenType: TokenType.ERC721,
-        })
+      for (const item of order.items) {
+        for (const offer of item.parameters.offer) {
+          console.log(offer)
+          buyItems.push({
+            tokenAddress: offer.token,
+            tokenId: offer.identifierOrCriteria,
+            tokenType: TokenType.ERC721,
+          })
+        }
       }
     }
     return buyItems
   }
 
   getTotalPrice(): BigNumber {
-    return this.orders.reduce(
-      (prevAmt, order) => prevAmt.add(this.calculateValue(order.parameters.consideration)),
-      BigNumber.from(0)
-    )
+    let totalPrice = BigNumber.from(0)
+    for (const order of this.orders) {
+      for (const item of order.items) {
+        totalPrice = totalPrice.add(this.calculateValue(item.parameters.consideration))
+      }
+    }
+    return totalPrice
   }
 
-  private getConsiderationFulfillments(protocolDatas: SeaportData[]): FulfillmentComponent[][] {
+  private getConsiderationFulfillments(protocolDatas: OrderWithZone[]): FulfillmentComponent[][] {
     let considerationFulfillments: FulfillmentComponent[][] = []
     const considerationRecipients: string[] = []
 
@@ -159,7 +167,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return considerationFulfillments
   }
 
-  private getAdvancedOrderParams(data: SeaportData): { advancedOrder: AdvancedOrder; value: BigNumber } {
+  private getAdvancedOrderParams(data: OrderWithZone): { advancedOrder: AdvancedOrder; value: BigNumber } {
     const advancedOrder = {
       parameters: data.parameters,
       numerator: BigNumber.from('1'),

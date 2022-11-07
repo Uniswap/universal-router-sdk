@@ -208,7 +208,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
 
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
-        assertEq(token.balanceOf(RECIPIENT), 1);
+        assertEq(token.balanceOf(RECIPIENT), 2);
 
         assertEq(from.balance, balance - params.value + failedAmount);
     }
