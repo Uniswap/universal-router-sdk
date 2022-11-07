@@ -109,6 +109,13 @@ export class UniswapTrade implements Command {
         this.options.recipient,
         this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
       ])
+    } else if (this.trade.inputAmount.currency.isNative && this.trade.tradeType === TradeType.EXACT_OUTPUT) {
+      // for exactOutput swaps that take native currency as input
+      // we need to send back the change to the user
+      planner.addCommand(CommandType.UNWRAP_WETH, [
+        this.options.recipient,
+        0,
+      ])
     }
   }
 }

@@ -56,6 +56,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         require(success, "call failed");
         assertLe(from.balance, BALANCE - params.value);
         assertGt(DAI.balanceOf(RECIPIENT), 10000000);
+        assertEq(WETH.balanceOf(address(router)), 0);
+        assertEq(address(router).balance, 0);
     }
 
     function testV2ExactInputSingleERC20() public {
@@ -99,6 +101,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         require(success, "call failed");
         assertLe(from.balance, BALANCE - params.value);
         assertEq(USDC.balanceOf(RECIPIENT), 1000000000);
+        assertEq(WETH.balanceOf(address(router)), 0);
+        assertEq(address(router).balance, 0);
     }
 
     function testV2ExactOutputSingleERC20() public {
