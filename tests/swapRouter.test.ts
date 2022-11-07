@@ -189,14 +189,16 @@ describe('SwapRouter', () => {
   describe('sudoswap', () => {
     // buyItem from block 15770228
     const sudoswapData: SudoswapData = {
-      swaps: [{
-        swapInfo: {
-          pair: '0x339e7004372e04b1d59443f0ddc075efd9d80360',
-          nftIds: [80, 35, 93],
+      swaps: [
+        {
+          swapInfo: {
+            pair: '0x339e7004372e04b1d59443f0ddc075efd9d80360',
+            nftIds: [80, 35, 93],
+          },
+          tokenAddress: '0xfa9937555dc20a020a161232de4d2b109c62aa9c',
+          maxCost: '73337152777777783',
         },
-        tokenAddress: '0xfa9937555dc20a020a161232de4d2b109c62aa9c',
-        maxCost: '73337152777777783'
-      }],
+      ],
       nftRecipient: SAMPLE_ADDR,
       ethRecipient: SAMPLE_ADDR,
       deadline: '2000000000',
