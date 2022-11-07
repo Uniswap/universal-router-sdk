@@ -6,7 +6,7 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type SeaportData = {
-  items: OrderWithZone[],
+  items: OrderWithZone[]
   recipient: string // address
 }
 
@@ -33,7 +33,7 @@ export type Order = {
 }
 
 type OrderWithZone = {
-  parameters: OrderParametersWithZone,
+  parameters: OrderParametersWithZone
   signature: string
 }
 
@@ -102,8 +102,6 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       }
       planner.addCommand(CommandType.SEAPORT, [this.getTotalPrice().toString(), calldata])
     }
-
-
   }
 
   getBuyItems(): BuyItem[] {

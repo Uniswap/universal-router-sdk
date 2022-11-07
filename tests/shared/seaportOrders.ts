@@ -53,9 +53,9 @@ export const seaportData2Covens: SeaportData = {
       },
       signature:
         '0x58073c305ffa6daf8b6279050d9837d88040350a004efe3028fd6cda8aef41cd0819bb209b6ef3b3d6df717180677a3916c15ea669f8251471d3d39ee6abdac31b',
-      },
-      {
-        parameters: {
+    },
+    {
+      parameters: {
         offerer: '0x4fdcd0496f4c2d3629c0741626de74d24a683e50',
         offer: [
           {
@@ -103,7 +103,7 @@ export const seaportData2Covens: SeaportData = {
       },
       signature:
         '0x81237739418cadbfd0875476c1d343550166e7099f0430ad581e98245e03db303480cbfda1e2c9aa6f3663d7f5ab86800b72ddeaaf81998179a651eef627e5f81b',
-    }
+    },
   ],
   recipient: SAMPLE_ADDR,
 }
