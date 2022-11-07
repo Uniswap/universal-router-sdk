@@ -113,7 +113,7 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         Router router = deployRouterMainnetConfig();
         ICryptopunksMarket token = ICryptopunksMarket(0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB);
         uint256 balance = 80 ether;
-        
+
         vm.deal(from, balance);
         assertEq(from.balance, balance);
         assertEq(token.balanceOf(RECIPIENT), 0);
@@ -121,11 +121,11 @@ contract SwapGenieCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT), 1);
-        
+
         assertEq(token.punkIndexToAddress(2976), RECIPIENT);
         assertEq(from.balance, balance - params.value);
     }
-        
+
     function testX2Y2BuyItems() public {
         MethodParameters memory params = readFixture(json, "._X2Y2_BUY_ITEM");
 
