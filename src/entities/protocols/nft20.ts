@@ -6,11 +6,11 @@ import { ethers, BigNumber, BigNumberish } from 'ethers'
 import { CurrencyAmount, Ether } from '@uniswap/sdk-core'
 
 export type NFT20Data = {
-  tokenAddress: string,
-  tokenIds: BigNumberish[],
-  tokenAmounts: BigNumberish[],
-  receipient: string,
-  fee: BigNumberish,
+  tokenAddress: string
+  tokenIds: BigNumberish[]
+  tokenAmounts: BigNumberish[]
+  receipient: string
+  fee: BigNumberish
   isV3: boolean
   value: CurrencyAmount<Currency>
 }
@@ -43,7 +43,6 @@ export class NFT20Trade extends NFTTrade<NFT20Data> {
         buyItems.push({
           tokenAddress: pool.tokenAddress,
           tokenId: tokenId,
-          priceInfo: pool.value,
           tokenType: TokenType.ERC721,
         })
       }
