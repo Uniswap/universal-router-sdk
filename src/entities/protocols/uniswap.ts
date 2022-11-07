@@ -82,7 +82,7 @@ export class UniswapTrade implements Command {
   encode(planner: RoutePlanner, _config: TradeConfig): void {
     let payerIsUser = true
     if (this.trade.inputAmount.currency.isNative) {
-      // TODO: opti if only one pool we can directly send this to the pool
+      // TODO: opti if only one v2 pool we can directly send this to the pool
       planner.addCommand(CommandType.WRAP_ETH, [
         NARWHAL_ADDRESS,
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
