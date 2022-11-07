@@ -8,9 +8,10 @@ import { RoutePlanner } from '../utils/routerCommands'
 import { getNativeCurrencyValue } from '../utils/getNativeCurrencyValue'
 import { Command, TradeConfig } from './Command'
 import { LooksRareData } from './protocols/looksRare'
+import { CryptopunkData } from './protocols/cryptopunk'
 import { X2Y2Data } from './protocols/x2y2'
 
-export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData | X2Y2Data
+export type SupportedProtocolsData = SeaportData | FoundationData | NFTXData | LooksRareData | X2Y2Data | CryptopunkData
 
 export abstract class NFTTrade<T> implements Command {
   readonly orders: T[]
