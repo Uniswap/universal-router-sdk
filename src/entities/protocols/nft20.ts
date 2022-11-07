@@ -9,10 +9,10 @@ export type NFT20Data = {
   tokenAddress: string
   tokenIds: BigNumberish[]
   tokenAmounts: BigNumberish[]
-  receipient: string
+  recipient: string
   fee: BigNumberish
   isV3: boolean
-  value: CurrencyAmount<Currency>
+  value: BigNumberish
 }
 
 export class NFT20Trade extends NFTTrade<NFT20Data> {
@@ -23,7 +23,7 @@ export class NFT20Trade extends NFTTrade<NFT20Data> {
   }
 
   encode(planner: RoutePlanner): void {
-    for (const order in this.orders) {
+    for (const order of this.orders) {
       const calldata = NFT20Trade.INTERFACE.encodeFunctionData('ethForNft', [
         order.tokenAddress,
         order.tokenIds,
@@ -39,7 +39,7 @@ export class NFT20Trade extends NFTTrade<NFT20Data> {
   getBuyItems(): BuyItem[] {
     let buyItems: BuyItem[] = []
     for (const pool of this.orders) {
-      for (const tokenIds of pool.tokenIds) {
+      for (const tokenId of pool.tokenIds) {
         buyItems.push({
           tokenAddress: pool.tokenAddress,
           tokenId: tokenId,
@@ -49,5 +49,13 @@ export class NFT20Trade extends NFTTrade<NFT20Data> {
     }
 
     return buyItems
+  }
+
+  getTotalPrice(): BigNumberish {
+    let total = BigNumber.from(0)
+    for (const item of this.orders) {
+      total = total.add(item.value)
+    }
+    return total
   }
 }
