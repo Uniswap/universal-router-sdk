@@ -254,25 +254,23 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
 
     if (mixedRouteIsAllV3(newRoute)) {
       const path: string = encodeMixedRouteToPath(newRoute)
+      // if output is native we keep tokens in the router for unwrap
+      const recipient = isLastSectionInRoute(i)
+        ? trade.outputAmount.currency.isNative
+          ? NARWHAL_ADDRESS
+          : options.recipient
+        : // send tokens directly to the first v2 pair of the next section
+          // note: because of the partitioning function we can be sure that the next section is v2
+          (sections[i + 1][0] as Pair).liquidityToken.address
 
       planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-        isLastSectionInRoute(i) && !trade.outputAmount.currency.isNative ? options.recipient : NARWHAL_ADDRESS, // recipient
+        recipient,
         i == 0 ? amountIn : 0, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOut
         path, // path
         payerIsUser && i === 0, // payerIsUser
       ])
     } else {
-      if (i !== 0) {
-        // need to transfer whatever we got from the last trade to the first v2 pool
-        // must be explicit as narwhal v2 exactInput doesn't have a CONTRACT_BALANCE flag and we don't know the exact output of the last swap
-        planner.addCommand(CommandType.SWEEP, [
-          newRoute.path[0].wrapped.address,
-          (newRoute.pools[0] as Pair).liquidityToken.address,
-          0,
-        ])
-      }
-
       planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
         i === 0 ? amountIn : 0, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
