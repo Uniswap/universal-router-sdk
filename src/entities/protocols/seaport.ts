@@ -6,7 +6,7 @@ import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 
 export type SeaportData = {
-  items: OrderWithZone[]
+  items: Order[]
   recipient: string // address
 }
 
@@ -32,11 +32,6 @@ export type Order = {
   signature: string
 }
 
-type OrderWithZone = {
-  parameters: OrderParametersWithZone
-  signature: string
-}
-
 type OrderParameters = {
   offerer: string // address,
   offer: OfferItem[]
@@ -45,13 +40,10 @@ type OrderParameters = {
   startTime: BigNumberish
   endTime: BigNumberish
   zoneHash: string // bytes32
+  zone: string // address
   salt: BigNumberish
   conduitKey: string // bytes32,
   totalOriginalConsiderationItems: BigNumberish
-}
-
-type OrderParametersWithZone = OrderParameters & {
-  zone: string // address
 }
 
 export type AdvancedOrder = Order & {
@@ -109,7 +101,6 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     for (const order of this.orders) {
       for (const item of order.items) {
         for (const offer of item.parameters.offer) {
-          console.log(offer)
           buyItems.push({
             tokenAddress: offer.token,
             tokenId: offer.identifierOrCriteria,
@@ -131,7 +122,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return totalPrice
   }
 
-  private getConsiderationFulfillments(protocolDatas: OrderWithZone[]): FulfillmentComponent[][] {
+  private getConsiderationFulfillments(protocolDatas: Order[]): FulfillmentComponent[][] {
     let considerationFulfillments: FulfillmentComponent[][] = []
     const considerationRecipients: string[] = []
 
@@ -165,7 +156,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return considerationFulfillments
   }
 
-  private getAdvancedOrderParams(data: OrderWithZone): { advancedOrder: AdvancedOrder; value: BigNumber } {
+  private getAdvancedOrderParams(data: Order): { advancedOrder: AdvancedOrder; value: BigNumber } {
     const advancedOrder = {
       parameters: data.parameters,
       numerator: BigNumber.from('1'),
