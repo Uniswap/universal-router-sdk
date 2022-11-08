@@ -138,26 +138,13 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
   )
 
   if (tradeType == TradeType.EXACT_INPUT) {
-    // need to explicitly transfer input tokens to the pool as narwhal doesnt handle this for us
-    if (payerIsUser) {
-      planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-        trade.inputAmount.currency.wrapped.address,
-        trade.route.pairs[0].liquidityToken.address,
-        trade.inputAmount.quotient.toString(),
-      ])
-    } else {
-      planner.addCommand(CommandType.TRANSFER, [
-        trade.inputAmount.currency.wrapped.address,
-        trade.route.pairs[0].liquidityToken.address,
-        trade.inputAmount.quotient.toString(),
-      ])
-    }
-
     planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
+      trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
       // if native, we have to unwrap so keep in the router for now
       trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
+      payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
@@ -276,15 +263,9 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         payerIsUser && i === 0, // payerIsUser
       ])
     } else {
-      // need to explicitly transfer input tokens to the pool as narwhal doesnt handle this for us
-      if (payerIsUser && i === 0) {
-        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-          newRoute.path[0].wrapped.address,
-          (newRoute.pools[0] as Pair).liquidityToken.address,
-          trade.inputAmount.quotient.toString(),
-        ])
-      } else {
+      if (i !== 0) {
         // need to transfer whatever we got from the last trade to the first v2 pool
+        // must be explicit as narwhal v2 exactInput doesn't have a CONTRACT_BALANCE flag and we don't know the exact output of the last swap
         planner.addCommand(CommandType.SWEEP, [
           newRoute.path[0].wrapped.address,
           (newRoute.pools[0] as Pair).liquidityToken.address,
@@ -293,9 +274,11 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
       }
 
       planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
+        i === 0 ? amountIn : 0, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
         isLastSectionInRoute(i) && !trade.outputAmount.currency.isNative ? options.recipient : NARWHAL_ADDRESS, // recipient
+        payerIsUser && i === 0,
       ])
     }
   }
