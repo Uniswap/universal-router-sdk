@@ -5,10 +5,10 @@ import { PermitSingle, Permit2Permit } from '../../src/utils/permit2'
 
 const DOMAIN_NAME = 'Permit2'
 
-function domain(): TypedDataDomain {
+function domain(chainId: number): TypedDataDomain {
   return {
     name: DOMAIN_NAME,
-    chainId: 1,
+    chainId,
     verifyingContract: PERMIT2_ADDRESS,
   }
 }
@@ -30,8 +30,8 @@ function permitSingle(): Record<string, TypedDataField[]> {
 }
 
 /// returns signature bytes
-export async function generatePermitSignature(permit: PermitSingle, signer: Wallet): Promise<string> {
-  return await signer._signTypedData(domain(), permitSingle(), permit)
+export async function generatePermitSignature(permit: PermitSingle, signer: Wallet, chainId: number): Promise<string> {
+  return await signer._signTypedData(domain(chainId), permitSingle(), permit)
 }
 
 export function toInputPermit(signature: string, permit: PermitSingle): Permit2Permit {

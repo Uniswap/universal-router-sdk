@@ -62,7 +62,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_INPUT_SINGLE_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V2_1_ETH_FOR_USDC', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -75,7 +75,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_INPUT_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V2_1_ETH_FOR_USDC_2_HOP', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -88,7 +88,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_INPUT_SINGLE_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V2_1000_USDC_FOR_ETH', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -100,10 +100,10 @@ describe('Uniswap', () => {
         TradeType.EXACT_INPUT
       )
       const permit = makePermit(USDC.address, inputUSDC)
-      const signature = await generatePermitSignature(permit, wallet)
+      const signature = await generatePermitSignature(permit, wallet, trade.route.chainId)
       const opts = swapOptions({ inputTokenPermit: toInputPermit(signature, permit) })
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_INPUT_SINGLE_ERC20_PERMIT', methodParameters)
+      registerFixture('_UNISWAP_V2_1000_USDC_FOR_ETH_PERMIT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -116,7 +116,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_INPUT_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V2_10_DAI_FOR_ETH_2_HOP', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -129,7 +129,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_OUTPUT_SINGLE_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V2_ETH_FOR_1000_USDC', methodParameters)
       expect(methodParameters.value).to.not.equal('0')
     })
 
@@ -142,7 +142,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V2_EXACT_OUTPUT_SINGLE_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V2_USDC_FOR_1_ETH', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
   })
@@ -157,7 +157,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V3_1_ETH_FOR_USDC', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -170,7 +170,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V3_1000_USDC_FOR_ETH', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -182,10 +182,10 @@ describe('Uniswap', () => {
         TradeType.EXACT_INPUT
       )
       const permit = makePermit(USDC.address, inputUSDC)
-      const signature = await generatePermitSignature(permit, wallet)
+      const signature = await generatePermitSignature(permit, wallet, trade.swaps[0].route.chainId)
       const opts = swapOptions({ inputTokenPermit: toInputPermit(signature, permit) })
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20_PERMIT', methodParameters)
+      registerFixture('_UNISWAP_V3_1000_USDC_FOR_ETH_PERMIT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -198,7 +198,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_INPUT_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V3_1_ETH_FOR_DAI_2_HOP', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -211,7 +211,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_SINGLE_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V3_ETH_FOR_1000_USDC', methodParameters)
       expect(methodParameters.value).to.not.equal('0')
     })
 
@@ -224,7 +224,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_SINGLE_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V3_USDC_FOR_1_ETH', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -237,7 +237,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_V3_ETH_FOR_1000_DAI_2_HOP', methodParameters)
       expect(methodParameters.value).to.not.equal('0')
     })
 
@@ -250,7 +250,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_V3_EXACT_OUTPUT_ERC20', methodParameters)
+      registerFixture('_UNISWAP_V3_DAI_FOR_1_ETH_2_HOP', methodParameters)
       expect(methodParameters.value).to.equal('0')
     })
   })
@@ -265,7 +265,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_MIXED_EXACT_INPUT_NATIVE', methodParameters)
+      registerFixture('_UNISWAP_MIXED_1_ETH_FOR_DAI', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -278,7 +278,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_MIXED_EXACT_INPUT_NATIVE_V2_FIRST', methodParameters)
+      registerFixture('_UNISWAP_MIXED_1_ETH_FOR_DAI_V2_FIRST', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -291,7 +291,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_MIXED_EXACT_INPUT_NATIVE_V2_ONLY', methodParameters)
+      registerFixture('_UNISWAP_MIXED_1_ETH_FOR_DAI_V2_ONLY', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -304,7 +304,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_MIXED_EXACT_INPUT_NATIVE_V3_ONLY', methodParameters)
+      registerFixture('_UNISWAP_MIXED_1_ETH_FOR_DAI_V3_ONLY', methodParameters)
       expect(methodParameters.value).to.eq(inputEther)
     })
 
@@ -317,7 +317,7 @@ describe('Uniswap', () => {
       )
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
-      registerFixture('_UNISWAP_MIXED_EXACT_INPUT_ERC20', methodParameters)
+      registerFixture('_UNISWAP_MIXED_DAI_FOR_ETH', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
   })
