@@ -15,7 +15,7 @@ import {
 } from '@uniswap/v3-sdk'
 import { SwapOptions } from '../src'
 import { NARWHAL_ADDRESS } from '../src/utils/constants'
-import { PermitSingle } from '../src/utils/permit2';
+import { PermitSingle } from '../src/utils/permit2'
 import { generatePermitSignature, toInputPermit } from './utils/permit2'
 import { CurrencyAmount, TradeType, Ether, Token, Percent } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
@@ -54,7 +54,6 @@ describe('Uniswap', () => {
 
   describe('v2', () => {
     it('encodes a single exactInput ETH->USDC swap', async () => {
-      console.log(await wallet.getAddress());
       const inputEther = utils.parseEther('1').toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], ETHER, USDC),
@@ -172,6 +171,21 @@ describe('Uniswap', () => {
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
       registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
+    it('encodes a single exactInput USDC->ETH swap with permit', async () => {
+      const inputUSDC = utils.parseUnits('1000', 6).toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC_V3], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(USDC, inputUSDC),
+        TradeType.EXACT_INPUT
+      )
+      const permit = makePermit(USDC.address, inputUSDC)
+      const signature = await generatePermitSignature(permit, wallet)
+      const opts = swapOptions({ inputTokenPermit: toInputPermit(signature, permit) })
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20_PERMIT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 

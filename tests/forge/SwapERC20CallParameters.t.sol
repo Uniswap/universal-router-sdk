@@ -26,8 +26,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
     function setUp() public {
         fromPrivateKey = 0x1234;
+        from = vm.addr(fromPrivateKey);
         string memory root = vm.projectRoot();
-        console2.log(from);
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
 
         (router, permit2) = forkAndDeploy(15898000);
@@ -154,6 +154,20 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
         permit2.approve(address(USDC), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        assertEq(USDC.balanceOf(from), BALANCE);
+        uint256 startingRecipientBalance = RECIPIENT.balance;
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(USDC.balanceOf(from), BALANCE - 1000000000);
+        assertGe(RECIPIENT.balance, startingRecipientBalance + 10000000);
+    }
+
+    function testV3ExactInputSingleERC20Permit() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_EXACT_INPUT_SINGLE_ERC20_PERMIT");
+
+        deal(address(USDC), from, BALANCE);
+        USDC.approve(address(permit2), BALANCE);
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 

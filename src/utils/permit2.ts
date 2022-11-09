@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { Token, BigintIsh } from '@uniswap/sdk-core'
 import { CommandType, RoutePlanner } from './routerCommands'
 import { NARWHAL_ADDRESS } from './constants'
-import PERMIT2_COMPILE from '../../out/Permit2.sol/Permit2.json';
+import PERMIT2_COMPILE from '../../out/Permit2.sol/Permit2.json'
 
 export interface Permit2Permit {
   v: 0 | 1 | 27 | 28
@@ -27,10 +27,9 @@ export interface PermitSingle {
   sigDeadline: string
 }
 
+const PERMIT_SIGNATURE = 'permit(address,((address,uint160,uint64,uint32),address,uint256),bytes)'
 
-const PERMIT_SIGNATURE = 'permit(address,((address,uint160,uint64,uint32),address,uint256),bytes)';
-
-const PERMIT2_INTERFACE = new ethers.utils.Interface(PERMIT2_COMPILE.abi);
+const PERMIT2_INTERFACE = new ethers.utils.Interface(PERMIT2_COMPILE.abi)
 
 export function encodePermit(planner: RoutePlanner, permit: Permit2Permit, token: Token): void {
   const signature = ethers.utils.joinSignature({ v: permit.v, r: permit.r, s: permit.s })
@@ -47,8 +46,8 @@ export function encodePermit(planner: RoutePlanner, permit: Permit2Permit, token
       spender: NARWHAL_ADDRESS,
       sigDeadline: permit.sigDeadline,
     },
-    signature
-  ]);
+    signature,
+  ])
 
   planner.addCommand(CommandType.PERMIT, ['0x' + calldata.slice(74)])
 }

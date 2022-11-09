@@ -8,12 +8,11 @@ const DOMAIN_NAME = 'Permit2'
 function domain(): TypedDataDomain {
   return {
     name: DOMAIN_NAME,
-    chainId: 1337,
+    chainId: 1,
     verifyingContract: PERMIT2_ADDRESS,
   }
 }
 
-// PermitSingle(PermitDetails details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint64 expiration,uint32 nonce)"
 function permitSingle(): Record<string, TypedDataField[]> {
   return {
     PermitSingle: [
