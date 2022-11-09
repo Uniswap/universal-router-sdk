@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import JSBI from 'jsbi'
-import { utils } from 'ethers'
+import { ethers, utils, Wallet } from 'ethers'
 import { SwapRouter } from '../src'
-import { SwapOptions, MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
+import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
 import {
   Trade as V3Trade,
@@ -13,6 +13,10 @@ import {
   TICK_SPACINGS,
   FeeAmount,
 } from '@uniswap/v3-sdk'
+import { SwapOptions } from '../src'
+import { NARWHAL_ADDRESS } from '../src/utils/constants'
+import { PermitSingle } from '../src/utils/permit2';
+import { generatePermitSignature, toInputPermit } from './utils/permit2'
 import { CurrencyAmount, TradeType, Ether, Token, Percent } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
 
@@ -46,8 +50,11 @@ const USDC_DAI_V3 = makePool(USDC, DAI, JSBI.BigInt('332156389980718567434966'),
 // note: these tests aren't testing much but registering calldata to interop file
 // for use in forge fork tests
 describe('Uniswap', () => {
+  const wallet = new Wallet(utils.zeroPad('0x1234', 32))
+
   describe('v2', () => {
     it('encodes a single exactInput ETH->USDC swap', async () => {
+      console.log(await wallet.getAddress());
       const inputEther = utils.parseEther('1').toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], ETHER, USDC),
@@ -83,6 +90,21 @@ describe('Uniswap', () => {
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
       registerFixture('_UNISWAP_V2_EXACT_INPUT_SINGLE_ERC20', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
+    it('encodes a single exactInput USDC->ETH swap with permit', async () => {
+      const inputUSDC = utils.parseUnits('1000', 6).toString()
+      const trade = new V2Trade(
+        new RouteV2([WETH_USDC_V2], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(USDC, inputUSDC),
+        TradeType.EXACT_INPUT
+      )
+      const permit = makePermit(USDC.address, inputUSDC)
+      const signature = await generatePermitSignature(permit, wallet)
+      const opts = swapOptions({ inputTokenPermit: toInputPermit(signature, permit) })
+      const methodParameters = SwapRouter.swapERC20CallParameters([trade], opts)
+      registerFixture('_UNISWAP_V2_EXACT_INPUT_SINGLE_ERC20_PERMIT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -293,6 +315,23 @@ function swapOptions(options: Partial<SwapOptions>): SwapOptions {
     slippageTolerance: new Percent(5, 100),
     recipient: RECIPIENT,
   })
+}
+
+function makePermit(
+  token: string,
+  amount: string = ethers.constants.MaxUint256.toString(),
+  nonce: string = '0'
+): PermitSingle {
+  return {
+    details: {
+      token,
+      amount,
+      expiration: Math.floor(new Date().getTime() / 1000 + 1000).toString(),
+      nonce,
+    },
+    spender: NARWHAL_ADDRESS,
+    sigDeadline: Math.floor(new Date().getTime() / 1000 + 1000).toString(),
+  }
 }
 
 function makePool(token0: Token, token1: Token, liquidity: JSBI, sqrtRatioX96: JSBI) {
