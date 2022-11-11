@@ -32,7 +32,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
 
-        (router, permit2) = forkAndDeploy(15942864);
+        (router, permit2) = forkAndDeploy(15942900);
         vm.deal(from, BALANCE);
     }
 
