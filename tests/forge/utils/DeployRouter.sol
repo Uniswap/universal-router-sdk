@@ -26,16 +26,19 @@ contract DeployRouter is Test {
     }
 
     function deployFixtureMainnetConfig() public returns (Router router, Permit2 permit2) {
-        permit2 = new Permit2();
-        router = new Router(
-            address(permit2),
-            address(0), // TODO: update with routerRewardsDistributor
-            address(0), // TODO: update with looksRareRewardsDistributor
-            address(LOOKS_TOKEN),
-            address(V2_FACTORY),
-            address(V3_FACTORY),
-            PAIR_INIT_CODE_HASH,
-            POOL_INIT_CODE_HASH
-        );
+        router = Router(payable(0x5393904db506415D941726f3Cf0404Bb167537A0));
+        permit2 = Permit2(0x6fEe9BeC3B3fc8f9DA5740f0efc6BbE6966cd6A6);
+
+        /* permit2 = new Permit2(); */
+        /* router = new Router( */
+        /*     address(permit2), */
+        /*     address(0), // TODO: update with routerRewardsDistributor */
+        /*     address(0), // TODO: update with looksRareRewardsDistributor */
+        /*     address(LOOKS_TOKEN), */
+        /*     address(V2_FACTORY), */
+        /*     address(V3_FACTORY), */
+        /*     PAIR_INIT_CODE_HASH, */
+        /*     POOL_INIT_CODE_HASH */
+        /* ); */
     }
 }
