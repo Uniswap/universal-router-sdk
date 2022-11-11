@@ -1,7 +1,5 @@
 import { BigNumber } from 'ethers'
 
-// TODO: update with narwhal address when deployed
-// or else we should use placeholder for self recipient as in v3
 export const NARWHAL_ADDRESS = '0x5393904db506415D941726f3Cf0404Bb167537A0'
 export const PERMIT2_ADDRESS = '0x6fEe9BeC3B3fc8f9DA5740f0efc6BbE6966cd6A6'
 
