@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { PermitSingle } from '@uniswap/permit2-sdk';
+import { PermitSingle } from '@uniswap/permit2-sdk'
 import { CommandType, RoutePlanner } from './routerCommands'
 import PERMIT2_COMPILE from '../../out/Permit2.sol/Permit2.json'
 

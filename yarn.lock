@@ -1829,8 +1829,10 @@
   resolved "https://registry.yarnpkg.com/@uniswap/lib/-/lib-4.0.1-alpha.tgz#2881008e55f075344675b3bca93f020b028fbd02"
   integrity sha512-f6UIliwBbRsgVLxIaBANF6w09tYqc6Y/qXdsrbEmXHyFA7ILiKrIwRFXe1yOg8M3cksgVsO9N7yuL2DdCGQKBA==
 
-"@uniswap/narwhal@../narwhal":
-  version "1.0.0-beta.3"
+"@uniswap/narwhal@1.0.0-beta.4":
+  version "1.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@uniswap/narwhal/-/narwhal-1.0.0-beta.4.tgz#811417214fe54608c0dd5e8064f31d6ecac8e591"
+  integrity sha512-p9cArp/cYDciHel7zGRYVRNoLMMjU6ux2W71FLiRwV4AokaQJZFeD2u94JSsiFTtdVUpzIZV3K2dODiGoSv0ZA==
 
 "@uniswap/permit2-sdk@^0.3.0":
   version "0.3.0"
