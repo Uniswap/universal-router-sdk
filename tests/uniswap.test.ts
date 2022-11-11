@@ -45,7 +45,12 @@ const WETH_USDC_V3 = makePool(
   JSBI.BigInt('2230513416205233323282465616270816')
 )
 
-const USDC_DAI_V3 = makePool(USDC, DAI, JSBI.BigInt('2470149530094514024128212'), JSBI.BigInt('79228223163124596104824'))
+const USDC_DAI_V3 = makePool(
+  USDC,
+  DAI,
+  JSBI.BigInt('2470149530094514024128212'),
+  JSBI.BigInt('79228223163124596104824')
+)
 
 // note: these tests aren't testing much but registering calldata to interop file
 // for use in forge fork tests
