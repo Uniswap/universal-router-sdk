@@ -23,8 +23,9 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     address from;
     uint256 fromPrivateKey;
     string json;
-    Router router;
-    Permit2 permit2;
+
+    Router router = Router(payable(0x5393904db506415D941726f3Cf0404Bb167537A0));
+    Permit2 permit2 = Permit2(0x6fEe9BeC3B3fc8f9DA5740f0efc6BbE6966cd6A6);
 
     function setUp() public {
         fromPrivateKey = 0x1234;
@@ -32,7 +33,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
 
-        (router, permit2) = forkAndDeploy(15898000);
+        vm.createSelectFork(vm.envString("FORK_URL"), 15947700);
+        vm.startPrank(from);
         vm.deal(from, BALANCE);
     }
 
@@ -67,7 +69,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
-        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
 
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
@@ -98,7 +100,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
         deal(address(DAI), from, BALANCE);
         DAI.approve(address(permit2), BALANCE);
-        permit2.approve(address(DAI), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        permit2.approve(address(DAI), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
         assertEq(DAI.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 
@@ -127,7 +129,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
-        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
 
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
@@ -155,7 +157,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
-        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 
@@ -208,7 +210,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
-        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint64(block.timestamp + 1000));
+        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 
@@ -236,7 +238,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         uint256 daiAmount = 2000 ether;
         deal(address(DAI), from, daiAmount);
         DAI.approve(address(permit2), daiAmount);
-        permit2.approve(address(DAI), address(router), uint160(daiAmount), uint64(block.timestamp + 1000));
+        permit2.approve(address(DAI), address(router), uint160(daiAmount), uint48(block.timestamp + 1000));
 
         assertEq(DAI.balanceOf(from), daiAmount);
         uint256 startingRecipientBalance = RECIPIENT.balance;
@@ -302,7 +304,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         uint256 daiAmount = 1000 ether;
         deal(address(DAI), from, daiAmount);
         DAI.approve(address(permit2), daiAmount);
-        permit2.approve(address(DAI), address(router), uint160(daiAmount), uint64(block.timestamp + 1000));
+        permit2.approve(address(DAI), address(router), uint160(daiAmount), uint48(block.timestamp + 1000));
         assertEq(DAI.balanceOf(from), daiAmount);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 
@@ -312,9 +314,4 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertGe(RECIPIENT.balance, startingRecipientBalance + 0.1 ether);
     }
 
-    function forkAndDeploy(uint256 forkBlock) private returns (Router _router, Permit2 _permit2) {
-        vm.createSelectFork(vm.envString("FORK_URL"), forkBlock);
-        vm.startPrank(from);
-        (_router, _permit2) = deployFixtureMainnetConfig();
-    }
 }
