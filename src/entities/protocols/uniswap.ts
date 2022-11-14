@@ -89,7 +89,7 @@ export class UniswapTrade implements Command {
   encode(planner: RoutePlanner, _config: TradeConfig): void {
     let payerIsUser = true
     if (this.trade.inputAmount.currency.isNative) {
-      // TODO: opti if only one v2 pool we can directly send this to the pool
+      // TODO: optimize if only one v2 pool we can directly send this to the pool
       planner.addCommand(CommandType.WRAP_ETH, [
         NARWHAL_ADDRESS,
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
@@ -98,16 +98,24 @@ export class UniswapTrade implements Command {
       payerIsUser = false
     }
 
+    // flag for whether we want to perform slippage check on aggregate output of multiple routes
+    //   1. when there are >2 exact input trades. this is only a heuristic,
+    //      as it's still more gas-expensive even in this case, but has benefits
+    //      in that the reversion probability is lower
+    const performAggregatedSlippageCheck = this.trade.tradeType === TradeType.EXACT_INPUT && this.trade.routes.length > 2
+    const outputIsNative = this.trade.outputAmount.currency.isNative
+    const routerMustCustody = performAggregatedSlippageCheck || outputIsNative
+
     for (const swap of this.trade.swaps) {
       switch (swap.route.protocol) {
         case Protocol.V2:
-          addV2Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser)
+          addV2Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
           break
         case Protocol.V3:
-          addV3Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser)
+          addV3Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
           break
         case Protocol.MIXED:
-          addMixedSwap(planner, swap, this.trade.tradeType, this.options, payerIsUser)
+          addMixedSwap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
           break
         default:
           throw new Error('UNSUPPORTED_TRADE_PROTOCOL')
@@ -136,7 +144,8 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean
+  payerIsUser: boolean,
+  routerMustCustody: boolean,
 ): void {
   const trade = new V2Trade(
     route as RouteV2<TInput, TOutput>,
@@ -150,7 +159,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
       // if native, we have to unwrap so keep in the router for now
-      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
       payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
@@ -158,7 +167,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
       payerIsUser,
     ])
   }
@@ -170,7 +179,8 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean
+  payerIsUser: boolean,
+  routerMustCustody: boolean,
 ): void {
   const trade = V3Trade.createUncheckedTrade({
     route: route as RouteV3<TInput, TOutput>,
@@ -182,7 +192,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   const path = encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_OUTPUT)
   if (tradeType == TradeType.EXACT_INPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       path,
@@ -190,7 +200,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
-      trade.outputAmount.currency.isNative ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       path,
@@ -205,16 +215,18 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   swap: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean
+  payerIsUser: boolean,
+  routerMustCustody: boolean,
 ): void {
   const { route, inputAmount, outputAmount } = swap
+  const tradeRecipient = routerMustCustody ? NARWHAL_ADDRESS : options.recipient
 
   // single hop, so it can be reduced to plain v2 or v3 swap logic
   if (route.pools.length === 1) {
     if (route.pools[0] instanceof Pool) {
-      return addV3Swap(planner, swap, tradeType, options, payerIsUser)
+      return addV3Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
     } else if (route.pools[0] instanceof Pair) {
-      return addV2Swap(planner, swap, tradeType, options, payerIsUser)
+      return addV2Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
     } else {
       throw new Error('Invalid route type')
     }
@@ -261,14 +273,10 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
 
     if (mixedRouteIsAllV3(newRoute)) {
       const path: string = encodeMixedRouteToPath(newRoute)
-      // if output is native we keep tokens in the router for unwrap
-      const recipient = isLastSectionInRoute(i)
-        ? trade.outputAmount.currency.isNative
-          ? NARWHAL_ADDRESS
-          : options.recipient
-        : // send tokens directly to the first v2 pair of the next section
-          // note: because of the partitioning function we can be sure that the next section is v2
-          (sections[i + 1][0] as Pair).liquidityToken.address
+
+      // if not last section: send tokens directly to the first v2 pair of the next section
+      // note: because of the partitioning function we can be sure that the next section is v2
+      const recipient = isLastSectionInRoute(i) ? tradeRecipient : (sections[i + 1][0] as Pair).liquidityToken.address
 
       planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
         recipient,
@@ -282,7 +290,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i === 0 ? amountIn : 0, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
-        isLastSectionInRoute(i) && !trade.outputAmount.currency.isNative ? options.recipient : NARWHAL_ADDRESS, // recipient
+        !isLastSectionInRoute(i) || routerMustCustody ? NARWHAL_ADDRESS : options.recipient, // recipient
         payerIsUser && i === 0,
       ])
     }
