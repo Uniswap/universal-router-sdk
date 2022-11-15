@@ -120,7 +120,7 @@ describe('SwapRouter', () => {
       price: x2y2SignedOrder721.price,
       tokenId: x2y2SignedOrder721.token_id,
       tokenAddress: ENS_NFT_ADDR,
-      tokenType: TokenType.ERC721
+      tokenType: TokenType.ERC721,
     }
 
     const x2y2_1155_Data: X2Y2Data = {
@@ -130,7 +130,7 @@ describe('SwapRouter', () => {
       tokenId: x2y2SignedOrder1155.token_id,
       tokenAddress: CAMEO_ADDRESS,
       tokenType: TokenType.ERC1155,
-      tokenAmount: 1
+      tokenAmount: 1,
     }
 
     it('encodes buying one ERC-721 from X2Y2', async () => {

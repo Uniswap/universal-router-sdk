@@ -70,7 +70,7 @@ const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.NFTX]: ['uint256', 'bytes'],
   [CommandType.LOOKS_RARE_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
   [CommandType.LOOKS_RARE_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
-  [CommandType.X2Y2_721]:  ['uint256', 'bytes', 'address', 'address', 'uint256'],
+  [CommandType.X2Y2_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
   [CommandType.X2Y2_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
   [CommandType.FOUNDATION]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
   [CommandType.PAY_PORTION]: ['address', 'address', 'uint256'],
