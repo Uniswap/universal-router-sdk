@@ -19,7 +19,7 @@ import {
 import { Permit2Permit } from '../../utils/permit2'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, TradeConfig } from '../Command'
-import { NARWHAL_ADDRESS, CONTRACT_BALANCE } from '../../utils/constants'
+import { MSG_SENDER, ADDRESS_THIS, CONTRACT_BALANCE } from '../../utils/constants'
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
@@ -45,12 +45,13 @@ export class UniswapTrade implements Command {
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: optimize if only one v2 pool we can directly send this to the pool
       planner.addCommand(CommandType.WRAP_ETH, [
-        NARWHAL_ADDRESS,
+        ADDRESS_THIS,
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
       ])
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
+    this.options.recipient = this.options.recipient ?? MSG_SENDER
 
     // flag for whether we want to perform slippage check on aggregate output of multiple routes
     //   1. when there are >2 exact input trades. this is only a heuristic,
@@ -122,7 +123,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
       // if native, we have to unwrap so keep in the router for now
-      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? ADDRESS_THIS : options.recipient,
       payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
@@ -130,7 +131,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? ADDRESS_THIS : options.recipient,
       payerIsUser,
     ])
   }
@@ -155,7 +156,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   const path = encodeRouteToPath(route as RouteV3<TInput, TOutput>, trade.tradeType === TradeType.EXACT_OUTPUT)
   if (tradeType == TradeType.EXACT_INPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? ADDRESS_THIS : options.recipient,
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       path,
@@ -163,7 +164,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
-      routerMustCustody ? NARWHAL_ADDRESS : options.recipient,
+      routerMustCustody ? ADDRESS_THIS : options.recipient,
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       path,
@@ -182,7 +183,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   routerMustCustody: boolean
 ): void {
   const { route, inputAmount, outputAmount } = swap
-  const tradeRecipient = routerMustCustody ? NARWHAL_ADDRESS : options.recipient
+  const tradeRecipient = routerMustCustody ? ADDRESS_THIS : options.recipient
 
   // single hop, so it can be reduced to plain v2 or v3 swap logic
   if (route.pools.length === 1) {
@@ -253,7 +254,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i === 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
-        !isLastSectionInRoute(i) || routerMustCustody ? NARWHAL_ADDRESS : options.recipient, // recipient
+        !isLastSectionInRoute(i) || routerMustCustody ? ADDRESS_THIS : options.recipient, // recipient
         payerIsUser && i === 0,
       ])
     }
