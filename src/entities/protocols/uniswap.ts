@@ -56,7 +56,8 @@ export class UniswapTrade implements Command {
     //   1. when there are >2 exact input trades. this is only a heuristic,
     //      as it's still more gas-expensive even in this case, but has benefits
     //      in that the reversion probability is lower
-    const performAggregatedSlippageCheck = this.trade.tradeType === TradeType.EXACT_INPUT && this.trade.routes.length > 2
+    const performAggregatedSlippageCheck =
+      this.trade.tradeType === TradeType.EXACT_INPUT && this.trade.routes.length > 2
     const outputIsNative = this.trade.outputAmount.currency.isNative
     const routerMustCustody = performAggregatedSlippageCheck || outputIsNative
 
@@ -80,7 +81,7 @@ export class UniswapTrade implements Command {
       planner.addCommand(CommandType.SWEEP, [
         this.trade.outputAmount.currency.wrapped.address,
         this.options.recipient,
-        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString()
+        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
       ])
     }
 
@@ -107,7 +108,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
   tradeType: TradeType,
   options: SwapOptions,
   payerIsUser: boolean,
-  routerMustCustody: boolean,
+  routerMustCustody: boolean
 ): void {
   const trade = new V2Trade(
     route as RouteV2<TInput, TOutput>,
@@ -142,7 +143,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   tradeType: TradeType,
   options: SwapOptions,
   payerIsUser: boolean,
-  routerMustCustody: boolean,
+  routerMustCustody: boolean
 ): void {
   const trade = V3Trade.createUncheckedTrade({
     route: route as RouteV3<TInput, TOutput>,
@@ -178,7 +179,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   tradeType: TradeType,
   options: SwapOptions,
   payerIsUser: boolean,
-  routerMustCustody: boolean,
+  routerMustCustody: boolean
 ): void {
   const { route, inputAmount, outputAmount } = swap
   const tradeRecipient = routerMustCustody ? NARWHAL_ADDRESS : options.recipient
