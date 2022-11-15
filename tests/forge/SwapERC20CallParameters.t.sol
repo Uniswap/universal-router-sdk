@@ -24,7 +24,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     uint256 fromPrivateKey;
     string json;
 
-    Router router = Router(payable(0x5393904db506415D941726f3Cf0404Bb167537A0));
+    Router router;
     Permit2 permit2 = Permit2(0x6fEe9BeC3B3fc8f9DA5740f0efc6BbE6966cd6A6);
 
     function setUp() public {
@@ -36,6 +36,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         vm.createSelectFork(vm.envString("FORK_URL"), 15947700);
         vm.startPrank(from);
         vm.deal(from, BALANCE);
+        router = deployRouterMainnetConfig();
     }
 
     function testV2ExactInputSingleNative() public {
