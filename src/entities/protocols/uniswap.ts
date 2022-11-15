@@ -122,7 +122,15 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (this.trade.outputAmount.currency.isNative) {
+    if (routerMustCustody && !outputIsNative) {
+      planner.addCommand(CommandType.SWEEP, [
+        this.trade.outputAmount.currency.wrapped.address,
+        this.options.recipient,
+        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString()
+      ])
+    }
+
+    if (outputIsNative) {
       planner.addCommand(CommandType.UNWRAP_WETH, [
         this.options.recipient,
         this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
