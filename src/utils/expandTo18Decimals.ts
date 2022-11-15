@@ -1,6 +1,5 @@
 import { BigNumber } from 'ethers'
 import JSBI from 'jsbi'
-import { BigintIsh, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import bn from 'bignumber.js'
 
 export function expandTo18DecimalsBN(n: number): BigNumber {
