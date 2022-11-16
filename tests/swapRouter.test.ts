@@ -81,7 +81,6 @@ describe('SwapRouter', () => {
     const looksRareOrder721: MakerOrder = looksRareOrders[0]
     const looksRareOrder1155: MakerOrder = looksRareOrders[2]
 
-
     // buyItems from block 15360000
     const makerOrder721: MakerOrder = looksRareOrder721
     const takerOrder721: TakerOrder = {
@@ -96,7 +95,7 @@ describe('SwapRouter', () => {
       makerOrder: makerOrder721,
       takerOrder: takerOrder721,
       recipient,
-      tokenType: TokenType.ERC721
+      tokenType: TokenType.ERC721,
     }
 
     const makerOrder1155: MakerOrder = looksRareOrder1155
@@ -112,7 +111,7 @@ describe('SwapRouter', () => {
       makerOrder: makerOrder1155,
       takerOrder: takerOrder1155,
       recipient,
-      tokenType: TokenType.ERC1155
+      tokenType: TokenType.ERC1155,
     }
 
     it('encodes buying one ERC721 from LooksRare', async () => {

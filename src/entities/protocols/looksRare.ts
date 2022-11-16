@@ -65,7 +65,14 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
       } else if (item.tokenType == TokenType.ERC1155) {
         planner.addCommand(
           CommandType.LOOKS_RARE_1155,
-          [item.makerOrder.price, calldata, item.recipient, item.makerOrder.collection, item.makerOrder.tokenId, item.makerOrder.amount],
+          [
+            item.makerOrder.price,
+            calldata,
+            item.recipient,
+            item.makerOrder.collection,
+            item.makerOrder.tokenId,
+            item.makerOrder.amount,
+          ],
           config.allowRevert
         )
       }
