@@ -5,7 +5,6 @@ import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { BigNumber, BigNumberish } from 'ethers'
 
-
 type X2Y2PartialData = {
   signedInput: string
   recipient: string
@@ -19,7 +18,7 @@ export type X2Y2_721_Data = X2Y2PartialData & {
 }
 
 export type X2Y2_1155_Data = X2Y2PartialData & {
-  tokenType: TokenType.ERC1155,
+  tokenType: TokenType.ERC1155
   tokenAmount: BigNumberish
 }
 
