@@ -55,14 +55,14 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
         item.makerOrder,
       ])
 
-      if (item.tokenType = TokenType.ERC721) {
+      if (item.tokenType == TokenType.ERC721) {
         invariant(item.makerOrder.amount == 1, 'ERC721 token amount must be 1')
         planner.addCommand(
           CommandType.LOOKS_RARE_721,
           [item.makerOrder.price, calldata, item.recipient, item.makerOrder.collection, item.makerOrder.tokenId],
           config.allowRevert
         )
-      } else if (item.tokenType = TokenType.ERC1155) {
+      } else if (item.tokenType == TokenType.ERC1155) {
         planner.addCommand(
           CommandType.LOOKS_RARE_1155,
           [item.makerOrder.price, calldata, item.recipient, item.makerOrder.collection, item.makerOrder.tokenId, item.makerOrder.amount],
@@ -78,7 +78,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
       buyItems.push({
         tokenAddress: item.makerOrder.collection,
         tokenId: item.makerOrder.tokenId,
-        tokenType: TokenType.ERC721,
+        tokenType: item.tokenType,
       })
     }
     return buyItems
