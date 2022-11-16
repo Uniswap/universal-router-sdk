@@ -60,6 +60,7 @@ export class UniswapTrade implements Command {
     const performAggregatedSlippageCheck =
       this.trade.tradeType === TradeType.EXACT_INPUT && this.trade.routes.length > 2
     const outputIsNative = this.trade.outputAmount.currency.isNative
+    const inputIsNative = this.trade.inputAmount.currency.isNative
     const routerMustCustody = performAggregatedSlippageCheck || outputIsNative
 
     for (const swap of this.trade.swaps) {
@@ -78,23 +79,22 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (routerMustCustody && !outputIsNative) {
-      planner.addCommand(CommandType.SWEEP, [
-        this.trade.outputAmount.currency.wrapped.address,
-        this.options.recipient,
-        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
-      ])
+    if (routerMustCustody) {
+      if (outputIsNative) {
+        planner.addCommand(CommandType.UNWRAP_WETH, [
+          this.options.recipient,
+          this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
+        ])
+      } else {
+        planner.addCommand(CommandType.SWEEP, [
+          this.trade.outputAmount.currency.wrapped.address,
+          this.options.recipient,
+          this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
+        ])
+      }
     }
 
-    if (outputIsNative) {
-      planner.addCommand(CommandType.UNWRAP_WETH, [
-        this.options.recipient,
-        this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
-      ])
-    } else if (
-      this.trade.inputAmount.currency.isNative &&
-      (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))
-    ) {
+    if (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))) {
       // for exactOutput swaps that take native currency as input
       // we need to send back the change to the user
       planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
@@ -238,12 +238,10 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
     if (mixedRouteIsAllV3(newRoute)) {
       const path: string = encodeMixedRouteToPath(newRoute)
 
-      // if not last section: send tokens directly to the first v2 pair of the next section
-      // note: because of the partitioning function we can be sure that the next section is v2
-      const recipient = isLastSectionInRoute(i) ? tradeRecipient : (sections[i + 1][0] as Pair).liquidityToken.address
-
       planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-        recipient,
+        // if not last section: send tokens directly to the first v2 pair of the next section
+        // note: because of the partitioning function we can be sure that the next section is v2
+        isLastSectionInRoute(i) ? tradeRecipient : (sections[i + 1][0] as Pair).liquidityToken.address,
         i == 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOut
         path, // path
@@ -254,7 +252,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i === 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
-        !isLastSectionInRoute(i) || routerMustCustody ? ADDRESS_THIS : options.recipient, // recipient
+        isLastSectionInRoute(i) ? tradeRecipient : ADDRESS_THIS, // recipient
         payerIsUser && i === 0,
       ])
     }
