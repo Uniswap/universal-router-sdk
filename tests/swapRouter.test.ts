@@ -95,9 +95,10 @@ describe('SwapRouter', () => {
       makerOrder,
       takerOrder,
       recipient,
+      tokenType: TokenType.ERC721
     }
 
-    it('encodes buying one NFTs from LooksRare', async () => {
+    it('encodes buying one ERC721 from LooksRare', async () => {
       const looksRareTrade = new LooksRareTrade([looksRareData])
       const methodParameters = SwapRouter.swapGenieCallParameters([looksRareTrade], { sender: FORGE_SENDER_ADDRESS })
       registerFixture('_LOOKSRARE_BUY_ITEM', methodParameters)
