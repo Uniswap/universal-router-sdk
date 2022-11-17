@@ -13,6 +13,8 @@ import {
   SeaportData
 } from "@uniswap/universal-router-sdk";
 
+// Each protocol data object contains 1 call to that protocol. Some protocols can fit
+// many NFT purchase within 1 call, like seaport. Others require multiple calls per NFT (like LooksRare).
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
 const seaportTrades = new SeaportTrade([seaportData1])
 
@@ -22,9 +24,16 @@ const { calldata, value} = SwapRouter.swapNFTCallParameters([looksRareTrades, se
 ```
 
 ### Trading ERC20s on Uniswap
+```typescript
+import { TradeType } from '@uniswap/sdk-core'
+import { Trade as V2TradeSDK } from '@uniswap/v2-sdk'
+import { Trade as V3TradeSDK } from '@uniswap/v3-sdk'
+import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 
-
-
+// Use the raw calldata and value returned to call into Universal Swap Router contracts
+const routerTrade = new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_INPUT })
+const { calldata, value } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+```
 
 ## Running this package
 Make sure you are running `node v16`
