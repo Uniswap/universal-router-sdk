@@ -20,7 +20,7 @@ const seaportTrades = new SeaportTrade([seaportData1])
 
 // Use the raw calldata and value returned to call into Universal Swap Router contracts
 // Trades will happen in the order that they are handed in
-const { calldata, value} = SwapRouter.swapNFTCallParameters([looksRareTrades, seaportTrades], { sender: sender.address })
+const { calldata, value } = SwapRouter.swapNFTCallParameters([looksRareTrades, seaportTrades], { sender: sender.address })
 ```
 
 ### Trading ERC20s on Uniswap
@@ -30,9 +30,10 @@ import { Trade as V2TradeSDK } from '@uniswap/v2-sdk'
 import { Trade as V3TradeSDK } from '@uniswap/v3-sdk'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 
-// Use the raw calldata and value returned to call into Universal Swap Router contracts
+const options = { slippageTolerance, recipient }
 const routerTrade = new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_INPUT })
-const { calldata, value } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+// Use the raw calldata and value returned to call into Universal Swap Router contracts
+const { calldata, value } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), options)
 ```
 
 ## Running this package
