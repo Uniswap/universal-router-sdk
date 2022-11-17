@@ -1,17 +1,17 @@
 import { BigNumber } from 'ethers'
 
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
-  switch(chainId) {
+  switch (chainId) {
     case 1:
       return '0x0000000052BE00bA3a005edbE83a0fB9aaDB964C'
     case 137:
-      return '0xcedf31643c19f57b59608fae04202658310a895b'
+      return '0x0Fe79af880457F544a8751B9360FfbB3D99fC60a'
     case 10:
-      return '0x7166e00AbfaaB56Ca83b0025a9157FeBb01D31b3'
+      return '0xFcCF1af487bE1A1bB663a61334AE0C4C93bbCE21'
     case 42161:
-      return '0xb36D7488EF109153679C1785aCcD1314549313E5'
+      return '0x901712919bCDC37AA92E4AfC227d4a2D20621BB2'
     case 42220:
-      return '0x2711385d4d6BfEd6B3EC06CeE352056a27A3B753'
+      return '0x17858afB362e9f8c327D90Cf558fa9518b20aE0C'
     default:
       throw new Error(`Universal Router not deployed on chain ${chainId}`)
   }
