@@ -318,7 +318,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     function testTwoRoutesExactInputETHtoUSDC() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_SPLIT_TWO_ROUTES_ETH_TO_USDC");
 
-        uint256 eth = 2 ether;
         assertEq(from.balance, BALANCE);
         assertEq(USDC.balanceOf(RECIPIENT), 0);
 
@@ -333,7 +332,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     function testThreeRoutesExactInputETHtoUSDC() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_SPLIT_THREE_ROUTES_ETH_TO_USDC");
 
-        uint256 eth = 2 ether;
         assertEq(from.balance, BALANCE);
         assertEq(USDC.balanceOf(RECIPIENT), 0);
 
