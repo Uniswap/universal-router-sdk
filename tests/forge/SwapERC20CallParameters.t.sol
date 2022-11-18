@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {Test, stdJson, console2} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
-import {Router} from "universal-router/Router.sol";
+import {UniversalRouter} from "universal-router/UniversalRouter.sol";
 import {Permit2} from "permit2/src/Permit2.sol";
 import {DeployRouter} from "./utils/DeployRouter.sol";
 import {MethodParameters, Interop} from "./utils/Interop.sol";
@@ -24,7 +24,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     uint256 fromPrivateKey;
     string json;
 
-    Router router;
+    UniversalRouter router;
     Permit2 permit2;
 
     function setUp() public {
