@@ -39,7 +39,7 @@ describe('Uniswap', () => {
 
     WETH_USDC_V3 = await getPool(WETH, USDC, FEE_AMOUNT, FORK_BLOCK)
     WETH_USDC_V3_LOW_FEE = await getPool(WETH, USDC, FeeAmount.LOW, FORK_BLOCK)
-    USDC_DAI_V3 = await getPool(USDC, DAI, FEE_AMOUNT, FORK_BLOCK)
+    USDC_DAI_V3 = await getPool(DAI, USDC, FeeAmount.LOW, FORK_BLOCK)
   })
 
   describe('v2', () => {
