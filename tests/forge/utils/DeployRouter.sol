@@ -34,10 +34,9 @@ contract DeployRouter is Test {
     function deployFixtureMainnetConfig() public returns (UniversalRouter router, Permit2 permit2) {
         try vm.envBool("USE_MAINNET_DEPLOYMENT") returns (bool useMainnet) {
             if (useMainnet) return useMainnetDeployment();
-        } catch {
-            permit2 = new Permit2();
-            router = deployRouter(address(permit2));
-        }
+        } catch {}
+        permit2 = new Permit2();
+        router = deployRouter(address(permit2));
     }
 
     function deployRouter(address permit2) public returns (UniversalRouter router) {

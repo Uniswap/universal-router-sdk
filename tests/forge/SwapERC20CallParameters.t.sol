@@ -168,7 +168,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertGe(RECIPIENT.balance, startingRecipientBalance + 0.1 ether);
     }
 
-    function testV3ExactInputSingleERC20Permit() public {
+    function testV3ExactInputSingleERC20WithPermit() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_V3_1000_USDC_FOR_ETH_PERMIT");
 
         deal(address(USDC), from, BALANCE);
