@@ -5,19 +5,14 @@ import { expandTo18Decimals } from '../src/utils/expandTo18Decimals'
 import { SwapRouter } from '../src'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
-import {
-  Trade as V3Trade,
-  Route as RouteV3,
-  Pool,
-  FeeAmount,
-} from '@uniswap/v3-sdk'
+import { Trade as V3Trade, Route as RouteV3, Pool, FeeAmount } from '@uniswap/v3-sdk'
 import { SwapOptions } from '../src'
 import { PermitSingle } from '@uniswap/permit2-sdk'
 import { generatePermitSignature, toInputPermit } from './utils/permit2'
 import { ROUTER_ADDRESS } from './utils/addresses'
 import { CurrencyAmount, TradeType, Ether, Token, Percent, Currency } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
-import { getPair, getPool } from './utils/uniswapData';
+import { getPair, getPool } from './utils/uniswapData'
 
 const ETHER = Ether.onChain(1)
 const RECIPIENT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -25,7 +20,7 @@ const WETH = new Token(1, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', 18, 'WET
 const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'dai')
 const USDC = new Token(1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6, 'USDC', 'USD Coin')
 const FEE_AMOUNT = FeeAmount.MEDIUM
-const FORK_BLOCK = 15947700;
+const FORK_BLOCK = 15947700
 
 // live values from the fork block
 // note: these tests aren't testing much but registering calldata to interop file
@@ -38,16 +33,14 @@ describe('Uniswap', () => {
   let WETH_USDC_V3_LOW_FEE: Pool
   let USDC_DAI_V3: Pool
 
-
   before(async () => {
-    WETH_USDC_V2 = await getPair(WETH, USDC, FORK_BLOCK);
-    USDC_DAI_V2 = await getPair(USDC, DAI, FORK_BLOCK);
+    WETH_USDC_V2 = await getPair(WETH, USDC, FORK_BLOCK)
+    USDC_DAI_V2 = await getPair(USDC, DAI, FORK_BLOCK)
 
-    WETH_USDC_V3 = await getPool(WETH, USDC, FEE_AMOUNT, FORK_BLOCK);
-    WETH_USDC_V3_LOW_FEE = await getPool(WETH, USDC, FeeAmount.LOW, FORK_BLOCK);
-    USDC_DAI_V3 = await getPool(USDC, DAI, FEE_AMOUNT, FORK_BLOCK);
-  });
-
+    WETH_USDC_V3 = await getPool(WETH, USDC, FEE_AMOUNT, FORK_BLOCK)
+    WETH_USDC_V3_LOW_FEE = await getPool(WETH, USDC, FeeAmount.LOW, FORK_BLOCK)
+    USDC_DAI_V3 = await getPool(USDC, DAI, FEE_AMOUNT, FORK_BLOCK)
+  })
 
   describe('v2', () => {
     it('encodes a single exactInput ETH->USDC swap', async () => {
