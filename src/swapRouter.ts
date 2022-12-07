@@ -19,6 +19,21 @@ export type SwapRouterConfig = {
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
 
+  public static swapCallParameters(
+    trades: (NFTTrade<SupportedProtocolsData> | RouterTrade<Currency, Currency, TradeType>)[],
+    config: SwapRouterConfig
+  ): MethodParameters {
+    console.log('compiles')
+    for (const trade of trades) {
+      if (trade instanceof NFTTrade) {
+        console.log('NFT trade')
+      } else if (trade instanceof RouterTrade) {
+        console.log('routerTrade')
+      }
+    }
+    return { calldata: '', value: '' }
+  }
+
   /**
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given swap.
    * @param trades to produce call parameters for
@@ -49,27 +64,26 @@ export abstract class SwapRouter {
    */
   public static swapERC20CallParameters(
     trades: RouterTrade<Currency, Currency, TradeType>,
-    options: SwapOptions
+    swapOptions: SwapOptions,
+    routerConfig: SwapRouterConfig = {}
   ): MethodParameters {
-    // TODO: use permit if signature included in options
+    // TODO: use permit if signature included in swapOptions
     const planner = new RoutePlanner()
 
-    const trade: UniswapTrade = new UniswapTrade(trades, options)
+    const trade: UniswapTrade = new UniswapTrade(trades, swapOptions)
 
     const inputCurrency = trade.trade.inputAmount.currency
-    invariant(!(inputCurrency.isNative && !!options.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
-    if (options.inputTokenPermit && inputCurrency instanceof Token) {
-      encodePermit(planner, options.inputTokenPermit)
+    invariant(!(inputCurrency.isNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
+    if (swapOptions.inputTokenPermit && inputCurrency instanceof Token) {
+      encodePermit(planner, swapOptions.inputTokenPermit)
     }
 
     const nativeCurrencyValue = inputCurrency.isNative
-      ? BigNumber.from(trade.trade.maximumAmountIn(options.slippageTolerance).quotient.toString())
+      ? BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance).quotient.toString())
       : BigNumber.from(0)
 
     trade.encode(planner, { allowRevert: false })
-    return SwapRouter.encodePlan(planner, nativeCurrencyValue, {
-      deadline: options.deadlineOrPreviousBlockhash ? BigNumber.from(options.deadlineOrPreviousBlockhash) : undefined,
-    })
+    return SwapRouter.encodePlan(planner, nativeCurrencyValue, routerConfig)
   }
 
   /**

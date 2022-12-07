@@ -23,7 +23,7 @@ import { MSG_SENDER, ADDRESS_THIS, CONTRACT_BALANCE } from '../../utils/constant
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
-export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
+export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit' | 'deadlineOrPreviousBlockhash'> & {
   inputTokenPermit?: Permit2Permit
 }
 
