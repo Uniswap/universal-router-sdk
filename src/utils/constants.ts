@@ -4,6 +4,8 @@ export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
   switch (chainId) {
     case 1:
       return '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B'
+    case 5:
+      return '0x5302086A3a25d473aAbBd0356eFf8Dd811a4d89B'
     case 137:
       return '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5'
     case 10:
