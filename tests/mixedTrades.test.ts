@@ -15,13 +15,12 @@ import {
   TICK_SPACINGS,
   FeeAmount,
 } from '@uniswap/v3-sdk'
-import { SwapOptions } from '../src'
+import { UniswapTrade } from '../src'
 import { PermitSingle } from '@uniswap/permit2-sdk'
 import { generatePermitSignature, toInputPermit } from './utils/permit2'
 import { ROUTER_ADDRESS } from './utils/addresses'
 import { CurrencyAmount, TradeType, Ether, Token, Percent, Currency } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
-
 import {
   buildTrade,
   makePermit,
@@ -45,7 +44,7 @@ const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 // this is the address forge is deploying the router to
 const ROUTER_ADDR = '0x4a873bdd49f7f9cc0a5458416a12973fab208f8d'
 
-describe('Uniswap', () => {
+describe.only('Uniswap', () => {
   describe('erc20 --> nft', async () => {
     const foundationData: FoundationData = {
       referrer: '0x459e213D8B5E79d706aB22b945e3aF983d51BC4C',
@@ -56,16 +55,20 @@ describe('Uniswap', () => {
     }
 
     it('encodes a mixed exactInput v3ETH->v2USDC->DAI swap', async () => {
-      const inputEther = utils.parseEther('1').toString()
-      const erc20trade = buildTrade([await MixedRouteTrade.fromRoute(
-        new MixedRouteSDK([WETH_USDC_V3, USDC_DAI_V2], ETHER, DAI),
-        CurrencyAmount.fromRawAmount(ETHER, inputEther),
-        TradeType.EXACT_INPUT
+      const outputEther = foundationData.price.toString()
+      const erc20Trade = buildTrade([await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC_V3], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(ETHER, outputEther),
+        TradeType.EXACT_OUTPUT
       )])
       const opts = swapOptions({})
-      const methodParameters = SwapRouter.swapERC20CallParameters(erc20trade, opts)
-      registerFixture('_UNISWAP_MIXED_1_ETH_FOR_DAI', methodParameters)
-      expect(methodParameters.value).to.eq(inputEther)
+      const uniswapTrade = new UniswapTrade(erc20Trade, opts)
+      const foundationTrade = new FoundationTrade([foundationData])
+
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, foundationTrade], { sender: FORGE_SENDER_ADDRESS })
+      registerFixture('_ERC20_FOR_FOUNDATION_NFT', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+      console.log(methodParameters)
     })
 
     it('encodes a single foundation trade', async () => {

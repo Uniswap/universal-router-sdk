@@ -20,18 +20,30 @@ export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
 
   public static swapCallParameters(
-    trades: (NFTTrade<SupportedProtocolsData> | RouterTrade<Currency, Currency, TradeType>)[],
+    trades: (NFTTrade<SupportedProtocolsData> | UniswapTrade)[],
     config: SwapRouterConfig
   ): MethodParameters {
-    console.log('compiles')
+    const planner = new RoutePlanner()
+    let totalNativeValue = BigNumber.from(0)
+
     for (const trade of trades) {
       if (trade instanceof NFTTrade) {
-        console.log('NFT trade')
-      } else if (trade instanceof RouterTrade) {
-        console.log('routerTrade')
+        trade.encode(planner, { allowRevert })
+        totalPrice = totalPrice.add(trade.getTotalPrice())
+      } else if (trade instanceof UniswapTrade) {
+        const inputCurrency = trade.trade.inputAmount.currency
+        const swapOptions = trade.options
+
+        invariant(!(inputCurrency.isNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
+        if (swapOptions.inputTokenPermit && inputCurrency instanceof Token) {
+          encodePermit(planner, swapOptions.inputTokenPermit)
+        } else if (inputCurrency.isNative) {
+          totalNativeValue = totalNativeValue.add(BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance)))
+        }
+        trade.encode(planner, { allowRevert: false })
       }
     }
-    return { calldata: '', value: '' }
+    return SwapRouter.encodePlan(planner, totalNativeValue, config)
   }
 
   /**
@@ -74,6 +86,7 @@ export abstract class SwapRouter {
 
     const inputCurrency = trade.trade.inputAmount.currency
     invariant(!(inputCurrency.isNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
+
     if (swapOptions.inputTokenPermit && inputCurrency instanceof Token) {
       encodePermit(planner, swapOptions.inputTokenPermit)
     }
