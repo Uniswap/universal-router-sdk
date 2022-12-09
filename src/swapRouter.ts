@@ -9,7 +9,7 @@ import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
-import { ETH_ADDRESS } from './utils/constants'
+import { ADDRESS_THIS, ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
   sender?: string // address
@@ -24,26 +24,49 @@ export abstract class SwapRouter {
     config: SwapRouterConfig
   ): MethodParameters {
     const planner = new RoutePlanner()
-    let totalNativeValue = BigNumber.from(0)
+    let currentNativeValueInRouter = BigNumber.from(0)
+    let transactionValue = BigNumber.from(0)
 
     for (const trade of trades) {
+
       if (trade instanceof NFTTrade) {
-        trade.encode(planner, { allowRevert })
-        totalPrice = totalPrice.add(trade.getTotalPrice())
+        // TODO: allow revert only for multiple nfts
+        trade.encode(planner, { allowRevert: true })
+        const tradePrice = trade.getTotalPrice()
+
+        // send enough native value to contract for NFT purchase
+        if (currentNativeValueInRouter.lt(tradePrice)) {
+          transactionValue = transactionValue.add(tradePrice.sub(currentNativeValueInRouter))
+        }
+
       } else if (trade instanceof UniswapTrade) {
-        const inputCurrency = trade.trade.inputAmount.currency
+        const inputIsNative = trade.trade.inputAmount.currency.isNative
+        const outputIsNative = trade.trade.outputAmount.currency.isNative
         const swapOptions = trade.options
 
-        invariant(!(inputCurrency.isNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
-        if (swapOptions.inputTokenPermit && inputCurrency instanceof Token) {
+        invariant(!(inputIsNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
+
+        if (!!swapOptions.inputTokenPermit) {
           encodePermit(planner, swapOptions.inputTokenPermit)
-        } else if (inputCurrency.isNative) {
-          totalNativeValue = totalNativeValue.add(BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance)))
         }
+
+        if (inputIsNative) {
+          transactionValue = transactionValue.add(
+            BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance).quotient.toString())
+          )
+        }
+
+        // track amount of native currency in the router
+        if (outputIsNative && swapOptions.recipient == ADDRESS_THIS) {
+          currentNativeValueInRouter = currentNativeValueInRouter.add(
+            BigNumber.from(trade.trade.minimumAmountOut(swapOptions.slippageTolerance).quotient.toString())
+          )
+        }
+
         trade.encode(planner, { allowRevert: false })
       }
     }
-    return SwapRouter.encodePlan(planner, totalNativeValue, config)
+    return SwapRouter.encodePlan(planner, transactionValue, config)
   }
 
   /**
@@ -87,7 +110,7 @@ export abstract class SwapRouter {
     const inputCurrency = trade.trade.inputAmount.currency
     invariant(!(inputCurrency.isNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
 
-    if (swapOptions.inputTokenPermit && inputCurrency instanceof Token) {
+    if (swapOptions.inputTokenPermit) {
       encodePermit(planner, swapOptions.inputTokenPermit)
     }
 

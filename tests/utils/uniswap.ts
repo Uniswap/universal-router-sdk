@@ -96,10 +96,13 @@ export function buildTrade(
 
 // use some sane defaults
 export function swapOptions(options: Partial<SwapOptions>): SwapOptions {
-  return Object.assign(options, {
-    slippageTolerance: new Percent(5, 100),
-    recipient: RECIPIENT,
-  })
+  return Object.assign(
+    {
+      slippageTolerance: new Percent(5, 100),
+      recipient: RECIPIENT,
+    },
+    options
+  )
 }
 
 export function makePermit(

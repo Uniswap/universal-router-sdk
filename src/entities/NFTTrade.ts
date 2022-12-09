@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { BigNumberish } from 'ethers'
+import { BigNumber, BigNumberish } from 'ethers'
 import { SeaportData } from './protocols/seaport'
 import { FoundationData } from './protocols/foundation'
 import { NFTXData } from './protocols/nftx'
@@ -35,7 +35,7 @@ export abstract class NFTTrade<T> implements Command {
 
   abstract getBuyItems(): BuyItem[]
 
-  abstract getTotalPrice(): BigNumberish
+  abstract getTotalPrice(): BigNumber
 }
 
 export type BuyItem = {

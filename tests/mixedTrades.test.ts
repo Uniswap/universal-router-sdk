@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import JSBI from 'jsbi'
 import { ethers, utils, Wallet } from 'ethers'
 import { expandTo18Decimals, expandTo18DecimalsBN } from '../src/utils/expandTo18Decimals'
-import { SwapRouter } from '../src'
+import { SwapRouter, ADDRESS_THIS } from '../src'
 import { FoundationTrade, FoundationData } from '../src/entities/protocols/foundation'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
@@ -44,7 +44,7 @@ const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 // this is the address forge is deploying the router to
 const ROUTER_ADDR = '0x4a873bdd49f7f9cc0a5458416a12973fab208f8d'
 
-describe.only('Uniswap', () => {
+describe('SwapRouter.swapCallParameters', () => {
   describe('erc20 --> nft', async () => {
     const foundationData: FoundationData = {
       referrer: '0x459e213D8B5E79d706aB22b945e3aF983d51BC4C',
@@ -54,21 +54,40 @@ describe.only('Uniswap', () => {
       recipient: SAMPLE_ADDR,
     }
 
-    it('encodes a mixed exactInput v3ETH->v2USDC->DAI swap', async () => {
+    it('encodes a mixed exactInput ETH->v2USDC->DAI->Foundation NFT', async () => {
       const outputEther = foundationData.price.toString()
-      const erc20Trade = buildTrade([await V3Trade.fromRoute(
-        new RouteV3([WETH_USDC_V3], USDC, ETHER),
-        CurrencyAmount.fromRawAmount(ETHER, outputEther),
-        TradeType.EXACT_OUTPUT
-      )])
-      const opts = swapOptions({})
+      const erc20Trade = buildTrade([
+        await V3Trade.fromRoute(
+          new RouteV3([WETH_USDC_V3], USDC, ETHER),
+          CurrencyAmount.fromRawAmount(ETHER, outputEther),
+          TradeType.EXACT_OUTPUT
+        ),
+      ])
+      const opts = swapOptions({ recipient: ADDRESS_THIS })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const foundationTrade = new FoundationTrade([foundationData])
 
-      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, foundationTrade], { sender: FORGE_SENDER_ADDRESS })
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, foundationTrade], {
+        sender: FORGE_SENDER_ADDRESS,
+      })
       registerFixture('_ERC20_FOR_FOUNDATION_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
-      console.log(methodParameters)
+    })
+
+    it('encodes a single exactInput ETH->USDC swap', async () => {
+      const inputEther = utils.parseEther('1').toString()
+      const erc20Trade = buildTrade([
+        new V2Trade(
+          new RouteV2([WETH_USDC_V2], ETHER, USDC),
+          CurrencyAmount.fromRawAmount(ETHER, inputEther),
+          TradeType.EXACT_INPUT
+        ),
+      ])
+      const opts = swapOptions({})
+      const uniswapTrade = new UniswapTrade(erc20Trade, opts)
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade], { sender: FORGE_SENDER_ADDRESS })
+      registerFixture('_UNISWAP_V2_1_ETH_FOR_USDC', methodParameters)
+      expect(methodParameters.value).to.eq(inputEther)
     })
 
     it('encodes a single foundation trade', async () => {
