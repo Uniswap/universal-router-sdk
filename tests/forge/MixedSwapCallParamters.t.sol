@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import {Test, stdJson, console2} from "forge-std/Test.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC721} from "solmate/tokens/ERC721.sol";
 import {UniversalRouter} from "universal-router/UniversalRouter.sol";
 import {Permit2} from "permit2/src/Permit2.sol";
 import {DeployRouter} from "./utils/DeployRouter.sol";
@@ -40,7 +41,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     }
 
     function testV3ERC20ForFoundationNFT() public {
-        MethodParameters memory params = readFixture(json, "._ERC20_FOR_FOUNDATION_NFT");
+        MethodParameters memory params = readFixture(json, "._ERC20_FOR_1_FOUNDATION_NFT");
+        ERC721 nft = ERC721(0xEf96021Af16BD04918b0d87cE045d7984ad6c38c);
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
@@ -53,5 +55,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         require(success, "call failed");
         assertLe(USDC.balanceOf(from), balanceOfBefore);
         assertGe(RECIPIENT.balance, startingRecipientBalance + 0.01 ether);
+        assertEq(nft.balanceOf(RECIPIENT), 1);
     }
 }

@@ -54,7 +54,7 @@ describe('SwapRouter.swapCallParameters', () => {
       recipient: SAMPLE_ADDR,
     }
 
-    it('encodes a mixed exactInput ETH->v2USDC->DAI->Foundation NFT', async () => {
+    it('erc20 -> 1 foundation nft', async () => {
       const outputEther = foundationData.price.toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
@@ -70,7 +70,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, foundationTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_FOUNDATION_NFT', methodParameters)
+      registerFixture('_ERC20_FOR_1_FOUNDATION_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
