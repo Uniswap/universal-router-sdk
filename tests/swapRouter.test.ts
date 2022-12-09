@@ -31,6 +31,22 @@ function calculateSeaportValue(considerations: ConsiderationItem[]): BigNumber {
 }
 
 describe('SwapRouter', () => {
+  describe('#swapNFTCallParameters', () => {
+    it('returns hex number value in Method Parameters', async () => {
+      const foundationData: FoundationData = {
+        referrer: '0x459e213D8B5E79d706aB22b945e3aF983d51BC4C',
+        tokenAddress: '0xEf96021Af16BD04918b0d87cE045d7984ad6c38c',
+        tokenId: 32,
+        price: expandTo18DecimalsBN(0.01),
+        recipient: SAMPLE_ADDR,
+      }
+
+      const foundationTrade = new FoundationTrade([foundationData])
+      const methodParameters = SwapRouter.swapNFTCallParameters([foundationTrade], { sender: FORGE_SENDER_ADDRESS })
+      expect(methodParameters.value).to.eq('0x2386f26fc10000')
+    })
+  })
+
   describe('Foundation', () => {
     // buyItem from block 15725945
     const foundationData: FoundationData = {
