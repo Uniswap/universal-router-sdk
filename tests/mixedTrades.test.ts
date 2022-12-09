@@ -41,16 +41,6 @@ const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const ROUTER_ADDR = '0x4a873bdd49f7f9cc0a5458416a12973fab208f8d'
 
 describe('SwapRouter.swapCallParameters', () => {
-  let WETH_USDC_V2: Pair
-  let USDC_DAI_V2: Pair
-  let WETH_USDC_V3: Pool
-  let WETH_USDC_V3_LOW_FEE: Pool
-  let USDC_DAI_V3: Pool
-
-  before(async () => {
-    ;({ WETH_USDC_V2, USDC_DAI_V2, WETH_USDC_V3, USDC_DAI_V3, WETH_USDC_V3_LOW_FEE } = await getUniswapPools())
-  })
-
   describe('erc20 --> nft', async () => {
     const foundationData: FoundationData = {
       referrer: '0x459e213D8B5E79d706aB22b945e3aF983d51BC4C',
@@ -61,6 +51,7 @@ describe('SwapRouter.swapCallParameters', () => {
     }
 
     it('erc20 -> 1 foundation nft', async () => {
+      const { WETH_USDC_V3 } = await getUniswapPools(15725945)
       const outputEther = foundationData.price.toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
@@ -81,6 +72,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('encodes a single exactInput ETH->USDC swap', async () => {
+      const { WETH_USDC_V2 } = await getUniswapPools()
       const inputEther = utils.parseEther('1').toString()
       const erc20Trade = buildTrade([
         new V2Trade(

@@ -24,25 +24,26 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     address from;
     uint256 fromPrivateKey;
     string json;
-
-    UniversalRouter router;
     Permit2 permit2;
+    UniversalRouter router;
 
     function setUp() public {
         fromPrivateKey = 0x1234;
         from = vm.addr(fromPrivateKey);
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
-
-        vm.createSelectFork(vm.envString("FORK_URL"), 15947700);
-        vm.startPrank(from);
         (router, permit2) = deployFixtureMainnetConfig();
         vm.deal(from, BALANCE);
     }
 
     function testV3ERC20ForFoundationNFT() public {
         MethodParameters memory params = readFixture(json, "._ERC20_FOR_1_FOUNDATION_NFT");
+
         ERC721 nft = ERC721(0xEf96021Af16BD04918b0d87cE045d7984ad6c38c);
+        vm.createSelectFork(vm.envString("FORK_URL"), 15725945);
+        vm.startPrank(from);
+
+        (router, permit2) = deployFixtureMainnetConfig();
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
@@ -54,7 +55,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertLe(USDC.balanceOf(from), balanceOfBefore);
-        assertGe(RECIPIENT.balance, startingRecipientBalance + 0.01 ether);
         assertEq(nft.balanceOf(RECIPIENT), 1);
     }
 }
