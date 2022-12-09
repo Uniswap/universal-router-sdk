@@ -71,6 +71,27 @@ describe('SwapRouter.swapCallParameters', () => {
       expect(methodParameters.value).to.eq('0')
     })
 
+    it('erc20 -> 1 foundation nft & 1 looksrare nft', async () => {
+      const { WETH_USDC_V3 } = await getUniswapPools(15725945)
+      const outputEther = foundationData.price.toString()
+      const erc20Trade = buildTrade([
+        await V3Trade.fromRoute(
+          new RouteV3([WETH_USDC_V3], USDC, ETHER),
+          CurrencyAmount.fromRawAmount(ETHER, outputEther),
+          TradeType.EXACT_OUTPUT
+        ),
+      ])
+      const opts = swapOptions({ recipient: ADDRESS_THIS })
+      const uniswapTrade = new UniswapTrade(erc20Trade, opts)
+      const foundationTrade = new FoundationTrade([foundationData])
+
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, foundationTrade], {
+        sender: FORGE_SENDER_ADDRESS,
+      })
+      registerFixture('_ERC20_FOR_1_FOUNDATION_NFT', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
     it('encodes a single exactInput ETH->USDC swap', async () => {
       const { WETH_USDC_V2 } = await getUniswapPools()
       const inputEther = utils.parseEther('1').toString()
