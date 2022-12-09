@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Test, stdJson, console2} from "forge-std/Test.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {UniversalRouter} from "universal-router/UniversalRouter.sol";
 import {Permit2} from "permit2/src/Permit2.sol";
 import {DeployRouter} from "./utils/DeployRouter.sol";
@@ -33,7 +33,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
 
-        vm.createSelectFork(vm.envString("FORK_URL"), 15947700);
+        vm.createSelectFork(vm.envString("FORK_URL"), 16075500);
         vm.startPrank(from);
         (router, permit2) = deployFixtureMainnetConfig();
         vm.deal(from, BALANCE);
@@ -168,7 +168,7 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertGe(RECIPIENT.balance, startingRecipientBalance + 0.1 ether);
     }
 
-    function testV3ExactInputSingleERC20Permit() public {
+    function testV3ExactInputSingleERC20WithPermit() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_V3_1000_USDC_FOR_ETH_PERMIT");
 
         deal(address(USDC), from, BALANCE);

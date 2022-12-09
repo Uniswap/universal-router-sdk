@@ -5,7 +5,7 @@ import {console2} from "forge-std/console2.sol";
 import {Test} from "forge-std/Test.sol";
 import {UniversalRouter} from "universal-router/UniversalRouter.sol";
 import {RouterParameters} from "universal-router/base/RouterImmutables.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {Permit2} from "permit2/src/Permit2.sol";
 import {IAllowanceTransfer} from "permit2/src/interfaces/IAllowanceTransfer.sol";
 
@@ -34,10 +34,9 @@ contract DeployRouter is Test {
     function deployFixtureMainnetConfig() public returns (UniversalRouter router, Permit2 permit2) {
         try vm.envBool("USE_MAINNET_DEPLOYMENT") returns (bool useMainnet) {
             if (useMainnet) return useMainnetDeployment();
-        } catch {
-            permit2 = new Permit2();
-            router = deployRouter(address(permit2));
-        }
+        } catch {}
+        permit2 = new Permit2();
+        router = deployRouter(address(permit2));
     }
 
     function deployRouter(address permit2) public returns (UniversalRouter router) {
@@ -65,7 +64,7 @@ contract DeployRouter is Test {
     }
 
     function useMainnetDeployment() public pure returns (UniversalRouter router, Permit2 permit2) {
-        router = UniversalRouter(payable(0x0000000052BE00bA3a005edbE83a0fB9aaDB964C));
+        router = UniversalRouter(payable(0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B));
         permit2 = Permit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
     }
 }

@@ -28,7 +28,6 @@ export abstract class SwapRouter {
     let transactionValue = BigNumber.from(0)
 
     for (const trade of trades) {
-
       if (trade instanceof NFTTrade) {
         // TODO: allow revert only for multiple nfts
         trade.encode(planner, { allowRevert: true })
@@ -38,7 +37,6 @@ export abstract class SwapRouter {
         if (currentNativeValueInRouter.lt(tradePrice)) {
           transactionValue = transactionValue.add(tradePrice.sub(currentNativeValueInRouter))
         }
-
       } else if (trade instanceof UniswapTrade) {
         const inputIsNative = trade.trade.inputAmount.currency.isNative
         const outputIsNative = trade.trade.outputAmount.currency.isNative

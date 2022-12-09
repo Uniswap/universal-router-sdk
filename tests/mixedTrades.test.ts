@@ -24,7 +24,8 @@ import { registerFixture } from './forge/writeInterop'
 import {
   buildTrade,
   makePermit,
-  makePool,
+  getUniswapPools,
+  getPool,
   swapOptions,
   ETHER,
   RECIPIENT,
@@ -32,11 +33,6 @@ import {
   DAI,
   USDC,
   FEE_AMOUNT,
-  WETH_USDC_V2,
-  USDC_DAI_V2,
-  WETH_USDC_V3,
-  USDC_DAI_V3,
-  WETH_USDC_V3_LOW_FEE,
 } from './utils/uniswap'
 
 const FORGE_SENDER_ADDRESS = '0xcf03dd0a894ef79cb5b601a43c4b25e3ae4c67ed'
@@ -45,6 +41,16 @@ const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const ROUTER_ADDR = '0x4a873bdd49f7f9cc0a5458416a12973fab208f8d'
 
 describe('SwapRouter.swapCallParameters', () => {
+  let WETH_USDC_V2: Pair
+  let USDC_DAI_V2: Pair
+  let WETH_USDC_V3: Pool
+  let WETH_USDC_V3_LOW_FEE: Pool
+  let USDC_DAI_V3: Pool
+
+  before(async () => {
+    ;({ WETH_USDC_V2, USDC_DAI_V2, WETH_USDC_V3, USDC_DAI_V3, WETH_USDC_V3_LOW_FEE } = await getUniswapPools())
+  })
+
   describe('erc20 --> nft', async () => {
     const foundationData: FoundationData = {
       referrer: '0x459e213D8B5E79d706aB22b945e3aF983d51BC4C',
