@@ -32,18 +32,18 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         from = vm.addr(fromPrivateKey);
         string memory root = vm.projectRoot();
         json = vm.readFile(string.concat(root, "/tests/forge/interop.json"));
-        (router, permit2) = deployFixtureMainnetConfig();
-        vm.deal(from, BALANCE);
     }
 
-    function testV3ERC20ForFoundationNFT() public {
+    function testMixedERC20ForLooksRareNFT() public {
         MethodParameters memory params = readFixture(json, "._ERC20_FOR_1_FOUNDATION_NFT");
 
-        ERC721 nft = ERC721(0xEf96021Af16BD04918b0d87cE045d7984ad6c38c);
+        ERC721 nft = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
         vm.createSelectFork(vm.envString("FORK_URL"), 15725945);
         vm.startPrank(from);
 
         (router, permit2) = deployFixtureMainnetConfig();
+        console2.log(address(router));
+        vm.deal(from, BALANCE);
 
         deal(address(USDC), from, BALANCE);
         USDC.approve(address(permit2), BALANCE);
@@ -51,6 +51,31 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertEq(USDC.balanceOf(from), BALANCE);
         uint256 startingRecipientBalance = RECIPIENT.balance;
 
+        uint256 balanceOfBefore = USDC.balanceOf(from);
+        console2.log(address(from).balance);
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(USDC.balanceOf(from), balanceOfBefore);
+        assertEq(nft.balanceOf(RECIPIENT), 1);
+    }
+
+    function testMixedERC20AndETHForLooksRareNFT() public {
+        MethodParameters memory params = readFixture(json, "._ERC20_AND_ETH_FOR_1_FOUNDATION_NFT");
+
+        ERC721 nft = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        vm.createSelectFork(vm.envString("FORK_URL"), 15725945);
+        vm.startPrank(from);
+
+        (router, permit2) = deployFixtureMainnetConfig();
+        vm.deal(from, BALANCE);
+
+        deal(address(USDC), from, BALANCE);
+        USDC.approve(address(permit2), BALANCE);
+        permit2.approve(address(USDC), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
+        assertEq(USDC.balanceOf(from), BALANCE);
+        uint256 startingRecipientBalance = RECIPIENT.balance;
+
+        console2.log(address(from).balance);
         uint256 balanceOfBefore = USDC.balanceOf(from);
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
