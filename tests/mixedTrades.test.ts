@@ -1,10 +1,12 @@
 import { expect } from 'chai'
 import JSBI from 'jsbi'
-import { ethers, utils, Wallet } from 'ethers'
+import { BigNumber, ethers, utils, Wallet } from 'ethers'
 import { expandTo18Decimals, expandTo18DecimalsBN } from '../src/utils/expandTo18Decimals'
 import { SwapRouter, ADDRESS_THIS } from '../src'
 import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
 import { looksRareOrders } from './orders/looksRare'
+import { ConsiderationItem, SeaportTrade } from '../src/entities/protocols/seaport'
+import { seaportData2Covens, seaportValue } from './orders/seaport'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
 import { TokenType } from '../src/entities/NFTTrade'
@@ -60,10 +62,10 @@ describe('SwapRouter.swapCallParameters', () => {
       recipient: SAMPLE_ADDR,
       tokenType: TokenType.ERC721,
     }
-
+    const seaportTrade = new SeaportTrade([seaportData2Covens])
 
     it('erc20 -> 1 looksrare nft', async () => {
-      const { WETH_USDC_V3 } = await getUniswapPools(15725945)
+      const { WETH_USDC_V3 } = await getUniswapPools(15360000)
       const outputEther = looksRareOrder.price.toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
@@ -79,12 +81,12 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_1_FOUNDATION_NFT', methodParameters)
+      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
     it('erc20 + eth -> 1 looksrare nft', async () => {
-      const { WETH_USDC_V3 } = await getUniswapPools(15725945)
+      const { WETH_USDC_V3 } = await getUniswapPools(15360000)
       const looksRarePriceUSDC = CurrencyAmount.fromRawAmount(WETH, looksRareOrder.price.toString())
       const partialLooksRarePriceUSDC = (await WETH_USDC_V3.getOutputAmount(looksRarePriceUSDC))[0]
       const erc20Trade = buildTrade([
@@ -101,13 +103,13 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_AND_ETH_FOR_1_FOUNDATION_NFT', methodParameters)
+      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.not.eq('0')
     })
 
-    it('erc20 -> 1 looksRare nft & 1 looksrare nft', async () => {
-      const { WETH_USDC_V3 } = await getUniswapPools(15725945)
-      const outputEther = looksRareOrder.price.toString()
+    it('erc20 -> 1 looksRare nft & 2 seaport nfts', async () => {
+      const { WETH_USDC_V3 } = await getUniswapPools(15360000)
+      const outputEther = BigNumber.from(looksRareOrder.price).add(seaportValue).toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -119,28 +121,32 @@ describe('SwapRouter.swapCallParameters', () => {
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const looksRareTrade = new LooksRareTrade([looksRareData])
 
-      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareTrade], {
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareTrade, seaportTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_1_FOUNDATION_NFT', methodParameters)
+      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT_2_SEAPORT_NFTS', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
-    it('encodes a single exactInput ETH->USDC swap', async () => {
-      const { WETH_USDC_V2 } = await getUniswapPools()
-      const inputEther = utils.parseEther('1').toString()
+    it('erc20 + eth -> 1 looksRare nft & 2 seaport nfts', async () => {
+      const { WETH_USDC_V3 } = await getUniswapPools(15360000)
+      const outputEther = BigNumber.from(looksRareOrder.price).toString()
       const erc20Trade = buildTrade([
-        new V2Trade(
-          new RouteV2([WETH_USDC_V2], ETHER, USDC),
-          CurrencyAmount.fromRawAmount(ETHER, inputEther),
-          TradeType.EXACT_INPUT
+        await V3Trade.fromRoute(
+          new RouteV3([WETH_USDC_V3], USDC, ETHER),
+          CurrencyAmount.fromRawAmount(ETHER, outputEther),
+          TradeType.EXACT_OUTPUT
         ),
       ])
-      const opts = swapOptions({})
+      const opts = swapOptions({ recipient: ADDRESS_THIS })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
-      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade], { sender: FORGE_SENDER_ADDRESS })
-      registerFixture('_UNISWAP_V2_1_ETH_FOR_USDC', methodParameters)
-      expect(methodParameters.value).to.eq(inputEther)
+      const looksRareTrade = new LooksRareTrade([looksRareData])
+
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareTrade, seaportTrade], {
+        sender: FORGE_SENDER_ADDRESS,
+      })
+      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT_2_SEAPORT_NFTS', methodParameters)
+      expect(methodParameters.value).to.eq('53000000000000000000')
     })
   })
 })

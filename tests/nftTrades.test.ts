@@ -6,7 +6,7 @@ import { SwapRouter } from '../src/swapRouter'
 import { TokenType } from '../src/entities/NFTTrade'
 import { FoundationTrade, FoundationData } from '../src/entities/protocols/foundation'
 import { ConsiderationItem, SeaportTrade } from '../src/entities/protocols/seaport'
-import { seaportData2Covens } from './orders/seaport'
+import { seaportData2Covens, seaportValue } from './orders/seaport'
 import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 import { NFT20Trade, NFT20Data } from '../src/entities/protocols/nft20'
 import { looksRareOrders } from './orders/looksRare'
@@ -22,13 +22,6 @@ const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
 // this is the address forge is deploying the router to
 const ROUTER_ADDR = '0x4a873bdd49f7f9cc0a5458416a12973fab208f8d'
-
-function calculateSeaportValue(considerations: ConsiderationItem[]): BigNumber {
-  return considerations.reduce(
-    (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
-    BigNumber.from(0)
-  )
-}
 
 describe('SwapRouter', () => {
   describe('#swapNFTCallParameters', () => {
@@ -197,9 +190,7 @@ describe('SwapRouter', () => {
 
   describe('Seaport', () => {
     it('encodes buying two NFTs from Seaport', async () => {
-      const value = calculateSeaportValue(seaportData2Covens.items[0].parameters.consideration).add(
-        calculateSeaportValue(seaportData2Covens.items[1].parameters.consideration)
-      )
+      const value = seaportValue
       const seaportTrade = new SeaportTrade([seaportData2Covens])
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade], { sender: FORGE_SENDER_ADDRESS })
       registerFixture('_SEAPORT_BUY_ITEMS', methodParameters)
@@ -291,11 +282,6 @@ describe('SwapRouter', () => {
       tokenIds: [584, 303], // invalid tokenIds
       value: expandTo18DecimalsBN(1),
     }
-
-    // buyItems from block 15360000
-    const seaportValue = calculateSeaportValue(seaportData2Covens.items[0].parameters.consideration).add(
-      calculateSeaportValue(seaportData2Covens.items[1].parameters.consideration)
-    )
 
     it('encodes partial fill for multiple trades between protocols', async () => {
       const nftxTrade = new NFTXTrade([nftxPurchase2Covens])
