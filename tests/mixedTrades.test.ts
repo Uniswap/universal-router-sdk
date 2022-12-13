@@ -37,7 +37,7 @@ import {
   DAI,
   USDC,
   FEE_AMOUNT,
-} from './utils/uniswap'
+} from './utils/uniswapData'
 
 const FORGE_SENDER_ADDRESS = '0xcf03dd0a894ef79cb5b601a43c4b25e3ae4c67ed'
 const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'

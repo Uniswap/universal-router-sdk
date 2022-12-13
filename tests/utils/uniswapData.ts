@@ -50,7 +50,7 @@ const V2_ABI = [
   },
 ]
 
-const FORK_BLOCK = 15947700
+const FORK_BLOCK = 16075500
 
 export const ETHER = Ether.onChain(1)
 export const RECIPIENT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'

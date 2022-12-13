@@ -24,8 +24,10 @@ import {
   DAI,
   USDC,
   FEE_AMOUNT,
-} from './utils/uniswap'
+} from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
+
+const FORK_BLOCK = 16075500
 
 // note: these tests aren't testing much but registering calldata to interop file
 // for use in forge fork tests
@@ -38,7 +40,7 @@ describe('Uniswap', () => {
   let USDC_DAI_V3: Pool
 
   before(async () => {
-    ;({ WETH_USDC_V2, USDC_DAI_V2, WETH_USDC_V3, USDC_DAI_V3, WETH_USDC_V3_LOW_FEE } = await getUniswapPools())
+    ;({ WETH_USDC_V2, USDC_DAI_V2, WETH_USDC_V3, USDC_DAI_V3, WETH_USDC_V3_LOW_FEE } = await getUniswapPools(FORK_BLOCK))
   })
 
   describe('v2', () => {
