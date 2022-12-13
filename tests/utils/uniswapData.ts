@@ -74,7 +74,7 @@ export async function getUniswapPools(forkBlock?: number): Promise<UniswapPools>
 
   const WETH_USDC_V3 = await getPool(WETH, USDC, FEE_AMOUNT, fork)
   const WETH_USDC_V3_LOW_FEE = await getPool(WETH, USDC, FeeAmount.LOW, fork)
-  const USDC_DAI_V3 = await getPool(USDC, DAI, FEE_AMOUNT, fork)
+  const USDC_DAI_V3 = await getPool(USDC, DAI, FeeAmount.LOW, fork)
 
   return {
     WETH_USDC_V2,
