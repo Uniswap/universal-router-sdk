@@ -36,6 +36,9 @@ export abstract class SwapRouter {
         // send enough native value to contract for NFT purchase
         if (currentNativeValueInRouter.lt(tradePrice)) {
           transactionValue = transactionValue.add(tradePrice.sub(currentNativeValueInRouter))
+          currentNativeValueInRouter = BigNumber.from(0)
+        } else {
+          currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
       } else if (trade instanceof UniswapTrade) {
         const inputIsNative = trade.trade.inputAmount.currency.isNative
