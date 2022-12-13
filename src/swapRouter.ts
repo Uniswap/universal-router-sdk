@@ -16,21 +16,27 @@ export type SwapRouterConfig = {
   deadline?: BigNumberish
 }
 
+type SupportedNFTTrade = NFTTrade<SupportedProtocolsData>
+
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
 
   public static swapCallParameters(
-    trades: (NFTTrade<SupportedProtocolsData> | UniswapTrade)[],
+    trades: (SupportedNFTTrade | UniswapTrade)[],
     config: SwapRouterConfig
   ): MethodParameters {
+    const nftTrades = trades.filter((trade, index, []) => trade instanceof NFTTrade) as SupportedNFTTrade[]
+    const allowRevert = nftTrades.length == 1 && nftTrades[0].orders.length == 1 ? false : true
     const planner = new RoutePlanner()
+
+    // track value flow to require the right amount of native value
     let currentNativeValueInRouter = BigNumber.from(0)
     let transactionValue = BigNumber.from(0)
 
     for (const trade of trades) {
       if (trade instanceof NFTTrade) {
         // TODO: allow revert only for multiple nfts
-        trade.encode(planner, { allowRevert: true })
+        trade.encode(planner, { allowRevert })
         const tradePrice = trade.getTotalPrice()
 
         // send enough native value to contract for NFT purchase
@@ -67,10 +73,12 @@ export abstract class SwapRouter {
         trade.encode(planner, { allowRevert: false })
       }
     }
+    // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
+    if (!!nftTrades) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, config.sender, 0])
     return SwapRouter.encodePlan(planner, transactionValue, config)
   }
 
-  /**
+  /** TODO: Deprecate in favor of swapCallParameters
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given swap.
    * @param trades to produce call parameters for
    */
@@ -93,7 +101,7 @@ export abstract class SwapRouter {
     return SwapRouter.encodePlan(planner, totalPrice, config)
   }
 
-  /**
+  /** TODO: Deprecate in favor of swapCallParameters
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given trade.
    * @param trades to produce call parameters for
    * @param options options for the call parameters
