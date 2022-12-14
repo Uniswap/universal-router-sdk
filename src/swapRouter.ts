@@ -17,14 +17,17 @@ export type SwapRouterConfig = {
 }
 
 type SupportedNFTTrade = NFTTrade<SupportedProtocolsData>
+type TradeArray = (SupportedNFTTrade | UniswapTrade)[]
 
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
 
   public static swapCallParameters(
-    trades: (SupportedNFTTrade | UniswapTrade)[],
+    trades: (SupportedNFTTrade | UniswapTrade)[] | SupportedNFTTrade | UniswapTrade,
     config: SwapRouterConfig = {}
   ): MethodParameters {
+    if (!Array.isArray(trades)) trades = [trades]
+
     const nftTrades = trades.filter((trade, index, []) => trade instanceof NFTTrade) as SupportedNFTTrade[]
     const allowRevert = nftTrades.length == 1 && nftTrades[0].orders.length == 1 ? false : true
     const planner = new RoutePlanner()

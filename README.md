@@ -38,7 +38,7 @@ const routerTrade = new UniswapTrade(
   options
 )
 // Use the raw calldata and value returned to call into Universal Swap Router contracts
-const { calldata, value } = SwapRouter.swapCallParameters([routerTrade])
+const { calldata, value } = SwapRouter.swapCallParameters(routerTrade)
 ```
 
 ### Using Uniswap for ERC20 NFT Trades
