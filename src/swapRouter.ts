@@ -9,7 +9,7 @@ import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
-import { ADDRESS_THIS, MSG_SENDER, ETH_ADDRESS } from './utils/constants'
+import { ROUTER_AS_RECIPIENT, MSG_SENDER, ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
   sender?: string // address
@@ -63,7 +63,7 @@ export abstract class SwapRouter {
         }
 
         // track amount of native currency in the router
-        if (outputIsNative && swapOptions.recipient == ADDRESS_THIS) {
+        if (outputIsNative && swapOptions.recipient == ROUTER_AS_RECIPIENT) {
           currentNativeValueInRouter = currentNativeValueInRouter.add(
             BigNumber.from(trade.trade.minimumAmountOut(swapOptions.slippageTolerance).quotient.toString())
           )

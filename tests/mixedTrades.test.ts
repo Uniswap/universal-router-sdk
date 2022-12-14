@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import JSBI from 'jsbi'
 import { BigNumber, ethers, utils, Wallet } from 'ethers'
 import { expandTo18Decimals, expandTo18DecimalsBN } from '../src/utils/expandTo18Decimals'
-import { SwapRouter, ADDRESS_THIS } from '../src'
+import { SwapRouter, ROUTER_AS_RECIPIENT } from '../src'
 import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
 import { looksRareOrders } from './orders/looksRare'
 import { ConsiderationItem, SeaportTrade } from '../src/entities/protocols/seaport'
@@ -74,7 +74,7 @@ describe('SwapRouter.swapCallParameters', () => {
           TradeType.EXACT_OUTPUT
         ),
       ])
-      const opts = swapOptions({ recipient: ADDRESS_THIS })
+      const opts = swapOptions({ recipient: ROUTER_AS_RECIPIENT })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const looksRareTrade = new LooksRareTrade([looksRareData])
 
@@ -96,7 +96,7 @@ describe('SwapRouter.swapCallParameters', () => {
           TradeType.EXACT_INPUT
         ),
       ])
-      const opts = swapOptions({ recipient: ADDRESS_THIS })
+      const opts = swapOptions({ recipient: ROUTER_AS_RECIPIENT })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const looksRareTrade = new LooksRareTrade([looksRareData])
 
@@ -117,7 +117,7 @@ describe('SwapRouter.swapCallParameters', () => {
           TradeType.EXACT_OUTPUT
         ),
       ])
-      const opts = swapOptions({ recipient: ADDRESS_THIS })
+      const opts = swapOptions({ recipient: ROUTER_AS_RECIPIENT })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const looksRareTrade = new LooksRareTrade([looksRareData])
 
@@ -138,7 +138,7 @@ describe('SwapRouter.swapCallParameters', () => {
           TradeType.EXACT_OUTPUT
         ),
       ])
-      const opts = swapOptions({ recipient: ADDRESS_THIS })
+      const opts = swapOptions({ recipient: ROUTER_AS_RECIPIENT })
       const uniswapTrade = new UniswapTrade(erc20Trade, opts)
       const looksRareTrade = new LooksRareTrade([looksRareData])
 

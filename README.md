@@ -42,12 +42,16 @@ const { calldata, value } = SwapRouter.swapCallParameters([routerTrade])
 ```
 
 ### Using Uniswap for ERC20 NFT Trades
+Send ETH to the router by trading an ERC20 for ETH with a Uniswap Trade and encoding the swap recipient as `ROUTER_AS_RECIPIENT` in the trade.
+
+Use `trade_type: TradeType.EXACT_OUTPUT` to cover the entire NFT price, alternatively the transaction will send supplemental ETH to fulfill the entire price if the swap does not cover it in full. Keep in mind that `TradeType.EXACT_INPUT` trades are subject to slippage on output, and ETH will be sent to cover potential slippage and any remaining ETH will be returned to sender.
 ```typescript
 import { TradeType } from '@uniswap/sdk-core'
 import { Trade as V2TradeSDK } from '@uniswap/v2-sdk'
 import { Trade as V3TradeSDK } from '@uniswap/v3-sdk'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import {
+  ROUTER_AS_RECIPIENT,
   UniswapTrade,
   LooksRareTrade,
   LooksRareData,
@@ -57,10 +61,9 @@ import {
 
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
 const seaportTrades = new SeaportTrade([seaportData1])
-const options = { slippageTolerance, recipient }
 const uniswapTrade = new UniswapTrade(
-  new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_INPUT }),
-  options
+  new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_OUTPUT }),
+  { slippageTolerance, recipient:  ROUTER_AS_RECIPIENT}
 )
 // Use the raw calldata and value returned to call into Universal Swap Router contracts
 const { calldata, value } = SwapRouter.swapCallParameters([uniswapTrade, seaportTrades, looksRareTrades])
