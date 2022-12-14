@@ -240,7 +240,6 @@ describe('SwapRouter', () => {
       expect(hexToDecimalString(methodParameters.value)).to.eq(nft20Data.value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
-
     })
   })
 

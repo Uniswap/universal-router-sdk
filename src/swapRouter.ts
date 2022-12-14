@@ -82,10 +82,7 @@ export abstract class SwapRouter {
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given swap.
    * @param trades to produce call parameters for
    */
-  public static swapNFTCallParameters(
-    trades: SupportedNFTTrade[],
-    config: SwapRouterConfig = {}
-  ): MethodParameters {
+  public static swapNFTCallParameters(trades: SupportedNFTTrade[], config: SwapRouterConfig = {}): MethodParameters {
     let planner = new RoutePlanner()
     let totalPrice = BigNumber.from(0)
 
