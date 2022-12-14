@@ -35,7 +35,6 @@ export abstract class SwapRouter {
 
     for (const trade of trades) {
       if (trade instanceof NFTTrade) {
-        // TODO: allow revert only for multiple nfts
         trade.encode(planner, { allowRevert })
         const tradePrice = trade.getTotalPrice()
 
@@ -74,6 +73,7 @@ export abstract class SwapRouter {
       }
     }
     // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
+    // or NFT trades with potential slippage (i.e. sudo)
     if (nftTrades.length > 0) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
     return SwapRouter.encodePlan(planner, transactionValue, config)
   }
@@ -83,10 +83,9 @@ export abstract class SwapRouter {
    * @param trades to produce call parameters for
    */
   public static swapNFTCallParameters(
-    trades: NFTTrade<SupportedProtocolsData>[],
+    trades: SupportedNFTTrade[],
     config: SwapRouterConfig = {}
   ): MethodParameters {
-    invariant(!!config.sender, 'SENDER_REQUIRED')
     let planner = new RoutePlanner()
     let totalPrice = BigNumber.from(0)
 
