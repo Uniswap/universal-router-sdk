@@ -9,7 +9,7 @@ import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
-import { ADDRESS_THIS, ETH_ADDRESS } from './utils/constants'
+import { ADDRESS_THIS, MSG_SENDER, ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
   sender?: string // address
@@ -23,7 +23,7 @@ export abstract class SwapRouter {
 
   public static swapCallParameters(
     trades: (SupportedNFTTrade | UniswapTrade)[],
-    config: SwapRouterConfig
+    config: SwapRouterConfig = {}
   ): MethodParameters {
     const nftTrades = trades.filter((trade, index, []) => trade instanceof NFTTrade) as SupportedNFTTrade[]
     const allowRevert = nftTrades.length == 1 && nftTrades[0].orders.length == 1 ? false : true
@@ -74,7 +74,7 @@ export abstract class SwapRouter {
       }
     }
     // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
-    if (!!nftTrades) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, config.sender, 0])
+    if (nftTrades.length > 0) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
     return SwapRouter.encodePlan(planner, transactionValue, config)
   }
 
@@ -84,7 +84,7 @@ export abstract class SwapRouter {
    */
   public static swapNFTCallParameters(
     trades: NFTTrade<SupportedProtocolsData>[],
-    config: SwapRouterConfig
+    config: SwapRouterConfig = {}
   ): MethodParameters {
     invariant(!!config.sender, 'SENDER_REQUIRED')
     let planner = new RoutePlanner()
@@ -97,7 +97,7 @@ export abstract class SwapRouter {
       totalPrice = totalPrice.add(trade.getTotalPrice())
     }
 
-    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, config.sender, 0])
+    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
     return SwapRouter.encodePlan(planner, totalPrice, config)
   }
 
@@ -143,7 +143,6 @@ export abstract class SwapRouter {
     config: SwapRouterConfig = {}
   ): MethodParameters {
     const { commands, inputs } = planner
-
     const functionSignature = !!config.deadline ? 'execute(bytes,bytes[],uint256)' : 'execute(bytes,bytes[])'
     const parameters = !!config.deadline ? [commands, inputs, config.deadline] : [commands, inputs]
     const calldata = SwapRouter.INTERFACE.encodeFunctionData(functionSignature, parameters)
