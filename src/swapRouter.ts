@@ -17,7 +17,6 @@ export type SwapRouterConfig = {
 }
 
 type SupportedNFTTrade = NFTTrade<SupportedProtocolsData>
-type TradeArray = (SupportedNFTTrade | UniswapTrade)[]
 
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
