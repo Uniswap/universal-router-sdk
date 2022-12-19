@@ -2,9 +2,6 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export default {
-  paths: {
-    sources: './contracts',
-  },
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
@@ -14,8 +11,5 @@ export default {
         blockNumber: 15360000,
       },
     },
-  },
-  mocha: {
-    timeout: 60000,
   },
 }
