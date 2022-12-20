@@ -27,7 +27,7 @@ export abstract class SwapRouter {
   ): MethodParameters {
     if (!Array.isArray(trades)) trades = [trades]
 
-    const nftTrades = trades.filter((trade, index, []) => trade instanceof NFTTrade) as SupportedNFTTrade[]
+    const nftTrades = trades.filter((trade, index, []) => trade.hasOwnProperty('market')) as SupportedNFTTrade[]
     const allowRevert = nftTrades.length == 1 && nftTrades[0].orders.length == 1 ? false : true
     const planner = new RoutePlanner()
 
@@ -35,8 +35,10 @@ export abstract class SwapRouter {
     let currentNativeValueInRouter = BigNumber.from(0)
     let transactionValue = BigNumber.from(0)
 
-    for (const trade of trades) {
-      if (trade instanceof NFTTrade) {
+    for (let trade of trades) {
+      // is NFTTrade
+      if (trade.hasOwnProperty('market')) {
+        trade = trade as SupportedNFTTrade
         trade.encode(planner, { allowRevert })
         const tradePrice = trade.getTotalPrice()
 
@@ -47,7 +49,9 @@ export abstract class SwapRouter {
         } else {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
-      } else if (trade instanceof UniswapTrade) {
+      // is UniswapTrade
+      } else if (trade.hasOwnProperty('trade')) {
+        trade = trade as UniswapTrade
         const inputIsNative = trade.trade.inputAmount.currency.isNative
         const outputIsNative = trade.trade.outputAmount.currency.isNative
         const swapOptions = trade.options
