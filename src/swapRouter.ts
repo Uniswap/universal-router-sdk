@@ -33,12 +33,12 @@ export abstract class SwapRouter {
     let currentNativeValueInRouter = BigNumber.from(0)
     let transactionValue = BigNumber.from(0)
 
-    for (const tradeCommand of trades) {
+    for (const trade of trades) {
       // is NFTTrade
-      if (tradeCommand.hasOwnProperty('market')) {
-        const trade = tradeCommand as SupportedNFTTrade
-        trade.encode(planner, { allowRevert })
-        const tradePrice = trade.getTotalPrice()
+      if (trade.hasOwnProperty('market')) {
+        const nftTrade = trade as SupportedNFTTrade
+        nftTrade.encode(planner, { allowRevert })
+        const tradePrice = nftTrade.getTotalPrice()
 
         // send enough native value to contract for NFT purchase
         if (currentNativeValueInRouter.lt(tradePrice)) {
@@ -48,11 +48,11 @@ export abstract class SwapRouter {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
         // is UniswapTrade
-      } else if (tradeCommand.hasOwnProperty('trade')) {
-        const trade = tradeCommand as UniswapTrade
-        const inputIsNative = trade.trade.inputAmount.currency.isNative
-        const outputIsNative = trade.trade.outputAmount.currency.isNative
-        const swapOptions = trade.options
+      } else if (trade.hasOwnProperty('trade')) {
+        const uniswapTrade = trade as UniswapTrade
+        const inputIsNative = uniswapTrade.trade.inputAmount.currency.isNative
+        const outputIsNative = uniswapTrade.trade.outputAmount.currency.isNative
+        const swapOptions = uniswapTrade.options
 
         invariant(!(inputIsNative && !!swapOptions.inputTokenPermit), 'NATIVE_INPUT_PERMIT')
 
@@ -62,17 +62,17 @@ export abstract class SwapRouter {
 
         if (inputIsNative) {
           transactionValue = transactionValue.add(
-            BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance).quotient.toString())
+            BigNumber.from(uniswapTrade.trade.maximumAmountIn(swapOptions.slippageTolerance).quotient.toString())
           )
         }
         // track amount of native currency in the router
         if (outputIsNative && swapOptions.recipient == ROUTER_AS_RECIPIENT) {
           currentNativeValueInRouter = currentNativeValueInRouter.add(
-            BigNumber.from(trade.trade.minimumAmountOut(swapOptions.slippageTolerance).quotient.toString())
+            BigNumber.from(uniswapTrade.trade.minimumAmountOut(swapOptions.slippageTolerance).quotient.toString())
           )
         }
 
-        trade.encode(planner, { allowRevert: false })
+        uniswapTrade.encode(planner, { allowRevert: false })
       } else {
         throw 'trade must be of instance: UniswapTrade or NFTTrade'
       }
