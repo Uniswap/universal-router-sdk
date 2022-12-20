@@ -5,6 +5,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Currency, TradeType, Token } from '@uniswap/sdk-core'
+import { Command } from './entities/Command'
 import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
@@ -21,10 +22,7 @@ type SupportedNFTTrade = NFTTrade<SupportedProtocolsData>
 export abstract class SwapRouter {
   public static INTERFACE: Interface = new Interface(abi)
 
-  public static swapCallParameters(
-    trades: (SupportedNFTTrade | UniswapTrade)[] | SupportedNFTTrade | UniswapTrade,
-    config: SwapRouterConfig = {}
-  ): MethodParameters {
+  public static swapCallParameters(trades: Command[] | Command, config: SwapRouterConfig = {}): MethodParameters {
     if (!Array.isArray(trades)) trades = [trades]
 
     const nftTrades = trades.filter((trade, index, []) => trade.hasOwnProperty('market')) as SupportedNFTTrade[]
@@ -35,10 +33,10 @@ export abstract class SwapRouter {
     let currentNativeValueInRouter = BigNumber.from(0)
     let transactionValue = BigNumber.from(0)
 
-    for (let trade of trades) {
+    for (const tradeCommand of trades) {
       // is NFTTrade
-      if (trade.hasOwnProperty('market')) {
-        trade = trade as SupportedNFTTrade
+      if (tradeCommand.hasOwnProperty('market')) {
+        const trade = tradeCommand as SupportedNFTTrade
         trade.encode(planner, { allowRevert })
         const tradePrice = trade.getTotalPrice()
 
@@ -50,8 +48,8 @@ export abstract class SwapRouter {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
         // is UniswapTrade
-      } else if (trade.hasOwnProperty('trade')) {
-        trade = trade as UniswapTrade
+      } else if (tradeCommand.hasOwnProperty('trade')) {
+        const trade = tradeCommand as UniswapTrade
         const inputIsNative = trade.trade.inputAmount.currency.isNative
         const outputIsNative = trade.trade.outputAmount.currency.isNative
         const swapOptions = trade.options
@@ -67,7 +65,6 @@ export abstract class SwapRouter {
             BigNumber.from(trade.trade.maximumAmountIn(swapOptions.slippageTolerance).quotient.toString())
           )
         }
-
         // track amount of native currency in the router
         if (outputIsNative && swapOptions.recipient == ROUTER_AS_RECIPIENT) {
           currentNativeValueInRouter = currentNativeValueInRouter.add(
@@ -76,6 +73,8 @@ export abstract class SwapRouter {
         }
 
         trade.encode(planner, { allowRevert: false })
+      } else {
+        throw 'trade must be of instance: UniswapTrade or NFTTrade'
       }
     }
     // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
