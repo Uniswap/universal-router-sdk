@@ -1,30 +1,15 @@
 import { expect } from 'chai'
 import JSBI from 'jsbi'
-import { ethers, utils, Wallet } from 'ethers'
+import { utils, Wallet } from 'ethers'
 import { expandTo18Decimals } from '../src/utils/expandTo18Decimals'
 import { SwapRouter, UniswapTrade } from '../src'
-import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
+import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
-import { Trade as V3Trade, Route as RouteV3, Pool, FeeAmount } from '@uniswap/v3-sdk'
-import { SwapOptions } from '../src'
-import { PermitSingle } from '@uniswap/permit2-sdk'
+import { Trade as V3Trade, Route as RouteV3, Pool } from '@uniswap/v3-sdk'
 import { generatePermitSignature, toInputPermit } from './utils/permit2'
-import { ROUTER_ADDRESS } from './utils/addresses'
-import { CurrencyAmount, TradeType, Ether, Token, Percent, Currency } from '@uniswap/sdk-core'
+import { CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
-import {
-  buildTrade,
-  makePermit,
-  getUniswapPools,
-  getPool,
-  swapOptions,
-  ETHER,
-  RECIPIENT,
-  WETH,
-  DAI,
-  USDC,
-  FEE_AMOUNT,
-} from './utils/uniswapData'
+import { buildTrade, makePermit, getUniswapPools, swapOptions, ETHER, DAI, USDC } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 
 const FORK_BLOCK = 16075500
@@ -288,6 +273,8 @@ describe('Uniswap', () => {
       const methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
       registerFixture('_UNISWAP_V3_DAI_FOR_1_ETH_2_HOP', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.equal('0')
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })
   })
 

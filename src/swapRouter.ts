@@ -4,7 +4,7 @@ import { Interface } from '@ethersproject/abi'
 import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { Trade as RouterTrade } from '@uniswap/router-sdk'
-import { Currency, TradeType, Token } from '@uniswap/sdk-core'
+import { Currency, TradeType } from '@uniswap/sdk-core'
 import { Command } from './entities/Command'
 import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
@@ -25,7 +25,7 @@ export abstract class SwapRouter {
   public static swapCallParameters(trades: Command[] | Command, config: SwapRouterConfig = {}): MethodParameters {
     if (!Array.isArray(trades)) trades = [trades]
 
-    const nftTrades = trades.filter((trade, index, []) => trade.hasOwnProperty('market')) as SupportedNFTTrade[]
+    const nftTrades = trades.filter((trade, _, []) => trade.hasOwnProperty('market')) as SupportedNFTTrade[]
     const allowRevert = nftTrades.length == 1 && nftTrades[0].orders.length == 1 ? false : true
     const planner = new RoutePlanner()
 

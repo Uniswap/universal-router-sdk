@@ -1,8 +1,5 @@
-import { expect } from 'chai'
 import JSBI from 'jsbi'
-import { ethers, utils, Wallet } from 'ethers'
-import { expandTo18Decimals } from '../../src/utils/expandTo18Decimals'
-import { SwapRouter } from '../../src'
+import { ethers } from 'ethers'
 import { MixedRouteTrade, MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2, computePairAddress } from '@uniswap/v2-sdk'
 import {
@@ -16,7 +13,6 @@ import {
 } from '@uniswap/v3-sdk'
 import { SwapOptions } from '../../src'
 import { PermitSingle } from '@uniswap/permit2-sdk'
-import { generatePermitSignature, toInputPermit } from './permit2'
 import { ROUTER_ADDRESS } from './addresses'
 import { CurrencyAmount, TradeType, Ether, Token, Percent, Currency } from '@uniswap/sdk-core'
 import IUniswapV3Pool from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
