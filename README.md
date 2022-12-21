@@ -61,6 +61,7 @@ import {
 
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
 const seaportTrades = new SeaportTrade([seaportData1])
+// WARNING: never send funds to ROUTER_AS_RECIPIENT unless it is ETH that will be used in NFT trades, otherwise funds are lost.
 const uniswapTrade = new UniswapTrade(
   new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_OUTPUT }),
   { slippageTolerance, recipient:  ROUTER_AS_RECIPIENT}

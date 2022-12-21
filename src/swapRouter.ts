@@ -111,7 +111,7 @@ export abstract class SwapRouter {
    */
   public static swapERC20CallParameters(
     trades: RouterTrade<Currency, Currency, TradeType>,
-    options: SwapOptions,
+    options: SwapOptions
   ): MethodParameters {
     // TODO: use permit if signature included in swapOptions
     const planner = new RoutePlanner()
