@@ -84,7 +84,7 @@ export abstract class SwapRouter {
   }
 
   /**
-   * @deprecated in favor of swapCallParameters. Update before next major version.
+   * @deprecated in favor of swapCallParameters. Update before next major version 2.0.0
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given swap.
    * @param trades to produce call parameters for
    */
@@ -104,7 +104,7 @@ export abstract class SwapRouter {
   }
 
   /**
-   * @deprecated in favor of swapCallParameters. Update before next major version.
+   * @deprecated in favor of swapCallParameters. Update before next major version 2.0.0
    * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given trade.
    * @param trades to produce call parameters for
    * @param options options for the call parameters
