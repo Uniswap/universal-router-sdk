@@ -5,7 +5,7 @@ import { FoundationData } from './protocols/foundation'
 import { NFTXData } from './protocols/nftx'
 import { NFT20Data } from './protocols/nft20'
 import { RoutePlanner } from '../utils/routerCommands'
-import { Command, TradeConfig } from './Command'
+import { Command, RouterTradeType, TradeConfig } from './Command'
 import { LooksRareData } from './protocols/looksRare'
 import { SudoswapData } from './protocols/sudoswap'
 import { CryptopunkData } from './protocols/cryptopunk'
@@ -22,6 +22,7 @@ export type SupportedProtocolsData =
   | SudoswapData
 
 export abstract class NFTTrade<T> implements Command {
+  readonly tradeType: RouterTradeType = RouterTradeType.NFTTrade
   readonly orders: T[]
   readonly market: Market
 

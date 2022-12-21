@@ -5,7 +5,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { MethodParameters } from '@uniswap/v3-sdk'
 import { Trade as RouterTrade } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { Command } from './entities/Command'
+import { Command, RouterTradeType } from './entities/Command'
 import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
@@ -35,7 +35,7 @@ export abstract class SwapRouter {
 
     for (const trade of trades) {
       // is NFTTrade
-      if (trade.hasOwnProperty('market')) {
+      if (trade.tradeType == RouterTradeType.NFTTrade) {
         const nftTrade = trade as SupportedNFTTrade
         nftTrade.encode(planner, { allowRevert })
         const tradePrice = nftTrade.getTotalPrice()
@@ -48,7 +48,7 @@ export abstract class SwapRouter {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
         // is UniswapTrade
-      } else if (trade.hasOwnProperty('trade')) {
+      } else if (trade.tradeType == RouterTradeType.UniswapTrade) {
         const uniswapTrade = trade as UniswapTrade
         const inputIsNative = uniswapTrade.trade.inputAmount.currency.isNative
         const outputIsNative = uniswapTrade.trade.outputAmount.currency.isNative

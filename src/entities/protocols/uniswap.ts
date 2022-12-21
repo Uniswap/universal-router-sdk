@@ -18,7 +18,7 @@ import {
 } from '@uniswap/router-sdk'
 import { Permit2Permit } from '../../utils/permit2'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { Command, TradeConfig } from '../Command'
+import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { MSG_SENDER, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
 
 // the existing router permit object doesn't include enough data for permit2
@@ -38,6 +38,7 @@ interface Swap<TInput extends Currency, TOutput extends Currency> {
 // Wrapper for uniswap router-sdk trade entity to encode swaps for Universal Router
 // also translates trade objects from previous (v2, v3) SDKs
 export class UniswapTrade implements Command {
+  readonly tradeType: RouterTradeType = RouterTradeType.UniswapTrade
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {}
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
