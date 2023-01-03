@@ -19,7 +19,7 @@ import {
 import { Permit2Permit } from '../../utils/permit2'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
-import { MSG_SENDER, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
+import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
@@ -52,7 +52,7 @@ export class UniswapTrade implements Command {
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
-    this.options.recipient = this.options.recipient ?? MSG_SENDER
+    this.options.recipient = this.options.recipient ?? SENDER_AS_RECIPIENT
 
     // flag for whether we want to perform slippage check on aggregate output of multiple routes
     //   1. when there are >2 exact input trades. this is only a heuristic,

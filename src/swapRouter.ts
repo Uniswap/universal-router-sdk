@@ -10,7 +10,7 @@ import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
-import { ROUTER_AS_RECIPIENT, MSG_SENDER, ETH_ADDRESS } from './utils/constants'
+import { ROUTER_AS_RECIPIENT, SENDER_AS_RECIPIENT, ETH_ADDRESS } from './utils/constants'
 
 export type SwapRouterConfig = {
   sender?: string // address
@@ -79,7 +79,7 @@ export abstract class SwapRouter {
     }
     // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
     // or NFT trades with potential slippage (i.e. sudo)
-    if (nftTrades.length > 0) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
+    if (nftTrades.length > 0) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, SENDER_AS_RECIPIENT, 0])
     return SwapRouter.encodePlan(planner, transactionValue, config)
   }
 
@@ -99,7 +99,7 @@ export abstract class SwapRouter {
       totalPrice = totalPrice.add(trade.getTotalPrice())
     }
 
-    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
+    planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, SENDER_AS_RECIPIENT, 0])
     return SwapRouter.encodePlan(planner, totalPrice, config)
   }
 
