@@ -7,6 +7,7 @@ export type TradeConfig = {
 export enum RouterTradeType {
   UniswapTrade = 'UniswapTrade',
   NFTTrade = 'NFTTrade',
+  ConvertWETH = 'ConvertWETH'
 }
 
 // interface for entities that can be encoded as a Universal Router command

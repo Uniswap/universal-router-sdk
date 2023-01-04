@@ -8,6 +8,7 @@ import { Currency, TradeType } from '@uniswap/sdk-core'
 import { Command, RouterTradeType } from './entities/Command'
 import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
+import { ConvertWETH } from './entities/protocols/convertWETH'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
 import { ROUTER_AS_RECIPIENT, SENDER_AS_RECIPIENT, ETH_ADDRESS } from './utils/constants'
@@ -34,6 +35,7 @@ export abstract class SwapRouter {
     let transactionValue = BigNumber.from(0)
 
     for (const trade of trades) {
+      //
       // is NFTTrade
       if (trade.tradeType == RouterTradeType.NFTTrade) {
         const nftTrade = trade as SupportedNFTTrade
@@ -47,6 +49,7 @@ export abstract class SwapRouter {
         } else {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
+        //
         // is UniswapTrade
       } else if (trade.tradeType == RouterTradeType.UniswapTrade) {
         const uniswapTrade = trade as UniswapTrade
@@ -71,12 +74,18 @@ export abstract class SwapRouter {
             BigNumber.from(uniswapTrade.trade.minimumAmountOut(swapOptions.slippageTolerance).quotient.toString())
           )
         }
-
         uniswapTrade.encode(planner, { allowRevert: false })
+        //
+        // is ConvertWETH
+      } else if (trade.tradeType == RouterTradeType.ConvertWETH) {
+        const convertWETH = trade as ConvertWETH
+        trade.encode(planner, { allowRevert: false })
+        currentNativeValueInRouter = currentNativeValueInRouter.add(convertWETH.permit2Data.details.amount)
       } else {
         throw 'trade must be of instance: UniswapTrade or NFTTrade'
       }
     }
+
     // TODO: matches current logic for now, but should eventually only sweep for multiple NFT trades
     // or NFT trades with potential slippage (i.e. sudo)
     if (nftTrades.length > 0) planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, SENDER_AS_RECIPIENT, 0])

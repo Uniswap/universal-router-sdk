@@ -49,6 +49,7 @@ export class LooksRareTrade extends NFTTrade<LooksRareData> {
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
+
     for (const item of this.orders) {
       const calldata = LooksRareTrade.INTERFACE.encodeFunctionData('matchAskWithTakerBidUsingETHAndWETH', [
         item.takerOrder,
