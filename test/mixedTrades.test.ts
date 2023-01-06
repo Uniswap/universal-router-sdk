@@ -27,7 +27,10 @@ describe('SwapRouter.swapCallParameters', () => {
 
   describe('erc20 --> nft', async () => {
     const { makerOrder, takerOrder } = createLooksRareOrders(looksRareOrders[0], ROUTER_ADDR)
-    const { makerOrder: recentMakerOrder, takerOrder: recentTakerOrder } = createLooksRareOrders(looksRareOrders[3], UNIVERSAL_ROUTER_ADDRESS(1))
+    const { makerOrder: recentMakerOrder, takerOrder: recentTakerOrder } = createLooksRareOrders(
+      looksRareOrders[3],
+      UNIVERSAL_ROUTER_ADDRESS(1)
+    )
     const recentLooksRareData: LooksRareData = {
       makerOrder: recentMakerOrder,
       takerOrder: recentTakerOrder,

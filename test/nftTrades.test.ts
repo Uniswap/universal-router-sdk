@@ -86,8 +86,14 @@ describe('SwapRouter', () => {
     const recipient = SAMPLE_ADDR
 
     // buyItems from block 15360000
-    const { makerOrder: makerOrder721, takerOrder: takerOrder721 } = createLooksRareOrders(looksRareOrders[0], ROUTER_ADDR)
-    const { makerOrder: makerOrder1155, takerOrder: takerOrder1155 } = createLooksRareOrders(looksRareOrders[2], ROUTER_ADDR)
+    const { makerOrder: makerOrder721, takerOrder: takerOrder721 } = createLooksRareOrders(
+      looksRareOrders[0],
+      ROUTER_ADDR
+    )
+    const { makerOrder: makerOrder1155, takerOrder: takerOrder1155 } = createLooksRareOrders(
+      looksRareOrders[2],
+      ROUTER_ADDR
+    )
 
     const looksRareData721: LooksRareData = {
       makerOrder: makerOrder721,
