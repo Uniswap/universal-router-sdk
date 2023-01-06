@@ -98,7 +98,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const signature = await generatePermitSignature(permit2Data, wallet, 1, PERMIT2_ADDRESS)
       const convertWETHData = {
         ...permit2Data,
-        signature
+        signature,
       }
       const convertWETHCommand = new ConvertWETH(outputEther, 1, convertWETHData)
 
@@ -108,7 +108,6 @@ describe('SwapRouter.swapCallParameters', () => {
       registerFixture('_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
-
 
     it('erc20 + eth -> 1 looksrare nft', async () => {
       const looksRarePriceUSDC = CurrencyAmount.fromRawAmount(WETH, looksRareOrder.price.toString())

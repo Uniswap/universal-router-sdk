@@ -7,7 +7,12 @@ import { ethers } from 'ethers'
 const TEST_DEADLINE = '3000000000000'
 
 /// returns signature bytes
-export async function generatePermitSignature(permit: PermitSingle, signer: Wallet, chainId: number, permitAddress: string = PERMIT2_ADDRESS): Promise<string> {
+export async function generatePermitSignature(
+  permit: PermitSingle,
+  signer: Wallet,
+  chainId: number,
+  permitAddress: string = PERMIT2_ADDRESS
+): Promise<string> {
   const { domain, types, values } = AllowanceTransfer.getPermitData(permit, permitAddress, chainId)
   return await signer._signTypedData(domain, types, values)
 }
