@@ -57,6 +57,29 @@ contract MixedSwapCallParameters is Test, Interop, DeployRouter {
         assertEq(nft.balanceOf(RECIPIENT), 1);
     }
 
+    function testMixedWETHForLooksRareNFTWithPermit() public {
+        MethodParameters memory params = readFixture(json, "._PERMIT_AND_WETH_FOR_1_LOOKSRARE_NFT");
+
+        ERC721 nft = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
+        vm.createSelectFork(vm.envString("FORK_URL"), 16300000);
+        vm.startPrank(from);
+
+        router = UniversalRouter(MAINNET_ROUTER);
+        permit2 = Permit2(MAINNET_PERMIT2);
+
+        vm.deal(from, BALANCE);
+
+        deal(address(WETH), from, BALANCE);
+        WETH.approve(address(permit2), BALANCE);
+        assertEq(WETH.balanceOf(from), BALANCE);
+
+        uint256 balanceOfBefore = WETH.balanceOf(from);
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(WETH.balanceOf(from), balanceOfBefore);
+        assertEq(nft.balanceOf(RECIPIENT), 1);
+    }
+
     function testMixedWETHForLooksRareNFT() public {
         MethodParameters memory params = readFixture(json, "._WETH_FOR_1_LOOKSRARE_NFT");
 
@@ -67,12 +90,11 @@ contract MixedSwapCallParameters is Test, Interop, DeployRouter {
         router = UniversalRouter(MAINNET_ROUTER);
         permit2 = Permit2(MAINNET_PERMIT2);
 
-        // (router, permit2) = deployFixtureMainnetConfig();
-        // vm.etch(MAINNET_ROUTER, address(router).code);
         vm.deal(from, BALANCE);
 
         deal(address(WETH), from, BALANCE);
         WETH.approve(address(permit2), BALANCE);
+        permit2.approve(address(WETH), address(router), uint160(BALANCE), uint48(block.timestamp + 1000));
         assertEq(WETH.balanceOf(from), BALANCE);
 
         uint256 balanceOfBefore = WETH.balanceOf(from);

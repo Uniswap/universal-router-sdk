@@ -35,8 +35,9 @@ export abstract class SwapRouter {
     let transactionValue = BigNumber.from(0)
 
     for (const trade of trades) {
-      //
-      // is NFTTrade
+      /**
+       * is NFTTrade
+       */
       if (trade.tradeType == RouterTradeType.NFTTrade) {
         const nftTrade = trade as SupportedNFTTrade
         nftTrade.encode(planner, { allowRevert })
@@ -49,8 +50,9 @@ export abstract class SwapRouter {
         } else {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
-        //
-        // is UniswapTrade
+      /**
+       * is Uniswap Trade
+       */
       } else if (trade.tradeType == RouterTradeType.UniswapTrade) {
         const uniswapTrade = trade as UniswapTrade
         const inputIsNative = uniswapTrade.trade.inputAmount.currency.isNative
@@ -75,12 +77,16 @@ export abstract class SwapRouter {
           )
         }
         uniswapTrade.encode(planner, { allowRevert: false })
-        //
-        // is ConvertWETH
+        /**
+         * is ConvertWETH
+         */
       } else if (trade.tradeType == RouterTradeType.ConvertWETH) {
         const convertWETH = trade as ConvertWETH
         trade.encode(planner, { allowRevert: false })
-        currentNativeValueInRouter = currentNativeValueInRouter.add(convertWETH.permit2Data.details.amount)
+        currentNativeValueInRouter = currentNativeValueInRouter.add(convertWETH.amount)
+        /**
+         * else
+         */
       } else {
         throw 'trade must be of instance: UniswapTrade or NFTTrade'
       }

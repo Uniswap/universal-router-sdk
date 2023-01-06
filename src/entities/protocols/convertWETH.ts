@@ -26,8 +26,8 @@ export class ConvertWETH implements Command {
   }
 
   encode(planner: RoutePlanner, _: TradeConfig): void {
-    encodePermit(planner, this.permit2Data)
+    if (!!this.permit2Data) encodePermit(planner, this.permit2Data)
     planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [this.wethAddress, this.routerAddress, this.amount])
-    planner.addCommand(CommandType.UNWRAP_WETH, [ROUTER_AS_RECIPIENT, this.permit2Data.details.amount])
+    planner.addCommand(CommandType.UNWRAP_WETH, [ROUTER_AS_RECIPIENT, this.amount])
   }
 }

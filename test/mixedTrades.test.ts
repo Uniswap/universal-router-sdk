@@ -4,7 +4,7 @@ import { ConvertWETH } from '../src/entities/protocols/convertWETH'
 import { SwapRouter, PERMIT2_ADDRESS, ROUTER_AS_RECIPIENT, UNIVERSAL_ROUTER_ADDRESS, WETH_ADDRESS } from '../src'
 import { utils, Wallet } from 'ethers'
 import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
-import { looksRareOrders } from './orders/looksRare'
+import { looksRareOrders, createLooksRareOrders } from './orders/looksRare'
 import { SeaportTrade } from '../src/entities/protocols/seaport'
 import { seaportData2Covens, seaportValue } from './orders/seaport'
 import { TokenType } from '../src/entities/NFTTrade'
@@ -26,15 +26,13 @@ describe('SwapRouter.swapCallParameters', () => {
   const wallet = new Wallet(utils.zeroPad('0x1234', 32))
 
   describe('erc20 --> nft', async () => {
-    const looksRareOrder: MakerOrder = looksRareOrders[0]
-    const makerOrder: MakerOrder = looksRareOrder
-    const takerOrder: TakerOrder = {
-      minPercentageToAsk: looksRareOrder.minPercentageToAsk,
-      price: looksRareOrder.price,
-      taker: ROUTER_ADDR,
-      tokenId: looksRareOrder.tokenId,
-      isOrderAsk: false,
-      params: looksRareOrder.params,
+    const { makerOrder, takerOrder } = createLooksRareOrders(looksRareOrders[0], ROUTER_ADDR)
+    const { makerOrder: recentMakerOrder, takerOrder: recentTakerOrder } = createLooksRareOrders(looksRareOrders[3], UNIVERSAL_ROUTER_ADDRESS(1))
+    const recentLooksRareData: LooksRareData = {
+      makerOrder: recentMakerOrder,
+      takerOrder: recentTakerOrder,
+      recipient: SAMPLE_ADDR,
+      tokenType: TokenType.ERC721,
     }
     const looksRareData: LooksRareData = {
       makerOrder: makerOrder,
@@ -55,7 +53,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 -> 1 looksrare nft', async () => {
-      const outputEther = looksRareOrder.price.toString()
+      const outputEther = makerOrder.price.toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -74,26 +72,10 @@ describe('SwapRouter.swapCallParameters', () => {
       expect(methodParameters.value).to.eq('0')
     })
 
-    it('weth -> 1 looksrare nft', async () => {
-      const laterLooksRareOrder: MakerOrder = looksRareOrders[3]
-      const latermakerOrder: MakerOrder = laterLooksRareOrder
-      const latertakerOrder: TakerOrder = {
-        minPercentageToAsk: laterLooksRareOrder.minPercentageToAsk,
-        price: laterLooksRareOrder.price,
-        taker: UNIVERSAL_ROUTER_ADDRESS(1),
-        tokenId: laterLooksRareOrder.tokenId,
-        isOrderAsk: false,
-        params: laterLooksRareOrder.params,
-      }
-      const laterLooksRareData: LooksRareData = {
-        makerOrder: latermakerOrder,
-        takerOrder: latertakerOrder,
-        recipient: SAMPLE_ADDR,
-        tokenType: TokenType.ERC721,
-      }
-      const laterlooksRareTrade = new LooksRareTrade([laterLooksRareData])
+    it('weth -> 1 looksrare nft with Permit', async () => {
+      const recentlooksRareTrade = new LooksRareTrade([recentLooksRareData])
 
-      const outputEther = laterLooksRareOrder.price.toString()
+      const outputEther = recentMakerOrder.price.toString()
       const permit2Data = makePermit(WETH_ADDRESS(1), outputEther, '0', UNIVERSAL_ROUTER_ADDRESS(1))
       const signature = await generatePermitSignature(permit2Data, wallet, 1, PERMIT2_ADDRESS)
       const convertWETHData = {
@@ -102,7 +84,20 @@ describe('SwapRouter.swapCallParameters', () => {
       }
       const convertWETHCommand = new ConvertWETH(outputEther, 1, convertWETHData)
 
-      const methodParameters = SwapRouter.swapCallParameters([convertWETHCommand, laterlooksRareTrade], {
+      const methodParameters = SwapRouter.swapCallParameters([convertWETHCommand, recentlooksRareTrade], {
+        sender: FORGE_SENDER_ADDRESS,
+      })
+      registerFixture('_PERMIT_AND_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
+      expect(methodParameters.value).to.eq('0')
+    })
+
+    it('weth -> 1 looksrare nft without Permit', async () => {
+      const recentlooksRareTrade = new LooksRareTrade([recentLooksRareData])
+
+      const outputEther = recentMakerOrder.price.toString()
+      const convertWETHCommand = new ConvertWETH(outputEther, 1)
+
+      const methodParameters = SwapRouter.swapCallParameters([convertWETHCommand, recentlooksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
       registerFixture('_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
@@ -110,7 +105,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 + eth -> 1 looksrare nft', async () => {
-      const looksRarePriceUSDC = CurrencyAmount.fromRawAmount(WETH, looksRareOrder.price.toString())
+      const looksRarePriceUSDC = CurrencyAmount.fromRawAmount(WETH, makerOrder.price.toString())
       const partialLooksRarePriceUSDC = (await WETH_USDC_V3.getOutputAmount(looksRarePriceUSDC))[0]
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
@@ -131,7 +126,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 -> 1 looksRare nft & 2 seaport nfts', async () => {
-      const outputEther = BigNumber.from(looksRareOrder.price).add(seaportValue).toString()
+      const outputEther = BigNumber.from(makerOrder.price).add(seaportValue).toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -151,7 +146,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 + eth -> 1 looksRare nft & 2 seaport nfts', async () => {
-      const outputEther = BigNumber.from(looksRareOrder.price).toString()
+      const outputEther = BigNumber.from(makerOrder.price).toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -171,7 +166,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('2 erc20s -> 1 NFT', async () => {
-      const outputEther = BigNumber.from(looksRareOrder.price)
+      const outputEther = BigNumber.from(makerOrder.price)
       const erc20Trade1 = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -199,7 +194,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 -> 1 invalid NFT', async () => {
-      const outputEther = BigNumber.from(looksRareOrder.price).toString()
+      const outputEther = BigNumber.from(makerOrder.price).toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
@@ -219,7 +214,7 @@ describe('SwapRouter.swapCallParameters', () => {
     })
 
     it('erc20 -> 3 NFTs partial fill', async () => {
-      const outputEther = BigNumber.from(looksRareOrder.price).add(seaportValue).toString()
+      const outputEther = BigNumber.from(makerOrder.price).add(seaportValue).toString()
       const erc20Trade = buildTrade([
         await V3Trade.fromRoute(
           new RouteV3([WETH_USDC_V3], USDC, ETHER),
