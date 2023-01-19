@@ -8,7 +8,7 @@ import { Currency, TradeType } from '@uniswap/sdk-core'
 import { Command, RouterTradeType } from './entities/Command'
 import { NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
-import { ConvertWETH } from './entities/protocols/convertWETH'
+import { UnwrapWETH } from './entities/protocols/UnwrapWETH'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
 import { encodePermit } from './utils/permit2'
 import { ROUTER_AS_RECIPIENT, SENDER_AS_RECIPIENT, ETH_ADDRESS } from './utils/constants'
@@ -78,12 +78,12 @@ export abstract class SwapRouter {
         }
         uniswapTrade.encode(planner, { allowRevert: false })
         /**
-         * is ConvertWETH
+         * is UnwrapWETH
          */
-      } else if (trade.tradeType == RouterTradeType.ConvertWETH) {
-        const convertWETH = trade as ConvertWETH
+      } else if (trade.tradeType == RouterTradeType.UnwrapWETH) {
+        const UnwrapWETH = trade as UnwrapWETH
         trade.encode(planner, { allowRevert: false })
-        currentNativeValueInRouter = currentNativeValueInRouter.add(convertWETH.amount)
+        currentNativeValueInRouter = currentNativeValueInRouter.add(UnwrapWETH.amount)
         /**
          * else
          */

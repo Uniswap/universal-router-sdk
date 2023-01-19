@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
   switch (chainId) {
-    case 1: //mainnet
+    case 1: // mainnet
       return '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B'
     case 5: // goerli
       return '0x4648a43B2C14Da09FdF82B161150d3F634f40491'

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { BigNumber } from 'ethers'
-import { ConvertWETH } from '../src/entities/protocols/convertWETH'
+import { UnwrapWETH } from '../src/entities/protocols/UnwrapWETH'
 import { SwapRouter, PERMIT2_ADDRESS, ROUTER_AS_RECIPIENT, UNIVERSAL_ROUTER_ADDRESS, WETH_ADDRESS } from '../src'
 import { utils, Wallet } from 'ethers'
 import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
@@ -81,13 +81,13 @@ describe('SwapRouter.swapCallParameters', () => {
       const outputEther = recentMakerOrder.price.toString()
       const permit2Data = makePermit(WETH_ADDRESS(1), outputEther, '0', UNIVERSAL_ROUTER_ADDRESS(1))
       const signature = await generatePermitSignature(permit2Data, wallet, 1, PERMIT2_ADDRESS)
-      const convertWETHData = {
+      const UnwrapWETHData = {
         ...permit2Data,
         signature,
       }
-      const convertWETHCommand = new ConvertWETH(outputEther, 1, convertWETHData)
+      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1, UnwrapWETHData)
 
-      const methodParameters = SwapRouter.swapCallParameters([convertWETHCommand, recentlooksRareTrade], {
+      const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, recentlooksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
       registerFixture('_PERMIT_AND_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
@@ -98,9 +98,9 @@ describe('SwapRouter.swapCallParameters', () => {
       const recentlooksRareTrade = new LooksRareTrade([recentLooksRareData])
 
       const outputEther = recentMakerOrder.price.toString()
-      const convertWETHCommand = new ConvertWETH(outputEther, 1)
+      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1)
 
-      const methodParameters = SwapRouter.swapCallParameters([convertWETHCommand, recentlooksRareTrade], {
+      const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, recentlooksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
       registerFixture('_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)

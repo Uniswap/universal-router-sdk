@@ -6,8 +6,8 @@ import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { encodePermit } from '../../utils/permit2'
 import { ROUTER_AS_RECIPIENT, UNIVERSAL_ROUTER_ADDRESS, WETH_ADDRESS } from '../../utils/constants'
 
-export class ConvertWETH implements Command {
-  readonly tradeType: RouterTradeType = RouterTradeType.ConvertWETH
+export class UnwrapWETH implements Command {
+  readonly tradeType: RouterTradeType = RouterTradeType.UnwrapWETH
   readonly permit2Data: Permit2Permit
   readonly wethAddress: string
   readonly routerAddress: string
