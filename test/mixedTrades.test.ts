@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { BigNumber } from 'ethers'
-import { UnwrapWETH } from '../src/entities/protocols/UnwrapWETH'
+import { UnwrapWETH } from '../src/entities/protocols/unwrapWETH'
 import { SwapRouter, PERMIT2_ADDRESS, ROUTER_AS_RECIPIENT, UNIVERSAL_ROUTER_ADDRESS, WETH_ADDRESS } from '../src'
 import { utils, Wallet } from 'ethers'
 import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
