@@ -71,7 +71,7 @@ const { calldata, value } = SwapRouter.swapCallParameters([uniswapTrade, seaport
 ```
 
 ### Using WETH for NFT Trades
-The current router purchases all NFTs with ETH, but you may send WETH to the router to be unwrapped for ETH right before the NFT commands. Similar to ERC20 Uniswap Trades for NFT's, any WETH sent that does not cover the purchase will be include as value in the transaction. You can also use ERC20s and WETH to cover the transaction by including both commands before the NFT purchase.
+The current router purchases all NFTs with ETH, but you can send WETH to the router to be unwrapped for ETH right before the NFT commands. Similar to ERC20 Uniswap Trades for NFTs, supplemental ETH will be sent in the transaction if the WETH amount will not cover the NFT buys. You can also use ERC20s and WETH to cover the transaction by including both commands before the NFT purchase.
 
 ```typescript
 import {
