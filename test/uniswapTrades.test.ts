@@ -79,7 +79,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })
 
-    it.only('encodes a single exactInput USDC->ETH swap with permit', async () => {
+    it('encodes a single exactInput USDC->ETH swap with permit', async () => {
       const inputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], USDC, ETHER),
@@ -97,7 +97,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })
 
-    it.only('encodes a single exactInput USDC->ETH swap with EIP-2098 permit', async () => {
+    it('encodes a single exactInput USDC->ETH swap with EIP-2098 permit', async () => {
       const inputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], USDC, ETHER),
@@ -115,7 +115,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })
 
-    it.only('encodes a single exactInput USDC->ETH swap with permit with v recovery id', async () => {
+    it('encodes a single exactInput USDC->ETH swap with permit with v recovery id', async () => {
       const inputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], USDC, ETHER),
