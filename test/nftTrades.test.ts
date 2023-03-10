@@ -11,11 +11,13 @@ import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 import { NFT20Trade, NFT20Data } from '../src/entities/protocols/nft20'
 import { looksRareOrders, createLooksRareOrders } from './orders/looksRare'
 import { x2y2Orders } from './orders/x2y2'
-import { LooksRareData, LooksRareTrade, MakerOrder, TakerOrder } from '../src/entities/protocols/looksRare'
+import { LooksRareData, LooksRareTrade } from '../src/entities/protocols/looksRare'
 import { SudoswapTrade, SudoswapData } from '../src/entities/protocols/sudoswap'
 import { CryptopunkTrade, CryptopunkData } from '../src/entities/protocols/cryptopunk'
 import { X2Y2Data, X2Y2Trade } from '../src/entities/protocols/x2y2'
 import { registerFixture } from './forge/writeInterop'
+import { SeaportV1_4Trade } from '../src/entities/protocols/seaportV1_4'
+import { seaportV1_4Data, seaportV1_4Value } from './orders/seaportV1_4'
 
 const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
@@ -182,6 +184,19 @@ describe('SwapRouter', () => {
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
       const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
       registerFixture('_SEAPORT_BUY_ITEMS', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
+    })
+  })
+
+  describe('SeaportV1_4', () => {
+    it('encodes buying two NFTs from Seaport v1.4', async () => {
+      const value = seaportV1_4Value
+      const seaportV1_4Trade = new SeaportV1_4Trade([seaportV1_4Data])
+      const methodParameters = SwapRouter.swapNFTCallParameters([seaportV1_4Trade])
+      const methodParametersV2 = SwapRouter.swapCallParameters(seaportV1_4Trade)
+      registerFixture('_SEAPORT_V1_4_BUY_ITEMS', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))

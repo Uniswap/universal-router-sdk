@@ -52,6 +52,7 @@ export enum Market {
   NFT20 = 'nft20',
   NFTX = 'nftx',
   Seaport = 'seaport',
+  SeaportV1_4 = 'seaportV1_4',
   Sudoswap = 'Sudoswap',
   Cryptopunks = 'cryptopunks',
   X2Y2 = 'x2y2',
