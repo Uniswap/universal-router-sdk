@@ -13,6 +13,7 @@ export enum SeaportVersion {
 export type SeaportData = {
   items: Order[]
   recipient: string // address
+  version: SeaportVersion
 }
 
 export type FulfillmentComponent = {
@@ -62,8 +63,8 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
   readonly commandType: CommandType
 
-  constructor(orders: SeaportData[], version: SeaportVersion) {
-    if (version == SeaportVersion.ONE_POINT_ONE) {
+  constructor(orders: SeaportData[]) {
+    if (orders[0].version == SeaportVersion.ONE_POINT_ONE) {
       super(Market.Seaport, orders)
       this.commandType = CommandType.SEAPORT
     } else {
@@ -73,7 +74,9 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
+    const seaportVersion = this.orders[0].version
     for (const order of this.orders) {
+      if (order.version != seaportVersion) throw new Error('Differing Seaport Versions')
       let advancedOrders: AdvancedOrder[] = []
       let orderFulfillments: FulfillmentComponent[][] = order.items.map((_, index) => [
         { orderIndex: index, itemIndex: 0 },

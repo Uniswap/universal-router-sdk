@@ -17,7 +17,7 @@ import {
 // Each protocol data object contains 1 call to that protocol. Some protocols can fit
 // many NFT purchase within 1 call, like seaport. Others require multiple calls per NFT (like LooksRare).
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
-const seaportTrades = new SeaportTrade([seaportData1], SeaportVersion.ONE_POINT_FOUR)
+const seaportTrades = new SeaportTrade([seaportData1])
 
 // Use the raw calldata and value returned to call into Universal Swap Router contracts
 // Trades will happen in the order that they are handed in
@@ -60,7 +60,7 @@ import {
 } from "@uniswap/universal-router-sdk";
 
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
-const seaportTrades = new SeaportTrade([seaportData1], SeaportVersion.ONE_POINT_FOUR)
+const seaportTrades = new SeaportTrade([seaportData1])
 // WARNING: never send funds to ROUTER_AS_RECIPIENT unless it is ETH that will be used in NFT trades, otherwise funds are lost.
 const uniswapTrade = new UniswapTrade(
   new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_OUTPUT }),
@@ -84,7 +84,7 @@ import {
 } from "@uniswap/universal-router-sdk";
 
 const looksRareTrades = new LooksRareTrade([looksrareData1, looksrareData2])
-const seaportTrades = new SeaportTrade([seaportData1], SeaportVersion.ONE_POINT_FOUR)
+const seaportTrades = new SeaportTrade([seaportData1])
 // if no Permit needed, omit the third var of type Permit2Permit
 const unwrapWETH = new UnwrapWETH(amountWETH, chainId, optionalPermit2Params)
 

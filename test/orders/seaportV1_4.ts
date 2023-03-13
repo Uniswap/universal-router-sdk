@@ -1,4 +1,4 @@
-import { SeaportData, ConsiderationItem } from '../../src/entities/protocols/seaport'
+import { SeaportData, ConsiderationItem, SeaportVersion } from '../../src/entities/protocols/seaport'
 import { BigNumber } from 'ethers'
 
 const SAMPLE_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -57,6 +57,7 @@ export const seaportV1_4Data: SeaportData = {
     },
   ],
   recipient: SAMPLE_ADDR,
+  version: SeaportVersion.ONE_POINT_FOUR,
 }
 
 export const seaportV1_4Value = calculateSeaportValue(seaportV1_4Data.items[0].parameters.consideration)

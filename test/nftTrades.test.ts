@@ -179,7 +179,7 @@ describe('SwapRouter', () => {
   describe('Seaport', () => {
     it('encodes buying two NFTs from Seaport', async () => {
       const value = seaportValue
-      const seaportTrade = new SeaportTrade([seaportData2Covens], SeaportVersion.ONE_POINT_ONE)
+      const seaportTrade = new SeaportTrade([seaportData2Covens])
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
       const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
       registerFixture('_SEAPORT_BUY_ITEMS', methodParameters)
@@ -192,7 +192,7 @@ describe('SwapRouter', () => {
   describe('SeaportV1_4', () => {
     it('encodes buying two NFTs from Seaport v1.4', async () => {
       const value = seaportV1_4Value
-      const seaportV1_4Trade = new SeaportTrade([seaportV1_4Data], SeaportVersion.ONE_POINT_FOUR)
+      const seaportV1_4Trade = new SeaportTrade([seaportV1_4Data])
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportV1_4Trade])
       const methodParametersV2 = SwapRouter.swapCallParameters(seaportV1_4Trade)
       registerFixture('_SEAPORT_V1_4_BUY_ITEMS', methodParameters)
@@ -286,7 +286,7 @@ describe('SwapRouter', () => {
 
     it('encodes partial fill for multiple trades between protocols', async () => {
       const nftxTrade = new NFTXTrade([nftxPurchase2Covens])
-      const seaportTrade = new SeaportTrade([seaportData2Covens], SeaportVersion.ONE_POINT_ONE)
+      const seaportTrade = new SeaportTrade([seaportData2Covens])
       const methodParameters = SwapRouter.swapNFTCallParameters([nftxTrade, seaportTrade])
       const methodParametersV2 = SwapRouter.swapCallParameters([nftxTrade, seaportTrade])
       registerFixture('_PARTIAL_FILL', methodParameters)
