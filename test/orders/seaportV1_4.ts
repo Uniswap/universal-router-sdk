@@ -57,7 +57,7 @@ export const seaportV1_4Data: SeaportData = {
     },
   ],
   recipient: SAMPLE_ADDR,
-  version: SeaportVersion.ONE_POINT_FOUR,
+  version: SeaportVersion.V1_4,
 }
 
 export const seaportV1_4Value = calculateSeaportValue(seaportV1_4Data.items[0].parameters.consideration)

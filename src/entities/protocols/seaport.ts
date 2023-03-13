@@ -6,8 +6,8 @@ import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 
 export enum SeaportVersion {
-  ONE_POINT_ONE,
-  ONE_POINT_FOUR,
+  V1_1,
+  V1_4,
 }
 
 export type SeaportData = {
@@ -135,9 +135,9 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
   private commandMap(version: SeaportVersion): CommandType {
     switch (version) {
-      case SeaportVersion.ONE_POINT_ONE:
+      case SeaportVersion.V1_1:
         return CommandType.SEAPORT
-      case SeaportVersion.ONE_POINT_FOUR:
+      case SeaportVersion.V1_4:
         return CommandType.SEAPORT_V1_4
     }
   }

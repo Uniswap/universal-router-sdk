@@ -107,7 +107,7 @@ export const seaportData2Covens: SeaportData = {
     },
   ],
   recipient: SAMPLE_ADDR,
-  version: SeaportVersion.ONE_POINT_ONE,
+  version: SeaportVersion.V1_1,
 }
 
 export const seaportValue: BigNumber = calculateSeaportValue(seaportData2Covens.items[0].parameters.consideration).add(
