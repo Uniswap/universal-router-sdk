@@ -61,7 +61,6 @@ export type AdvancedOrder = Order & {
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
-  readonly commandType: CommandType
 
   constructor(orders: SeaportData[]) {
     super(Market.Seaport, orders)
