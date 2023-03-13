@@ -13,7 +13,7 @@ contract MixedSwapCallParameters is Test, Interop, DeployRouter {
     using stdJson for string;
 
     address private constant RECIPIENT = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
-    address payable private constant MAINNET_ROUTER = payable(0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B);
+    address payable private constant MAINNET_ROUTER = payable(0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5);
     address private constant MAINNET_PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
 
     ERC20 private constant WETH = ERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
