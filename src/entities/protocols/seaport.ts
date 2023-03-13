@@ -64,19 +64,11 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
   readonly commandType: CommandType
 
   constructor(orders: SeaportData[]) {
-    if (orders[0].version == SeaportVersion.ONE_POINT_ONE) {
-      super(Market.Seaport, orders)
-      this.commandType = CommandType.SEAPORT
-    } else {
-      super(Market.SeaportV1_4, orders)
-      this.commandType = CommandType.SEAPORT_V1_4
-    }
+    super(Market.Seaport, orders)
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
-    const seaportVersion = this.orders[0].version
     for (const order of this.orders) {
-      if (order.version != seaportVersion) throw new Error('Differing Seaport Versions')
       let advancedOrders: AdvancedOrder[] = []
       let orderFulfillments: FulfillmentComponent[][] = order.items.map((_, index) => [
         { orderIndex: index, itemIndex: 0 },
@@ -107,7 +99,11 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
           100, // TODO: look into making this a better number
         ])
       }
-      planner.addCommand(this.commandType, [this.getTotalPrice().toString(), calldata], config.allowRevert)
+      planner.addCommand(
+        this.commandMap(order.version),
+        [this.getTotalPrice().toString(), calldata],
+        config.allowRevert
+      )
     }
   }
 
@@ -135,6 +131,15 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       }
     }
     return totalPrice
+  }
+
+  private commandMap(version: SeaportVersion): CommandType {
+    switch (version) {
+      case SeaportVersion.ONE_POINT_ONE:
+        return CommandType.SEAPORT
+      case SeaportVersion.ONE_POINT_FOUR:
+        return CommandType.SEAPORT_V1_4
+    }
   }
 
   private getConsiderationFulfillments(protocolDatas: Order[]): FulfillmentComponent[][] {
