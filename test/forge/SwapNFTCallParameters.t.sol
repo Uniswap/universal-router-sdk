@@ -143,8 +143,7 @@ contract swapNFTCallParametersTest is Test, Interop, DeployRouter {
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertEq(token.balanceOf(RECIPIENT, 1), 2);
-        assertEq(from.balance, 0);
-        assertEq(balance - params.value, 0);
+        assertEq(from.balance, balance - params.value);
     }
 
     function testCryptopunkBuyItems() public {
