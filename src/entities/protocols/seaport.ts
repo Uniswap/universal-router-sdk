@@ -5,6 +5,11 @@ import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 
+export enum SeaportVersion {
+  ONE_POINT_ONE,
+  ONE_POINT_FOUR,
+}
+
 export type SeaportData = {
   items: Order[]
   recipient: string // address
@@ -55,9 +60,16 @@ export type AdvancedOrder = Order & {
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
+  readonly commandType: CommandType
 
-  constructor(orders: SeaportData[]) {
-    super(Market.Seaport, orders)
+  constructor(orders: SeaportData[], version: SeaportVersion) {
+    if (version == SeaportVersion.ONE_POINT_ONE) {
+      super(Market.Seaport, orders)
+      this.commandType = CommandType.SEAPORT
+    } else {
+      super(Market.SeaportV1_4, orders)
+      this.commandType = CommandType.SEAPORT_V1_4
+    }
   }
 
   encode(planner: RoutePlanner, config: TradeConfig): void {
@@ -92,7 +104,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
           100, // TODO: look into making this a better number
         ])
       }
-      planner.addCommand(CommandType.SEAPORT, [this.getTotalPrice().toString(), calldata], config.allowRevert)
+      planner.addCommand(this.commandType, [this.getTotalPrice().toString(), calldata], config.allowRevert)
     }
   }
 

@@ -45,7 +45,7 @@ describe('SwapRouter.swapCallParameters', () => {
     }
     const invalidLooksRareMaker = { ...makerOrder, tokenId: 1 }
     const invalidLooksRareData = { ...looksRareData, makerOrder: invalidLooksRareMaker }
-    const seaportTrade = new SeaportTrade([seaportData2Covens])
+    const seaportTrade = new SeaportTrade([seaportData2Covens], SeaportVersion.ONE_POINT_ONE)
 
     let WETH_USDC_V3: Pool
     let USDC_DAI_V2: Pair
