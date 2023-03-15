@@ -19,5 +19,5 @@ export function encodePermit(planner: RoutePlanner, permit: Permit2Permit): void
     signature = ethers.utils.joinSignature(ethers.utils.splitSignature(permit.signature))
   }
 
-  planner.addCommand(CommandType.PERMIT, [permit, signature])
+  planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, signature])
 }
