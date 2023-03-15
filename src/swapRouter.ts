@@ -51,7 +51,7 @@ export abstract class SwapRouter {
           currentNativeValueInRouter = currentNativeValueInRouter.sub(tradePrice)
         }
         /**
-         * is Uniswap Trade
+         * is UniswapTrade
          */
       } else if (trade.tradeType == RouterTradeType.UniswapTrade) {
         const uniswapTrade = trade as UniswapTrade

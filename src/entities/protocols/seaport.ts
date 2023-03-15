@@ -4,6 +4,8 @@ import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
+import { encodePermit, Permit2Permit } from '../../utils/permit2'
+import { ETH_ADDRESS, MAX_UINT256 } from '../../utils/constants'
 
 export enum SeaportVersion {
   V1_1,
@@ -14,6 +16,8 @@ export type SeaportData = {
   items: Order[]
   recipient: string // address
   version: SeaportVersion
+  inputTokenPermit?: Permit2Permit
+  inputTokenApproval?: string
 }
 
 export type FulfillmentComponent = {
@@ -98,9 +102,20 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
           100, // TODO: look into making this a better number
         ])
       }
+
+      // if an approval is required, add it
+      if (!!order.inputTokenApproval) {
+        planner.addCommand(CommandType.APPROVE_ERC20, [order.inputTokenApproval, MAX_UINT256])
+      }
+
+      // if this order has a permit, encode it
+      if (!!order.inputTokenPermit) {
+        encodePermit(planner, order.inputTokenPermit)
+      }
+
       planner.addCommand(
         this.commandMap(order.version),
-        [this.getTotalOrderPrice(order).toString(), calldata],
+        [this.getTotalOrderPrice(order, ETH_ADDRESS).toString(), calldata],
         config.allowRevert
       )
     }
@@ -122,19 +137,19 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return buyItems
   }
 
-  getTotalOrderPrice(order: SeaportData): BigNumber {
+  getTotalOrderPrice(order: SeaportData, token: string = ETH_ADDRESS): BigNumber {
     let totalOrderPrice = BigNumber.from(0)
     for (const item of order.items) {
-      totalOrderPrice = totalOrderPrice.add(this.calculateValue(item.parameters.consideration))
+      totalOrderPrice = totalOrderPrice.add(this.calculateValue(item.parameters.consideration, token))
     }
     return totalOrderPrice
   }
 
-  getTotalPrice(): BigNumber {
+  getTotalPrice(token: string = ETH_ADDRESS): BigNumber {
     let totalPrice = BigNumber.from(0)
     for (const order of this.orders) {
       for (const item of order.items) {
-        totalPrice = totalPrice.add(this.calculateValue(item.parameters.consideration))
+        totalPrice = totalPrice.add(this.calculateValue(item.parameters.consideration, token))
       }
     }
     return totalPrice
@@ -183,7 +198,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return considerationFulfillments
   }
 
-  private getAdvancedOrderParams(data: Order): { advancedOrder: AdvancedOrder; value: BigNumber } {
+  private getAdvancedOrderParams(data: Order): { advancedOrder: AdvancedOrder } {
     const advancedOrder = {
       parameters: data.parameters,
       numerator: BigNumber.from('1'),
@@ -191,13 +206,13 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       signature: data.signature,
       extraData: '0x00',
     }
-    const value = this.calculateValue(data.parameters.consideration)
-    return { advancedOrder, value }
+    return { advancedOrder }
   }
 
-  private calculateValue(considerations: ConsiderationItem[]): BigNumber {
+  private calculateValue(considerations: ConsiderationItem[], token: string): BigNumber {
     return considerations.reduce(
-      (amt: BigNumber, consideration: ConsiderationItem) => amt.add(consideration.startAmount),
+      (amt: BigNumber, consideration: ConsiderationItem) =>
+        consideration.token == token ? amt.add(consideration.startAmount) : amt,
       BigNumber.from(0)
     )
   }
