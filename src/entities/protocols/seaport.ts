@@ -4,8 +4,9 @@ import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { encodePermit, Permit2Permit } from '../../utils/permit2'
-import { ETH_ADDRESS, MAX_UINT256 } from '../../utils/constants'
+import { encodePermit, Permit2Permit, Permit2TransferFrom } from '../../utils/permit2'
+import { CONDUIT_SPENDER_ID, ETH_ADDRESS } from '../../utils/constants'
+import invariant from 'tiny-invariant'
 
 export enum SeaportVersion {
   V1_1,
@@ -16,8 +17,9 @@ export type SeaportData = {
   items: Order[]
   recipient: string // address
   version: SeaportVersion
-  inputTokenPermit?: Permit2Permit
   inputTokenApproval?: string
+  inputTokenPermit?: Permit2Permit
+  inputTokenTransfer?: Permit2TransferFrom
 }
 
 export type FulfillmentComponent = {
@@ -65,6 +67,7 @@ export type AdvancedOrder = Order & {
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
+  readonly routerAddress: string
 
   constructor(orders: SeaportData[]) {
     super(Market.Seaport, orders)
@@ -103,14 +106,29 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         ])
       }
 
+      if (!!order.inputTokenApproval && !!order.inputTokenPermit)
+        invariant(order.inputTokenApproval === order.inputTokenPermit.details.token, `inconsistent token`)
+      if (!!order.inputTokenPermit && !!order.inputTokenTransfer)
+        invariant(order.inputTokenTransfer.token === order.inputTokenPermit.details.token, `inconsistent token`)
+      if (!!order.inputTokenApproval && !!order.inputTokenTransfer)
+        invariant(order.inputTokenApproval === order.inputTokenTransfer.token, `inconsistent token`)
+
       // if an approval is required, add it
       if (!!order.inputTokenApproval) {
-        planner.addCommand(CommandType.APPROVE_ERC20, [order.inputTokenApproval, MAX_UINT256])
+        planner.addCommand(CommandType.APPROVE_ERC20, [order.inputTokenApproval, CONDUIT_SPENDER_ID])
       }
 
       // if this order has a permit, encode it
       if (!!order.inputTokenPermit) {
         encodePermit(planner, order.inputTokenPermit)
+      }
+
+      if (!!order.inputTokenTransfer) {
+        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
+          order.inputTokenTransfer.token,
+          order.inputTokenTransfer.routerAddress,
+          this.getTotalOrderPrice(order, order.inputTokenTransfer.token).toString(),
+        ])
       }
 
       planner.addCommand(

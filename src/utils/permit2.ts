@@ -6,6 +6,11 @@ export interface Permit2Permit extends PermitSingle {
   signature: string
 }
 
+export type Permit2TransferFrom = {
+  token: string
+  routerAddress: string
+}
+
 const SIGNATURE_LENGTH = 65
 const EIP_2098_SIGNATURE_LENGTH = 64
 
