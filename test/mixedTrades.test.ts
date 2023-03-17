@@ -88,7 +88,7 @@ describe('SwapRouter.swapCallParameters', () => {
         ...permit2Data,
         signature,
       }
-      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1, UnwrapWETHData, FORGE_ROUTER_ADDRESS)
+      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1, UnwrapWETHData)
 
       const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, recentlooksRareTrade], {
         sender: FORGE_ROUTER_ADDRESS,
@@ -101,7 +101,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const recentlooksRareTrade = new LooksRareTrade([recentLooksRareData])
 
       const outputEther = recentMakerOrder.price.toString()
-      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1, undefined, FORGE_ROUTER_ADDRESS)
+      const UnwrapWETHCommand = new UnwrapWETH(outputEther, 1)
 
       const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, recentlooksRareTrade], {
         sender: FORGE_SENDER_ADDRESS,
