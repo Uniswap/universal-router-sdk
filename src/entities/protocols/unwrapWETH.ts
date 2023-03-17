@@ -23,9 +23,12 @@ export class UnwrapWETH implements Command {
   }
 
   encode(planner: RoutePlanner, _: TradeConfig): void {
-    encodeInputTokenOptions(planner, undefined, this.permit2Data, {
-      token: this.wethAddress,
-      amount: this.amount.toString(),
+    encodeInputTokenOptions(planner, {
+      permit2Permit: this.permit2Data,
+      permit2TransferFrom: {
+        token: this.wethAddress,
+        amount: this.amount.toString(),
+      },
     })
     planner.addCommand(CommandType.UNWRAP_WETH, [ROUTER_AS_RECIPIENT, this.amount])
   }
