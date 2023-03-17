@@ -19,8 +19,10 @@
     "test:forge": "forge test",
     "install:ur": "cd node_modules/@uniswap/universal-router && forge install",
     "build": "tsdx build",
-    "prettier:fix": "prettier --write '**/*.ts' && prettier --write '**/*.json' && forge fmt",
-    "prettier": "prettier --check '**/*.ts' && prettier --check '**/*.json' && forge fmt",
+    "prettier:fix": "prettier --write '**/*.ts' && prettier --write '**/*.json'",
+    "forge:fix": "forge fmt",
+    "lint:fix": "yarn prettier:fix && yarn forge:fix",
+    "prettier": "prettier --check '**/*.ts' && prettier --check '**/*.json'",
     "docs": "typedoc"
   },
   "author": "@Uniswap",

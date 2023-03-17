@@ -35,12 +35,10 @@ contract DeployRouter is Test {
     address internal constant RECIPIENT = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
     address internal constant MAINNET_PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
 
-    address internal constant UNIVERSAL_ROUTER_V1 = 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B; // available from block 16075466
-    address internal constant UNIVERSAL_ROUTER_V1_1 = 0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5; // available from block 16819746
     address internal constant FORGE_ROUTER_ADDRESS = 0xE808C1cfeebb6cb36B537B82FA7c9EEf31415a05;
 
-    UniversalRouter public router = UniversalRouter(payable(UNIVERSAL_ROUTER_V1_1));
-    Permit2 public permit2 = Permit2(MAINNET_PERMIT2);
+    UniversalRouter public router;
+    Permit2 public permit2;
 
     address from;
     uint256 fromPrivateKey;
