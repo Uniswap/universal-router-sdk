@@ -56,6 +56,7 @@ export enum Market {
   Sudoswap = 'Sudoswap',
   Cryptopunks = 'cryptopunks',
   X2Y2 = 'x2y2',
+  Element = 'element'
 }
 
 export enum TokenType {
