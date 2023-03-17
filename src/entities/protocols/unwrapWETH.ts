@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant'
 import { BigNumberish } from 'ethers'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { encodeHandleInputTokens, Permit2Permit } from '../../utils/inputTokens'
+import { encodeInputTokenOptions, Permit2Permit } from '../../utils/inputTokens'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { ROUTER_AS_RECIPIENT, WETH_ADDRESS } from '../../utils/constants'
 
@@ -23,7 +23,7 @@ export class UnwrapWETH implements Command {
   }
 
   encode(planner: RoutePlanner, _: TradeConfig): void {
-    encodeHandleInputTokens(planner, undefined, this.permit2Data, {
+    encodeInputTokenOptions(planner, undefined, this.permit2Data, {
       token: this.wethAddress,
       amount: this.amount.toString(),
     })
