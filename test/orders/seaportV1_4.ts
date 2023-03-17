@@ -1,4 +1,4 @@
-import { SeaportData, ConsiderationItem, SeaportVersion } from '../../src/entities/protocols/seaport'
+import { SeaportData, ConsiderationItem } from '../../src/entities/protocols/seaport'
 import { BigNumber } from 'ethers'
 import { TEST_RECIPIENT_ADDRESS } from '../utils/addresses'
 
@@ -56,7 +56,8 @@ export const seaportV1_4DataETH: SeaportData = {
     },
   ],
   recipient: TEST_RECIPIENT_ADDRESS,
-  version: SeaportVersion.V1_4,
+  protocolAddress: '0x00000000000001ad428e4906aE43D8F9852d0dD6',
+  inputCurrency: '0x0000000000000000000000000000000000000000',
 }
 
 export const seaportV1_4ValueETH = calculateSeaportValue(seaportV1_4DataETH.items[0].parameters.consideration)

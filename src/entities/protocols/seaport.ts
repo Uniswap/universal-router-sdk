@@ -1,25 +1,24 @@
-import invariant from 'tiny-invariant'
-import abi from '../../../abis/Seaport.json'
 import { BigNumber, BigNumberish } from 'ethers'
 import { Interface } from '@ethersproject/abi'
+import abi from '../../../abis/Seaport.json'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { encodePermit, Permit2Permit } from '../../utils/permit2'
-import { CONDUIT_SPENDER_ID, ETH_ADDRESS, ROUTER_AS_RECIPIENT } from '../../utils/constants'
-
-export enum SeaportVersion {
-  V1_1,
-  V1_4,
-}
+import { encodeApprovalPermitTransfer, Permit2Permit } from '../../utils/inputTokens'
+import { ETH_ADDRESS } from '../../utils/constants'
 
 export type SeaportData = {
   items: Order[]
   recipient: string // address
-  version: SeaportVersion
-  inputTokenApproval?: string
-  inputTokenPermit?: Permit2Permit
-  inputTokenTransfer?: string
+  protocolAddress: string
+  inputCurrency: string
+  inputTokenProcessing?: InputTokenProcessing
+}
+
+export type InputTokenProcessing = {
+  permit2Permit?: Permit2Permit
+  protocolApproval: boolean
+  permit2TransferFrom: boolean
 }
 
 export type FulfillmentComponent = {
@@ -105,36 +104,26 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         ])
       }
 
-      if (!!order.inputTokenApproval && !!order.inputTokenPermit)
-        invariant(order.inputTokenApproval === order.inputTokenPermit.details.token, `inconsistent token`)
-      if (!!order.inputTokenPermit && !!order.inputTokenTransfer)
-        invariant(order.inputTokenTransfer === order.inputTokenPermit.details.token, `inconsistent token`)
-      if (!!order.inputTokenApproval && !!order.inputTokenTransfer)
-        invariant(order.inputTokenApproval === order.inputTokenTransfer, `inconsistent token`)
-
-      // if an approval is required, add it
-      if (!!order.inputTokenApproval) {
-        planner.addCommand(CommandType.APPROVE_ERC20, [order.inputTokenApproval, CONDUIT_SPENDER_ID])
+      let ethValue
+      if (order.inputCurrency != ETH_ADDRESS) {
+        ethValue = 0
+        if (!!order.inputTokenProcessing) {
+          encodeApprovalPermitTransfer(
+            planner,
+            order.inputTokenProcessing.protocolApproval
+              ? { token: order.inputCurrency, protocol: order.protocolAddress }
+              : undefined,
+            order.inputTokenProcessing.permit2Permit,
+            order.inputTokenProcessing.permit2TransferFrom
+              ? { token: order.inputCurrency, amount: this.getTotalOrderPrice(order, order.inputCurrency).toString() }
+              : undefined
+          )
+        }
+      } else {
+        ethValue = this.getTotalOrderPrice(order, ETH_ADDRESS).toString()
       }
 
-      // if this order has a permit, encode it
-      if (!!order.inputTokenPermit) {
-        encodePermit(planner, order.inputTokenPermit)
-      }
-
-      if (!!order.inputTokenTransfer) {
-        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-          order.inputTokenTransfer,
-          ROUTER_AS_RECIPIENT,
-          this.getTotalOrderPrice(order, order.inputTokenTransfer).toString(),
-        ])
-      }
-
-      planner.addCommand(
-        this.commandMap(order.version),
-        [this.getTotalOrderPrice(order, ETH_ADDRESS).toString(), calldata],
-        config.allowRevert
-      )
+      planner.addCommand(this.commandMap(order.protocolAddress), [ethValue, calldata], config.allowRevert)
     }
   }
 
@@ -172,12 +161,14 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return totalPrice
   }
 
-  private commandMap(version: SeaportVersion): CommandType {
-    switch (version) {
-      case SeaportVersion.V1_1:
+  private commandMap(protocolAddress: string): CommandType {
+    switch (protocolAddress.toLowerCase()) {
+      case '0x00000000006c3852cbef3e08e8df289169ede581': // Seaport v1.1
         return CommandType.SEAPORT
-      case SeaportVersion.V1_4:
+      case '0x00000000000001ad428e4906ae43d8f9852d0dd6': // Seaport v1.4
         return CommandType.SEAPORT_V1_4
+      default:
+        throw new Error('unsupported Seaport address')
     }
   }
 
