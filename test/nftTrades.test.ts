@@ -192,20 +192,17 @@ describe('SwapRouter', () => {
       // get the basic seaport data for ERC20 trade
       let seaportData = seaportDataERC20
 
-      // add token approval
+      // add token approval and transfer
       const WETH_MAINNET = WETH_ADDRESS(1)
       seaportData.inputTokenApproval = WETH_MAINNET
+      seaportData.inputTokenTransfer = WETH_MAINNET
 
-      // add permit and transfer
+      // add permit
       const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
       seaportData.inputTokenPermit = {
         ...permit2Data,
         signature,
-      }
-      seaportData.inputTokenTransfer = {
-        token: WETH_MAINNET,
-        routerAddress: FORGE_ROUTER_ADDRESS,
       }
 
       const seaportTrade = new SeaportTrade([seaportData])
@@ -223,15 +220,12 @@ describe('SwapRouter', () => {
       const WETH_MAINNET = WETH_ADDRESS(1)
 
       // add permit and transfer
+      seaportData.inputTokenTransfer = WETH_MAINNET
       const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
       seaportData.inputTokenPermit = {
         ...permit2Data,
         signature,
-      }
-      seaportData.inputTokenTransfer = {
-        token: WETH_MAINNET,
-        routerAddress: FORGE_ROUTER_ADDRESS,
       }
 
       const seaportTrade = new SeaportTrade([seaportData])

@@ -1,12 +1,12 @@
+import invariant from 'tiny-invariant'
 import abi from '../../../abis/Seaport.json'
 import { BigNumber, BigNumberish } from 'ethers'
 import { Interface } from '@ethersproject/abi'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { encodePermit, Permit2Permit, Permit2TransferFrom } from '../../utils/permit2'
-import { CONDUIT_SPENDER_ID, ETH_ADDRESS } from '../../utils/constants'
-import invariant from 'tiny-invariant'
+import { encodePermit, Permit2Permit } from '../../utils/permit2'
+import { CONDUIT_SPENDER_ID, ETH_ADDRESS, ROUTER_AS_RECIPIENT } from '../../utils/constants'
 
 export enum SeaportVersion {
   V1_1,
@@ -19,7 +19,7 @@ export type SeaportData = {
   version: SeaportVersion
   inputTokenApproval?: string
   inputTokenPermit?: Permit2Permit
-  inputTokenTransfer?: Permit2TransferFrom
+  inputTokenTransfer?: string
 }
 
 export type FulfillmentComponent = {
@@ -67,7 +67,6 @@ export type AdvancedOrder = Order & {
 export class SeaportTrade extends NFTTrade<SeaportData> {
   public static INTERFACE: Interface = new Interface(abi)
   public static OPENSEA_CONDUIT_KEY: string = '0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000'
-  readonly routerAddress: string
 
   constructor(orders: SeaportData[]) {
     super(Market.Seaport, orders)
@@ -109,9 +108,9 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
       if (!!order.inputTokenApproval && !!order.inputTokenPermit)
         invariant(order.inputTokenApproval === order.inputTokenPermit.details.token, `inconsistent token`)
       if (!!order.inputTokenPermit && !!order.inputTokenTransfer)
-        invariant(order.inputTokenTransfer.token === order.inputTokenPermit.details.token, `inconsistent token`)
+        invariant(order.inputTokenTransfer === order.inputTokenPermit.details.token, `inconsistent token`)
       if (!!order.inputTokenApproval && !!order.inputTokenTransfer)
-        invariant(order.inputTokenApproval === order.inputTokenTransfer.token, `inconsistent token`)
+        invariant(order.inputTokenApproval === order.inputTokenTransfer, `inconsistent token`)
 
       // if an approval is required, add it
       if (!!order.inputTokenApproval) {
@@ -125,9 +124,9 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
       if (!!order.inputTokenTransfer) {
         planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-          order.inputTokenTransfer.token,
-          order.inputTokenTransfer.routerAddress,
-          this.getTotalOrderPrice(order, order.inputTokenTransfer.token).toString(),
+          order.inputTokenTransfer,
+          ROUTER_AS_RECIPIENT,
+          this.getTotalOrderPrice(order, order.inputTokenTransfer).toString(),
         ])
       }
 
