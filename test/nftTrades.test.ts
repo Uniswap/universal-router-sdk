@@ -6,7 +6,7 @@ import { SwapRouter } from '../src/swapRouter'
 import { TokenType } from '../src/entities/NFTTrade'
 import { FoundationTrade, FoundationData } from '../src/entities/protocols/foundation'
 import { SeaportTrade } from '../src/entities/protocols/seaport'
-import { seaportDataETH, seaportDataERC20, calculateSeaportValue } from './orders/seaport'
+import { seaportDataETH, seaportDataERC20 } from './orders/seaport'
 import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 import { NFT20Trade, NFT20Data } from '../src/entities/protocols/nft20'
 import { looksRareOrders, createLooksRareOrders } from './orders/looksRare'
@@ -196,14 +196,17 @@ describe('SwapRouter', () => {
       const WETH_MAINNET = WETH_ADDRESS(1)
       const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
-      seaportData.inputTokenProcessing = {
-        protocolApproval: true,
-        permit2TransferFrom: true,
-        permit2Permit: {
-          ...permit2Data,
-          signature,
+      seaportData.inputTokenProcessing = [
+        {
+          token: WETH_MAINNET,
+          protocolApproval: true,
+          permit2TransferFrom: true,
+          permit2Permit: {
+            ...permit2Data,
+            signature,
+          },
         },
-      }
+      ]
 
       const seaportTrade = new SeaportTrade([seaportData])
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
@@ -222,14 +225,17 @@ describe('SwapRouter', () => {
       const WETH_MAINNET = WETH_ADDRESS(1)
       const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
-      seaportData.inputTokenProcessing = {
-        protocolApproval: false, // no approval
-        permit2TransferFrom: true,
-        permit2Permit: {
-          ...permit2Data,
-          signature,
+      seaportData.inputTokenProcessing = [
+        {
+          token: WETH_MAINNET,
+          protocolApproval: false, // no approval
+          permit2TransferFrom: true,
+          permit2Permit: {
+            ...permit2Data,
+            signature,
+          },
         },
-      }
+      ]
 
       const seaportTrade = new SeaportTrade([seaportData])
       const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])

@@ -11,11 +11,11 @@ export type SeaportData = {
   items: Order[]
   recipient: string // address
   protocolAddress: string
-  inputCurrency: string
-  inputTokenProcessing?: InputTokenProcessing
+  inputTokenProcessing?: InputTokenProcessing[]
 }
 
 export type InputTokenProcessing = {
+  token: string
   permit2Permit?: Permit2Permit
   protocolApproval: boolean
   permit2TransferFrom: boolean
@@ -104,26 +104,23 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
         ])
       }
 
-      let ethValue
-      if (order.inputCurrency != ETH_ADDRESS) {
-        ethValue = 0
-        if (!!order.inputTokenProcessing) {
+      if (!!order.inputTokenProcessing) {
+        for (const inputToken of order.inputTokenProcessing)
           encodeApprovalPermitTransfer(
             planner,
-            order.inputTokenProcessing.protocolApproval
-              ? { token: order.inputCurrency, protocol: order.protocolAddress }
-              : undefined,
-            order.inputTokenProcessing.permit2Permit,
-            order.inputTokenProcessing.permit2TransferFrom
-              ? { token: order.inputCurrency, amount: this.getTotalOrderPrice(order, order.inputCurrency).toString() }
+            inputToken.protocolApproval ? { token: inputToken.token, protocol: order.protocolAddress } : undefined,
+            inputToken.permit2Permit,
+            inputToken.permit2TransferFrom
+              ? { token: inputToken.token, amount: this.getTotalOrderPrice(order, inputToken.token).toString() }
               : undefined
           )
-        }
-      } else {
-        ethValue = this.getTotalOrderPrice(order, ETH_ADDRESS).toString()
       }
 
-      planner.addCommand(this.commandMap(order.protocolAddress), [ethValue, calldata], config.allowRevert)
+      planner.addCommand(
+        this.commandMap(order.protocolAddress),
+        [this.getTotalOrderPrice(order, ETH_ADDRESS).toString(), calldata],
+        config.allowRevert
+      )
     }
   }
 

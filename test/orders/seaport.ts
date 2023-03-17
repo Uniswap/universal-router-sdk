@@ -107,7 +107,6 @@ export const seaportDataETH: SeaportData = {
   ],
   recipient: TEST_RECIPIENT_ADDRESS,
   protocolAddress: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
-  inputCurrency: '0x0000000000000000000000000000000000000000',
 }
 
 export const seaportDataERC20: SeaportData = {
@@ -165,7 +164,6 @@ export const seaportDataERC20: SeaportData = {
   ],
   recipient: TEST_RECIPIENT_ADDRESS,
   protocolAddress: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
-  inputCurrency: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
 }
 
 export function calculateSeaportValue(considerations: ConsiderationItem[], token: string): BigNumber {
