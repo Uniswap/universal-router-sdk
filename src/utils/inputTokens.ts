@@ -35,7 +35,12 @@ export function encodePermit(planner: RoutePlanner, permit: Permit2Permit): void
   planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, signature])
 }
 
-export function encodeApprovalPermitTransfer(
+// Handles the encoding of commands needed to gather input tokens for a trade
+// Approval: The router approving another address to take tokens.
+//   note: Only seaport and sudoswap support this action. Approvals are left open.
+// Permit: A Permit2 signature-based Permit to allow the router to access a user's tokens
+// Transfer: A Permit2 TransferFrom of tokens from a user to either the router or another address
+export function encodeHandleInputTokens(
   planner: RoutePlanner,
   approval?: ApproveProtocol,
   permit?: Permit2Permit,

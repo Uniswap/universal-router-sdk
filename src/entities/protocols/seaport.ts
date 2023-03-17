@@ -4,7 +4,7 @@ import abi from '../../../abis/Seaport.json'
 import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
-import { encodeApprovalPermitTransfer, Permit2Permit } from '../../utils/inputTokens'
+import { encodeHandleInputTokens, Permit2Permit } from '../../utils/inputTokens'
 import { ETH_ADDRESS } from '../../utils/constants'
 
 export type SeaportData = {
@@ -106,7 +106,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
       if (!!order.inputTokenProcessing) {
         for (const inputToken of order.inputTokenProcessing)
-          encodeApprovalPermitTransfer(
+          encodeHandleInputTokens(
             planner,
             inputToken.protocolApproval ? { token: inputToken.token, protocol: order.protocolAddress } : undefined,
             inputToken.permit2Permit,
