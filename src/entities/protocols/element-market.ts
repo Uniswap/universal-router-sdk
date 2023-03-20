@@ -41,7 +41,7 @@ export type ElementData = {
 }
 
 export class ElementTrade extends NFTTrade<ElementData> {
-  private static ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase()
+  private static ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'.toLowerCase()
   public static INTERFACE: Interface = new Interface(abi)
 
   constructor(orders: ElementData[]) {
