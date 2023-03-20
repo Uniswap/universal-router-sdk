@@ -19,7 +19,42 @@ export const elementSignatureETH: OrderSignature = {
   s: '0x72cadb8ed8a5bf5938829f888ff60c9ebe163954dc15af3e5d6014e8f6801b83',
 }
 
+export const elementOrderETH_WithFees: ERC721SellOrder = {
+  maker: '0xd9d9c1141239f2b7f0604cde48bf3d6e809f4aeb',
+  taker: '0x0000000000000000000000000000000000000000',
+  expiry: '7212658763627609514',
+  nonce: '26',
+  erc20Token: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  erc20TokenAmount: '36340000000000000',
+  fees: [
+    {
+      recipient: '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3',
+      amount: '197500000000000',
+      feeData: '0x',
+    },
+    {
+      recipient: '0x44403685c1335a42a1d88ecf781b270a20e973ee',
+      amount: '2962500000000000',
+      feeData: '0x',
+    },
+  ],
+  nft: '0x4c69dbc3a2aa3476c3f7a1227ab70950db1f4858',
+  nftId: '2540',
+}
+
+export const elementOrderETH_WithFees_Signature: OrderSignature = {
+  signatureType: 0,
+  v: 28,
+  r: '0x5b80d409a0085b624d82fa6c60a4a9ec28dd898f243ce7c058f9b109c9de927f',
+  s: '0x3401627e461312e0069f4e8dab96c120e3b62f2fa1ce0e52927bca00fd70ef0c',
+}
+
 export const elementDataETH: ElementData = {
   order: elementOrderETH,
   signature: elementSignatureETH,
+}
+
+export const elementDataETH_WithFees: ElementData = {
+  order: elementOrderETH_WithFees,
+  signature: elementOrderETH_WithFees_Signature,
 }

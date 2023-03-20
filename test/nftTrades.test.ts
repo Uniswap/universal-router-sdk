@@ -21,7 +21,7 @@ import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_RECIPIENT_ADDRESS } f
 import { ETH_ADDRESS, WETH_ADDRESS } from '../src/utils/constants'
 import { generatePermitSignature, makePermit } from './utils/permit2'
 import { ElementTrade } from '../src/entities/protocols/element-market'
-import { elementDataETH } from './orders/element'
+import { elementDataETH, elementDataETH_WithFees } from './orders/element'
 
 describe('SwapRouter', () => {
   const recipient = TEST_RECIPIENT_ADDRESS
@@ -132,7 +132,7 @@ describe('SwapRouter', () => {
     })
   })
 
-  describe('Element Market', () => {
+  describe.only('Element Market', () => {
     // buy an ERC721 from block 16627214
     it('encodes buying one ERC721 from Element', async () => {
       const elementTrade = new ElementTrade([elementDataETH])
@@ -140,6 +140,17 @@ describe('SwapRouter', () => {
       const methodParametersV2 = SwapRouter.swapCallParameters(elementTrade)
       registerFixture('_ELEMENT_BUY_ITEM_721', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.eq(elementDataETH.order.erc20TokenAmount)
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
+    })
+
+    it('encodes buying one ERC721 with fees from Element', async () => {
+      const elementTrade = new ElementTrade([elementDataETH_WithFees])
+      const methodParameters = SwapRouter.swapNFTCallParameters([elementTrade])
+      const methodParametersV2 = SwapRouter.swapCallParameters(elementTrade)
+      registerFixture('_ELEMENT_BUY_ITEM_721_WITH_FEES', methodParameters)
+      /// encoded value should be equal to original erc20amount even if there are fees
+      expect(hexToDecimalString(methodParameters.value)).to.eq(elementTrade.applyFeesToAmount(elementDataETH_WithFees.order.erc20TokenAmount, elementDataETH_WithFees.order.fees))
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })

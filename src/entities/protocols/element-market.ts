@@ -41,6 +41,7 @@ export type ElementData = {
 }
 
 export class ElementTrade extends NFTTrade<ElementData> {
+  private static SENDER_AS_TAKER = '0x0000000000000000000000000000000000000000'
   private static ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'.toLowerCase()
   public static INTERFACE: Interface = new Interface(abi)
 
@@ -48,11 +49,27 @@ export class ElementTrade extends NFTTrade<ElementData> {
     super(Market.Element, orders)
   }
 
+  /// @dev If there are fees, we have to send an ETH value of the erc20TokenAmount + sum of fees
+  /// However, for the calldata we have to send the original erc20TokenAmount, so we separate the logic here 
+  /// so we never directly edit the original order object
+  applyFeesToAmount(erc20TokenAmount: string, fees: Fee[]): string {
+    if(fees) {
+      const feeSum = fees.reduce((acc, fee) => {
+        return acc.add(BigNumber.from(fee.amount))
+      }, BigNumber.from(0))
+      if(feeSum.gt(erc20TokenAmount)) throw new Error('Fees cannot be greater than order amount')
+      erc20TokenAmount = BigNumber.from(erc20TokenAmount).add(feeSum).toString()
+    }
+    return erc20TokenAmount
+  }
+
   encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
       if (item.order.erc20Token.toLowerCase() != ElementTrade.ETH_ADDRESS) throw new Error('Only ETH supported')
+      
+      const erc20TokenAmount = this.applyFeesToAmount(item.order.erc20TokenAmount, item.order.fees)
+      const value = BigNumber.from(erc20TokenAmount)
 
-      const value = BigNumber.from(item.order.erc20TokenAmount)
       const calldata = ElementTrade.INTERFACE.encodeFunctionData('buyERC721Ex', [
         item.order,
         item.signature,
@@ -61,6 +78,10 @@ export class ElementTrade extends NFTTrade<ElementData> {
       ])
 
       planner.addCommand(CommandType.ELEMENT_MARKET, [value.toString(), calldata], config.allowRevert)
+      if(item.order.taker == ElementTrade.SENDER_AS_TAKER) {
+        // TODO: we need to add an input for the eventual recipient of the NFT
+        planner.addCommand(CommandType.SWEEP_ERC721, [item.order.nft, item.order.taker, item.order.nftId])
+      }
     }
   }
 
@@ -79,7 +100,7 @@ export class ElementTrade extends NFTTrade<ElementData> {
   getTotalPrice(): BigNumber {
     let total = BigNumber.from(0)
     for (const item of this.orders) {
-      total = total.add(item.order.erc20TokenAmount)
+      total = total.add(this.applyFeesToAmount(item.order.erc20TokenAmount, item.order.fees))
     }
     return total
   }
