@@ -54,7 +54,7 @@ export const elementOrderETH_WithFees_Signature: OrderSignature = {
 export const elementDataETH: ElementData = {
   order: elementOrderETH,
   signature: elementSignatureETH,
-  recipient: ZERO_ADDRESS,
+  recipient: elementOrderETH.taker,
 }
 
 export const elementDataETH_WithFees: ElementData = {

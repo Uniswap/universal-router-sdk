@@ -5,6 +5,7 @@ import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { BigNumber } from 'ethers'
 import { ZERO_ADDRESS } from '../../utils/constants'
+import { ZERO } from '@uniswap/router-sdk'
 
 export interface Fee {
   recipient: string
@@ -53,6 +54,8 @@ export class ElementTrade extends NFTTrade<ElementData> {
   encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
       if (item.order.erc20Token.toLowerCase() != ElementTrade.ETH_ADDRESS) throw new Error('Only ETH supported')
+      if (item.order.taker != ZERO_ADDRESS && item.recipient.toLowerCase() != item.order.taker.toLowerCase())
+        throw new Error('Order has fixed taker')
 
       const value = this.getOrderPriceIncludingFees(item.order)
 
