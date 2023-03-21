@@ -1,4 +1,6 @@
 import { ElementData, OrderSignature, ERC721SellOrder } from '../../src/entities/protocols/element-market'
+import { ZERO_ADDRESS } from '../../src/utils/constants'
+import { TEST_RECIPIENT_ADDRESS } from '../utils/addresses'
 
 export const elementOrderETH: ERC721SellOrder = {
   maker: '0xABd6a19345943dD175026Cdb52902FD3392a3262',
@@ -52,9 +54,11 @@ export const elementOrderETH_WithFees_Signature: OrderSignature = {
 export const elementDataETH: ElementData = {
   order: elementOrderETH,
   signature: elementSignatureETH,
+  recipient: ZERO_ADDRESS,
 }
 
 export const elementDataETH_WithFees: ElementData = {
   order: elementOrderETH_WithFees,
   signature: elementOrderETH_WithFees_Signature,
+  recipient: TEST_RECIPIENT_ADDRESS,
 }

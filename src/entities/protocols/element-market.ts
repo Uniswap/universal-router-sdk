@@ -4,6 +4,7 @@ import { BuyItem, Market, NFTTrade, TokenType } from '../NFTTrade'
 import { TradeConfig } from '../Command'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { BigNumber } from 'ethers'
+import { ZERO_ADDRESS } from '../../utils/constants'
 
 export interface Fee {
   recipient: string
@@ -38,10 +39,10 @@ export type OrderSignature = {
 export type ElementData = {
   order: ERC721SellOrder
   signature: OrderSignature
+  recipient: string
 }
 
 export class ElementTrade extends NFTTrade<ElementData> {
-  private static SENDER_AS_TAKER = '0x0000000000000000000000000000000000000000'
   private static ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'.toLowerCase()
   public static INTERFACE: Interface = new Interface(abi)
 
@@ -49,39 +50,20 @@ export class ElementTrade extends NFTTrade<ElementData> {
     super(Market.Element, orders)
   }
 
-  /// @dev If there are fees, we have to send an ETH value of the erc20TokenAmount + sum of fees
-  /// However, for the calldata we have to send the original erc20TokenAmount, so we separate the logic here 
-  /// so we never directly edit the original order object
-  applyFeesToAmount(erc20TokenAmount: string, fees: Fee[]): string {
-    if(fees) {
-      const feeSum = fees.reduce((acc, fee) => {
-        return acc.add(BigNumber.from(fee.amount))
-      }, BigNumber.from(0))
-      if(feeSum.gt(erc20TokenAmount)) throw new Error('Fees cannot be greater than order amount')
-      erc20TokenAmount = BigNumber.from(erc20TokenAmount).add(feeSum).toString()
-    }
-    return erc20TokenAmount
-  }
-
   encode(planner: RoutePlanner, config: TradeConfig): void {
     for (const item of this.orders) {
       if (item.order.erc20Token.toLowerCase() != ElementTrade.ETH_ADDRESS) throw new Error('Only ETH supported')
-      
-      const erc20TokenAmount = this.applyFeesToAmount(item.order.erc20TokenAmount, item.order.fees)
-      const value = BigNumber.from(erc20TokenAmount)
+
+      const value = this.getOrderPriceIncludingFees(item.order)
 
       const calldata = ElementTrade.INTERFACE.encodeFunctionData('buyERC721Ex', [
         item.order,
         item.signature,
-        item.order.taker, // taker
+        item.order.taker == ZERO_ADDRESS ? item.recipient : item.order.taker,
         '0x', // extraData
       ])
 
       planner.addCommand(CommandType.ELEMENT_MARKET, [value.toString(), calldata], config.allowRevert)
-      if(item.order.taker == ElementTrade.SENDER_AS_TAKER) {
-        // TODO: we need to add an input for the eventual recipient of the NFT
-        planner.addCommand(CommandType.SWEEP_ERC721, [item.order.nft, item.order.taker, item.order.nftId])
-      }
     }
   }
 
@@ -100,8 +82,21 @@ export class ElementTrade extends NFTTrade<ElementData> {
   getTotalPrice(): BigNumber {
     let total = BigNumber.from(0)
     for (const item of this.orders) {
-      total = total.add(this.applyFeesToAmount(item.order.erc20TokenAmount, item.order.fees))
+      total = total.add(this.getOrderPriceIncludingFees(item.order))
     }
     return total
+  }
+
+  /// @dev If there are fees, we have to send an ETH value of the erc20TokenAmount + sum of fees
+  /// However, for the calldata we have to send the original erc20TokenAmount, so we separate the logic here
+  /// so we never directly edit the original order object
+  getOrderPriceIncludingFees(order: ERC721SellOrder): BigNumber {
+    const nftPrice = BigNumber.from(order.erc20TokenAmount)
+    if (order.fees) {
+      return order.fees.reduce((acc, fee) => {
+        return acc.add(BigNumber.from(fee.amount))
+      }, nftPrice)
+    }
+    return nftPrice
   }
 }

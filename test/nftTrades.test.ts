@@ -132,7 +132,7 @@ describe('SwapRouter', () => {
     })
   })
 
-  describe.only('Element Market', () => {
+  describe('Element Market', () => {
     // buy an ERC721 from block 16627214
     it('encodes buying one ERC721 from Element', async () => {
       const elementTrade = new ElementTrade([elementDataETH])
@@ -148,11 +148,13 @@ describe('SwapRouter', () => {
       const elementTrade = new ElementTrade([elementDataETH_WithFees])
       const methodParameters = SwapRouter.swapNFTCallParameters([elementTrade])
       const methodParametersV2 = SwapRouter.swapCallParameters(elementTrade)
+      const value = elementTrade.getOrderPriceIncludingFees(elementDataETH_WithFees.order)
       registerFixture('_ELEMENT_BUY_ITEM_721_WITH_FEES', methodParameters)
-      /// encoded value should be equal to original erc20amount even if there are fees
-      expect(hexToDecimalString(methodParameters.value)).to.eq(elementTrade.applyFeesToAmount(elementDataETH_WithFees.order.erc20TokenAmount, elementDataETH_WithFees.order.fees))
+      /// value should be equal to erc20amount plus fees
+      expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
+      expect(methodParameters.value).to.not.eq(elementDataETH_WithFees.order.erc20TokenAmount)
     })
   })
 
