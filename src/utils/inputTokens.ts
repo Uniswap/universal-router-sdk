@@ -19,20 +19,26 @@ export type Permit2TransferFrom = {
   recipient?: string
 }
 
+export type InputTokenOptions = {
+  approval?: ApproveProtocol
+  permit2Permit?: Permit2Permit
+  permit2TransferFrom?: Permit2TransferFrom
+}
+
 const SIGNATURE_LENGTH = 65
 const EIP_2098_SIGNATURE_LENGTH = 64
 
-export function encodePermit(planner: RoutePlanner, permit: Permit2Permit): void {
-  let signature = permit.signature
+export function encodePermit(planner: RoutePlanner, permit2: Permit2Permit): void {
+  let signature = permit2.signature
 
-  const length = ethers.utils.arrayify(permit.signature).length
+  const length = ethers.utils.arrayify(permit2.signature).length
   // signature data provided for EIP-1271 may have length different from ECDSA signature
   if (length === SIGNATURE_LENGTH || length === EIP_2098_SIGNATURE_LENGTH) {
     // sanitizes signature to cover edge cases of malformed EIP-2098 sigs and v used as recovery id
-    signature = ethers.utils.joinSignature(ethers.utils.splitSignature(permit.signature))
+    signature = ethers.utils.joinSignature(ethers.utils.splitSignature(permit2.signature))
   }
 
-  planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, signature])
+  planner.addCommand(CommandType.PERMIT2_PERMIT, [permit2, signature])
 }
 
 // Handles the encoding of commands needed to gather input tokens for a trade
@@ -40,32 +46,33 @@ export function encodePermit(planner: RoutePlanner, permit: Permit2Permit): void
 //   note: Only seaport and sudoswap support this action. Approvals are left open.
 // Permit: A Permit2 signature-based Permit to allow the router to access a user's tokens
 // Transfer: A Permit2 TransferFrom of tokens from a user to either the router or another address
-export function encodeHandleInputTokens(
-  planner: RoutePlanner,
-  approval?: ApproveProtocol,
-  permit?: Permit2Permit,
-  transfer?: Permit2TransferFrom
-) {
+export function encodeInputTokenOptions(planner: RoutePlanner, options: InputTokenOptions) {
   // first ensure that all tokens provided for encoding are the same
-  if (!!approval && !!permit) invariant(approval.token === permit.details.token, `inconsistent token`)
-  if (!!approval && !!transfer) invariant(approval.token === transfer.token, `inconsistent token`)
-  if (!!transfer && !!permit) invariant(transfer.token === permit.details.token, `inconsistent token`)
+  if (!!options.approval && !!options.permit2Permit)
+    invariant(options.approval.token === options.permit2Permit.details.token, `inconsistent token`)
+  if (!!options.approval && !!options.permit2TransferFrom)
+    invariant(options.approval.token === options.permit2TransferFrom.token, `inconsistent token`)
+  if (!!options.permit2TransferFrom && !!options.permit2Permit)
+    invariant(options.permit2TransferFrom.token === options.permit2Permit.details.token, `inconsistent token`)
 
-  // if an approval is required, add it
-  if (!!approval) {
-    planner.addCommand(CommandType.APPROVE_ERC20, [approval.token, mapApprovalProtocol(approval.protocol)])
+  // if an options.approval is required, add it
+  if (!!options.approval) {
+    planner.addCommand(CommandType.APPROVE_ERC20, [
+      options.approval.token,
+      mapApprovalProtocol(options.approval.protocol),
+    ])
   }
 
-  // if this order has a permit, encode it
-  if (!!permit) {
-    encodePermit(planner, permit)
+  // if this order has a options.permit2Permit, encode it
+  if (!!options.permit2Permit) {
+    encodePermit(planner, options.permit2Permit)
   }
 
-  if (!!transfer) {
+  if (!!options.permit2TransferFrom) {
     planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-      transfer.token,
-      transfer.recipient ? transfer.recipient : ROUTER_AS_RECIPIENT,
-      transfer.amount,
+      options.permit2TransferFrom.token,
+      options.permit2TransferFrom.recipient ? options.permit2TransferFrom.recipient : ROUTER_AS_RECIPIENT,
+      options.permit2TransferFrom.amount,
     ])
   }
 }
