@@ -3,11 +3,11 @@ import { BigNumber } from 'ethers'
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
   switch (chainId) {
     case 1: // mainnet
-      return '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5'
+      return '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5' // URv1.1
     case 5: // goerli
       return '0x4648a43B2C14Da09FdF82B161150d3F634f40491'
     case 137: // polygon
-      return '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5'
+      return '0xe40B4A25328dc87bBE396662BAc0cD1C1bE6E883' // URv1.1
     case 80001: // polygon mumbai
       return '0x4648a43B2C14Da09FdF82B161150d3F634f40491'
     case 10: // optimism
