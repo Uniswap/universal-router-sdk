@@ -54,6 +54,18 @@ describe('Permit2', () => {
       const sanitized = getSanitizedSignature(permit, signature)
       expect(sanitized).to.equal(originalSignature)
     })
+
+    it('sanitizes a permit with v=1', async () => {
+      const inputUSDC = utils.parseUnits('1000', 6).toString()
+      const permit = makePermit(USDC.address, inputUSDC)
+      const originalSignature = await generatePermitSignature(permit, wallet, 1)
+
+      const { r, s } = utils.splitSignature(originalSignature)
+      // append recoveryParam as v
+      const signature = utils.joinSignature({ v: 1, r, s })
+      const sanitized = getSanitizedSignature(permit, signature)
+      expect(sanitized).to.equal(originalSignature)
+    })
   })
 
   function getSanitizedSignature(permit: PermitSingle, signature: string): string {
