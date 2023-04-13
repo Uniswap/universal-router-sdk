@@ -10,6 +10,7 @@ import { seaportDataETH, seaportDataERC20 } from './orders/seaport'
 import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 import { NFT20Trade, NFT20Data } from '../src/entities/protocols/nft20'
 import { looksRareOrders, createLooksRareOrders } from './orders/looksRare'
+import { looksRareV2Orders } from './orders/looksRareV2'
 import { x2y2Orders } from './orders/x2y2'
 import { LooksRareData, LooksRareTrade } from '../src/entities/protocols/looksRare'
 import { SudoswapTrade, SudoswapData } from '../src/entities/protocols/sudoswap'
@@ -22,6 +23,7 @@ import { ETH_ADDRESS, WETH_ADDRESS } from '../src/utils/constants'
 import { generatePermitSignature, makePermit } from './utils/permit2'
 import { ElementTrade } from '../src/entities/protocols/element-market'
 import { elementDataETH, elementDataETH_WithFees } from './orders/element'
+import { LooksRareV2Data, LooksRareV2Trade } from '../src/entities/protocols/looksRareV2'
 
 describe('SwapRouter', () => {
   const recipient = TEST_RECIPIENT_ADDRESS
@@ -127,6 +129,24 @@ describe('SwapRouter', () => {
       const methodParametersV2 = SwapRouter.swapCallParameters(looksRareTrade)
       registerFixture('_LOOKSRARE_BUY_ITEM_1155', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.eq(makerOrder1155.price)
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
+    })
+  })
+
+  describe('LooksRareV2', () => {
+    // buyItems from block 17030830
+    const looksRareV2Data: LooksRareV2Data = {
+      apiOrder: looksRareV2Orders[0],
+      taker: recipient,
+    }
+
+    it('encodes buying one ERC721 from LooksRare', async () => {
+      const looksRareV2Trade = new LooksRareV2Trade([looksRareV2Data])
+      const methodParameters = SwapRouter.swapNFTCallParameters([looksRareV2Trade])
+      const methodParametersV2 = SwapRouter.swapCallParameters(looksRareV2Trade)
+      registerFixture('_LOOKSRARE_V2_BUY_ITEM_721', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(looksRareV2Data.apiOrder.price)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
     })

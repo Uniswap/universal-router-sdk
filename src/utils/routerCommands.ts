@@ -40,9 +40,10 @@ export enum CommandType {
   SWEEP_ERC1155 = 0x1d,
   ELEMENT_MARKET = 0x1e,
 
-  EXECUTE_SUB_PLAN = 0x20,
-  SEAPORT_V1_4 = 0x21,
-  APPROVE_ERC20 = 0x22,
+  SEAPORT_V1_4 = 0x20,
+  LOOKS_RARE_V2 = 0x21,
+  EXECUTE_SUB_PLAN = 0x22,
+  APPROVE_ERC20 = 0x23,
 }
 
 const ALLOW_REVERT_FLAG = 0x80
@@ -53,6 +54,7 @@ const REVERTIBLE_COMMANDS = new Set<CommandType>([
   CommandType.NFTX,
   CommandType.LOOKS_RARE_721,
   CommandType.LOOKS_RARE_1155,
+  CommandType.LOOKS_RARE_V2,
   CommandType.X2Y2_721,
   CommandType.X2Y2_1155,
   CommandType.FOUNDATION,
@@ -107,6 +109,7 @@ const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.NFTX]: ['uint256', 'bytes'],
   [CommandType.LOOKS_RARE_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
   [CommandType.LOOKS_RARE_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
+  [CommandType.LOOKS_RARE_V2]: ['uint256', 'bytes'],
   [CommandType.X2Y2_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
   [CommandType.X2Y2_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
   [CommandType.FOUNDATION]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
