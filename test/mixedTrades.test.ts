@@ -37,8 +37,6 @@ describe('SwapRouter.swapCallParameters', () => {
       apiOrder: { ...looksRareV2Data.apiOrder, itemIds: ['1'] },
     }
 
-    console.log(looksRareV2Data.apiOrder.itemIds)
-    console.log(invalidLooksRareV2Data.apiOrder.itemIds)
     const invalidLooksRareV2Trade = new LooksRareV2Trade([invalidLooksRareV2Data])
 
     const seaportTrade = new SeaportTrade([seaportV1_4DataETHRecent])
