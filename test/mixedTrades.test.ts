@@ -32,8 +32,13 @@ describe('SwapRouter.swapCallParameters', () => {
     const looksRareV2Trade = new LooksRareV2Trade([looksRareV2Data])
     const looksRareV2Value = looksRareV2Trade.getTotalPrice()
 
-    let invalidLooksRareV2Data: LooksRareV2Data = looksRareV2Data
-    invalidLooksRareV2Data.apiOrder.itemIds = ['1']
+    const invalidLooksRareV2Data: LooksRareV2Data = {
+      ...looksRareV2Data,
+      apiOrder: { ...looksRareV2Data.apiOrder, itemIds: ['1'] },
+    }
+
+    console.log(looksRareV2Data.apiOrder.itemIds)
+    console.log(invalidLooksRareV2Data.apiOrder.itemIds)
     const invalidLooksRareV2Trade = new LooksRareV2Trade([invalidLooksRareV2Data])
 
     const seaportTrade = new SeaportTrade([seaportV1_4DataETHRecent])
