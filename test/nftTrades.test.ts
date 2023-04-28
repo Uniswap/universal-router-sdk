@@ -94,6 +94,11 @@ describe('SwapRouter', () => {
 
   describe('LooksRareV2', () => {
     // buyItems from block 17030830
+    const looksRareV2Data: LooksRareV2Data = {
+      apiOrder: looksRareV2Orders[0],
+      taker: recipient,
+    }
+
     it('encodes buying one ERC721 from LooksRare', async () => {
       const looksRareV2Trade = new LooksRareV2Trade([looksRareV2Data])
       const methodParameters = SwapRouter.swapNFTCallParameters([looksRareV2Trade])

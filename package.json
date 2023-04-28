@@ -14,8 +14,8 @@
     "access": "public"
   },
   "scripts": {
-    "test": "yarn test:encode && yarn test:forge",
-    "test:encode": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' hardhat test",
+    "test:all": "yarn test:hardhat && yarn test:forge",
+    "test:hardhat": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' hardhat test",
     "test:forge": "forge test",
     "install:ur": "cd node_modules/@uniswap/universal-router && forge install",
     "build": "tsdx build",
