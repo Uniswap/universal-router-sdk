@@ -44,8 +44,8 @@ export type LRV2APIOrder = MakerOrder & {
   hash: string
   signature: string
   createdAt: string
-  merkleRoot: string
-  merkleProof: MerkleProof[]
+  merkleRoot?: string
+  merkleProof?: MerkleProof[]
   status: string
 }
 
@@ -120,8 +120,8 @@ export class LooksRareV2Trade extends NFTTrade<LooksRareV2Data> {
     const value: BigNumber = BigNumber.from(data.apiOrder.price)
 
     const merkleTree: MerkleTree = {
-      root: data.apiOrder.merkleRoot,
-      proof: data.apiOrder.merkleProof,
+      root: data.apiOrder.merkleRoot ?? '0x0000000000000000000000000000000000000000000000000000000000000000',
+      proof: data.apiOrder.merkleProof ?? [],
     }
 
     return { takerBid, makerOrder, makerSignature, value, merkleTree }
