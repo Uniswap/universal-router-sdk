@@ -141,6 +141,19 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
     return buyItems
   }
 
+  getInputTokens(): Set<string> {
+    let inputTokens = new Set<string>()
+    for (const order of this.orders) {
+      for (const item of order.items) {
+        for (const consideration of item.parameters.consideration) {
+          const token = consideration.token.toLowerCase()
+          inputTokens.add(token)
+        }
+      }
+    }
+    return inputTokens
+  }
+
   getTotalOrderPrice(order: SeaportData, token: string = ETH_ADDRESS): BigNumber {
     let totalOrderPrice = BigNumber.from(0)
     for (const item of order.items) {
@@ -218,7 +231,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
   private calculateValue(considerations: ConsiderationItem[], token: string): BigNumber {
     return considerations.reduce(
       (amt: BigNumber, consideration: ConsiderationItem) =>
-        consideration.token == token ? amt.add(consideration.startAmount) : amt,
+        consideration.token.toLowerCase() == token.toLowerCase() ? amt.add(consideration.startAmount) : amt,
       BigNumber.from(0)
     )
   }
