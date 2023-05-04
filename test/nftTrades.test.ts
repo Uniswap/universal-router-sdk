@@ -6,7 +6,7 @@ import { SwapRouter } from '../src/swapRouter'
 import { TokenType } from '../src/entities/NFTTrade'
 import { FoundationTrade, FoundationData } from '../src/entities/protocols/foundation'
 import { SeaportTrade } from '../src/entities/protocols/seaport'
-import { seaportDataETH, seaportDataERC20 } from './orders/seaport'
+import { seaportV1_5DataETH } from './orders/seaportV1_5'
 import { NFTXTrade, NFTXData } from '../src/entities/protocols/nftx'
 import { NFT20Trade, NFT20Data } from '../src/entities/protocols/nft20'
 import { x2y2Orders } from './orders/x2y2'
@@ -15,9 +15,8 @@ import { CryptopunkTrade, CryptopunkData } from '../src/entities/protocols/crypt
 import { X2Y2Data, X2Y2Trade } from '../src/entities/protocols/x2y2'
 import { registerFixture } from './forge/writeInterop'
 import { seaportV1_4DataETH, seaportV1_4DataETHRecent } from './orders/seaportV1_4'
-import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_RECIPIENT_ADDRESS } from './utils/addresses'
-import { ETH_ADDRESS, WETH_ADDRESS } from '../src/utils/constants'
-import { generatePermitSignature, makePermit } from './utils/permit2'
+import { TEST_RECIPIENT_ADDRESS } from './utils/addresses'
+import { ETH_ADDRESS } from '../src/utils/constants'
 import { ElementTrade } from '../src/entities/protocols/element-market'
 import { elementDataETH, elementDataETH_WithFees } from './orders/element'
 import { LooksRareV2Data, LooksRareV2Trade } from '../src/entities/protocols/looksRareV2'
@@ -200,76 +199,18 @@ describe('SwapRouter', () => {
     })
   })
 
-  // describe('Seaport', () => {
-  //   it('encodes buying two NFTs from Seaport with ETH', async () => {
-  //     const seaportTrade = new SeaportTrade([seaportDataETH])
-  //     const value = seaportTrade.getTotalPrice(ETH_ADDRESS)
-  //     const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
-  //     const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
-  //     registerFixture('_SEAPORT_BUY_ITEMS_ETH', methodParameters)
-  //     expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
-  //     expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-  //     expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
-  //   })
-
-  //   it('encodes buying 1 NFT from Seaport with ERC20, with Permit and Approve', async () => {
-  //     // get the basic seaport data for ERC20 trade
-  //     let seaportData = seaportDataERC20
-
-  //     // make permit
-  //     const WETH_MAINNET = WETH_ADDRESS(1)
-  //     const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
-  //     const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
-  //     seaportData.inputTokenProcessing = [
-  //       {
-  //         token: WETH_MAINNET,
-  //         protocolApproval: true,
-  //         permit2TransferFrom: true,
-  //         permit2Permit: {
-  //           ...permit2Data,
-  //           signature,
-  //         },
-  //       },
-  //     ]
-
-  //     const seaportTrade = new SeaportTrade([seaportData])
-  //     const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
-  //     const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
-  //     registerFixture('_SEAPORT_BUY_ITEMS_ERC20_PERMIT_AND_APPROVE', methodParameters)
-  //     expect(hexToDecimalString(methodParameters.value)).to.eq('0')
-  //     expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-  //     expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
-  //   })
-
-  //   it('encodes buying 1 NFT from Seaport with ERC20, with Permit', async () => {
-  //     // get the basic seaport data for ERC20 trade
-  //     let seaportData = seaportDataERC20
-
-  //     // add permit and transfer
-  //     const WETH_MAINNET = WETH_ADDRESS(1)
-  //     const permit2Data = makePermit(WETH_MAINNET, undefined, undefined, FORGE_ROUTER_ADDRESS)
-  //     const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
-  //     seaportData.inputTokenProcessing = [
-  //       {
-  //         token: WETH_MAINNET,
-  //         protocolApproval: false, // no approval
-  //         permit2TransferFrom: true,
-  //         permit2Permit: {
-  //           ...permit2Data,
-  //           signature,
-  //         },
-  //       },
-  //     ]
-
-  //     const seaportTrade = new SeaportTrade([seaportData])
-  //     const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
-  //     const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
-  //     registerFixture('_SEAPORT_BUY_ITEMS_ERC20_PERMIT_NO_APPROVE', methodParameters)
-  //     expect(hexToDecimalString(methodParameters.value)).to.eq('0')
-  //     expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-  //     expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
-  //   })
-  // })
+  describe('SeaportV1_5', () => {
+    it('encodes buying two NFTs from Seaport v1.5 with ETH', async () => {
+      const seaportTrade = new SeaportTrade([seaportV1_5DataETH])
+      const value = seaportTrade.getTotalPrice(ETH_ADDRESS)
+      const methodParameters = SwapRouter.swapNFTCallParameters([seaportTrade])
+      const methodParametersV2 = SwapRouter.swapCallParameters(seaportTrade)
+      registerFixture('_SEAPORT_V1_5_BUY_ITEMS_ETH', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(hexToDecimalString(methodParametersV2.value))
+    })
+  })
 
   describe('SeaportV1_4', () => {
     it('encodes buying two NFTs from Seaport v1.4 with ETH', async () => {

@@ -147,24 +147,28 @@ contract swapNFTCallParametersTest is Test, Interop, DeployRouter {
         assertEq(from.balance, balance - params.value);
     }
 
-    // function testSeaportBuyItemsETH() public {
-    //     MethodParameters memory params = readFixture(json, "._SEAPORT_BUY_ITEMS_ETH");
+    function testSeaportV1_5BuyItemsETH() public {
+        MethodParameters memory params = readFixture(json, "._SEAPORT_V1_5_BUY_ITEMS_ETH");
+        uint256 tokenId0 = 564868729088757849349201848336735231016960;
+        uint256 tokenId1 = 580862000334041957131980454886028336955392;
 
-    //     vm.createSelectFork(vm.envString("FORK_URL"), 15360000);
-    //     vm.startPrank(from);
+        vm.createSelectFork(vm.envString("FORK_URL"), 17179617);
+        vm.startPrank(from);
 
-    //     deployRouterAndPermit2();
-    //     ERC721 token = ERC721(0x5180db8F5c931aaE63c74266b211F580155ecac8);
-    //     uint256 balance = 55 ether;
-    //     vm.deal(from, balance);
-    //     assertEq(from.balance, balance);
-    //     assertEq(token.balanceOf(RECIPIENT), 0);
+        deployRouterAndPermit2();
+        ERC1155 token = ERC1155(0xc36cF0cFcb5d905B8B513860dB0CFE63F6Cf9F5c);
+        uint256 balance = 55 ether;
+        vm.deal(from, balance);
+        assertEq(from.balance, balance);
+        assertEq(token.balanceOf(RECIPIENT, tokenId0), 0);
+        assertEq(token.balanceOf(RECIPIENT, tokenId1), 0);
 
-    //     (bool success,) = address(router).call{value: params.value}(params.data);
-    //     require(success, "call failed");
-    //     assertEq(token.balanceOf(RECIPIENT), 2);
-    //     assertEq(from.balance, balance - params.value);
-    // }
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(token.balanceOf(RECIPIENT, tokenId0), 1);
+        assertEq(token.balanceOf(RECIPIENT, tokenId1), 1);
+        assertEq(from.balance, balance - params.value);
+    }
 
     // function testSeaportBuyItemsERC20PermitApprove() public {
     //     MethodParameters memory params = readFixture(json, "._SEAPORT_BUY_ITEMS_ERC20_PERMIT_AND_APPROVE");

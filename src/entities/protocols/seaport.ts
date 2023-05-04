@@ -161,7 +161,7 @@ export class SeaportTrade extends NFTTrade<SeaportData> {
 
   private commandMap(protocolAddress: string): CommandType {
     switch (protocolAddress.toLowerCase()) {
-      case '0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC': // Seaport v1.5
+      case '0x00000000000000adc04c56bf30ac9d3c0aaf14dc': // Seaport v1.5
         return CommandType.SEAPORT_V1_5
       case '0x00000000000001ad428e4906ae43d8f9852d0dd6': // Seaport v1.4
         return CommandType.SEAPORT_V1_4
