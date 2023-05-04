@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { BigNumber, utils, Wallet } from 'ethers'
+import { BigNumber } from 'ethers'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { expandTo18DecimalsBN } from '../src/utils/expandTo18Decimals'
 import { SwapRouter } from '../src/swapRouter'
@@ -24,7 +24,6 @@ import { looksRareV2Orders } from './orders/looksRareV2'
 
 describe('SwapRouter', () => {
   const recipient = TEST_RECIPIENT_ADDRESS
-  const wallet = new Wallet(utils.zeroPad('0x1234', 32))
   const looksRareV2Data: LooksRareV2Data = {
     apiOrder: looksRareV2Orders[0],
     taker: recipient,
