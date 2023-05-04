@@ -64,7 +64,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareV2Trade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT', methodParametersV2)
+      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -80,7 +80,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, looksRareV2Trade], {
         sender: FORGE_ROUTER_ADDRESS,
       })
-      registerFixture('_PERMIT_AND_WETH_FOR_1_LOOKSRARE_NFT', methodParametersV2)
+      registerFixture('_PERMIT_AND_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -90,7 +90,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([UnwrapWETHCommand, looksRareV2Trade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_WETH_FOR_1_LOOKSRARE_NFT', methodParametersV2)
+      registerFixture('_WETH_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -110,7 +110,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareV2Trade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT', methodParametersV2)
+      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT', methodParameters)
       expect(methodParameters.value).to.not.eq('0')
     })
 
@@ -130,7 +130,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareV2Trade, seaportTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT_1_SEAPORT_NFT', methodParametersV2)
+      registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT_1_SEAPORT_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -148,7 +148,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, looksRareV2Trade, seaportTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT_1_SEAPORT_NFT', methodParametersV2)
+      registerFixture('_ERC20_AND_ETH_FOR_1_LOOKSRARE_NFT_1_SEAPORT_NFT', methodParameters)
       expect(methodParameters.value).to.eq(seaportValue.toString())
     })
 
@@ -174,7 +174,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade1, uniswapTrade2, looksRareV2Trade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_2_ERC20s_FOR_1_NFT', methodParametersV2)
+      registerFixture('_2_ERC20s_FOR_1_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -192,7 +192,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, invalidLooksRareV2Trade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_1_INVALID_NFT', methodParametersV2)
+      registerFixture('_ERC20_FOR_1_INVALID_NFT', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
 
@@ -213,7 +213,7 @@ describe('SwapRouter.swapCallParameters', () => {
       const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, invalidLooksRareV2Trade, seaportTrade], {
         sender: FORGE_SENDER_ADDRESS,
       })
-      registerFixture('_ERC20_FOR_NFTS_PARTIAL_FILL', methodParametersV2)
+      registerFixture('_ERC20_FOR_NFTS_PARTIAL_FILL', methodParameters)
       expect(methodParameters.value).to.eq('0')
     })
   })
