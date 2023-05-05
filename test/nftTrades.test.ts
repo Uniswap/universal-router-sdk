@@ -63,7 +63,7 @@ describe('SwapRouter', () => {
       registerFixture('_FOUNDATION_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(foundationData.price.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -87,7 +87,7 @@ describe('SwapRouter', () => {
       registerFixture('_NFTX_BUY_ITEMS', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(price.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -104,7 +104,7 @@ describe('SwapRouter', () => {
       registerFixture('_LOOKSRARE_V2_BUY_ITEM_721', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(looksRareV2Data.apiOrder.price)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
     it('encodes batch buying 2 ERC721s from LooksRare', async () => {
@@ -124,7 +124,7 @@ describe('SwapRouter', () => {
       registerFixture('_LOOKSRARE_V2_BATCH_BUY_ITEM_721', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(totalPrice.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -137,7 +137,7 @@ describe('SwapRouter', () => {
       registerFixture('_ELEMENT_BUY_ITEM_721', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(elementDataETH.order.erc20TokenAmount)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
     it('encodes buying one ERC721 with fees from Element', async () => {
@@ -149,7 +149,7 @@ describe('SwapRouter', () => {
       /// value should be equal to erc20amount plus fees
       expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
       expect(methodParameters.value).to.not.eq(elementDataETH_WithFees.order.erc20TokenAmount)
     })
   })
@@ -186,7 +186,7 @@ describe('SwapRouter', () => {
       registerFixture('_X2Y2_721_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(x2y2SignedOrder721.price)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
     it('encodes buying one ERC-1155 from X2Y2', async () => {
       const x2y2Trade = new X2Y2Trade([x2y2_1155_Data])
@@ -195,7 +195,7 @@ describe('SwapRouter', () => {
       registerFixture('_X2Y2_1155_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(x2y2SignedOrder1155.price)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -208,7 +208,7 @@ describe('SwapRouter', () => {
       registerFixture('_SEAPORT_V1_5_BUY_ITEMS_ETH', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -223,7 +223,7 @@ describe('SwapRouter', () => {
       registerFixture('_SEAPORT_V1_4_BUY_ITEMS_ETH', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
     it('encodes buying 1 NFT from Seaport with ERC20, with Permit and Approve', async () => {
@@ -294,7 +294,7 @@ describe('SwapRouter', () => {
       registerFixture('_CRYPTOPUNK_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(cryptopunk.value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -317,7 +317,7 @@ describe('SwapRouter', () => {
       registerFixture('_NFT20_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(nft20Data.value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -346,7 +346,7 @@ describe('SwapRouter', () => {
       registerFixture('_SUDOSWAP_BUY_ITEM', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(sudoswapData.swaps[0].maxCost.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 
@@ -368,7 +368,7 @@ describe('SwapRouter', () => {
       registerFixture('_PARTIAL_FILL', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(totalValue)
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
     it('encodes partial fill for multiple swaps within the same protocol', async () => {
@@ -398,7 +398,7 @@ describe('SwapRouter', () => {
       registerFixture('_PARTIAL_FILL_WITHIN_PROTOCOL', methodParametersV2)
       expect(hexToDecimalString(methodParameters.value)).to.eq(value.toString())
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
-      expect(hexToDecimalString(methodParameters.value)).to.eq(methodParametersV2.value)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
   })
 })
