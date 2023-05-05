@@ -180,10 +180,10 @@ contract swapNFTCallParametersTest is Test, Interop, DeployRouter {
 
         deployRouterAndPermit2();
 
-        uint256 balance = 55 ether;
-        vm.deal(from, balance);
-        assertEq(from.balance, balance);
+        vm.deal(from, 1 ether); // for gas
+        assertEq(from.balance, 1 ether);
 
+        uint256 balance = 55 ether;
         deal(address(GALA), from, balance);
         GALA.approve(address(permit2), balance);
         assertEq(GALA.balanceOf(from), balance);
@@ -208,10 +208,10 @@ contract swapNFTCallParametersTest is Test, Interop, DeployRouter {
 
         deployRouterAndPermit2();
 
-        uint256 balance = 55 ether;
-        vm.deal(from, balance);
-        assertEq(from.balance, balance);
+        vm.deal(from, 1 ether); // for gas
+        assertEq(from.balance, 1 ether);
 
+        uint256 balance = 55 ether;
         deal(address(GALA), from, balance);
         GALA.approve(address(permit2), balance);
         assertEq(GALA.balanceOf(from), balance);
