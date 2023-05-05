@@ -66,7 +66,6 @@ describe('SwapRouter.swapCallParameters', () => {
         sender: FORGE_SENDER_ADDRESS,
       })
       registerFixture('_ERC20_FOR_1_LOOKSRARE_NFT', methodParameters)
-      console.log(methodParameters.value)
       expect(methodParameters.value).to.eq('0x00')
     })
 
