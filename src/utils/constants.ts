@@ -31,6 +31,37 @@ export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
   }
 }
 
+export const UNIVERSAL_ROUTER_CREATION_BLOCK = (chainId: number): number => {
+  switch (chainId) {
+    case 1: // mainnet
+      return 17143817
+    case 5: // goerli
+      return 8940568
+    case 11155111: // sepolia
+      return 3543575
+    case 137: // polygon
+      return 42294741
+    case 80001: // polygon mumbai
+      return 35176052
+    case 10: // optimism
+      return 96333990
+    case 420: // optimism goerli
+      return 8887728
+    case 42161: // arbitrum
+      return 87206402
+    case 421613: // arbitrum goerli
+      return 18815277
+    case 42220: // celo
+      return 19106929
+    case 44787: // celo alfajores
+      return 17566658
+    case 56: // binance smart chain
+      return 27915533
+    default:
+      throw new Error(`Universal Router not deployed on chain ${chainId}`)
+  }
+}
+
 export const WETH_ADDRESS = (chainId: number): string => {
   switch (chainId) {
     case 1: //mainnet
