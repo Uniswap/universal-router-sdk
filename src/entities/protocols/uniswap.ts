@@ -20,6 +20,7 @@ import { Permit2Permit } from '../../utils/inputTokens'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
+import { encodeFeeBips } from '../../utils/numbers'
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
@@ -43,6 +44,8 @@ export class UniswapTrade implements Command {
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
     let payerIsUser = true
+
+    // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: optimize if only one v2 pool we can directly send this to the pool
       planner.addCommand(CommandType.WRAP_ETH, [
@@ -52,6 +55,7 @@ export class UniswapTrade implements Command {
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
+    // The overall recipient at the end of the trade, SENDER_AS_RECIPIENT uses the msg.sender
     this.options.recipient = this.options.recipient ?? SENDER_AS_RECIPIENT
 
     // flag for whether we want to perform slippage check on aggregate output of multiple routes
@@ -62,7 +66,7 @@ export class UniswapTrade implements Command {
       this.trade.tradeType === TradeType.EXACT_INPUT && this.trade.routes.length > 2
     const outputIsNative = this.trade.outputAmount.currency.isNative
     const inputIsNative = this.trade.inputAmount.currency.isNative
-    const routerMustCustody = performAggregatedSlippageCheck || outputIsNative
+    const routerMustCustody = performAggregatedSlippageCheck || outputIsNative || !!this.options.fee
 
     for (const swap of this.trade.swaps) {
       switch (swap.route.protocol) {
@@ -80,7 +84,20 @@ export class UniswapTrade implements Command {
       }
     }
 
+    // The router custodies for 3 reasons: to unwrap, to take a fee, and/or to do a slippage check
     if (routerMustCustody) {
+      // If there is a fee, that percentage is passed to the contract and sent to the recipient
+      // In the case where ETH is the output currency, the fee is taken in WETH
+      if (!!this.options.fee) {
+        const feeBips = encodeFeeBips(this.options.fee.fee)
+        planner.addCommand(CommandType.PAY_PORTION, [
+          this.trade.outputAmount.currency.wrapped.address,
+          this.options.fee.recipient,
+          feeBips,
+        ])
+      }
+      // The ETH or ERC20 that needs to be sent to the user after the fee is taken will also be caught
+      // by this if-else clause.
       if (outputIsNative) {
         planner.addCommand(CommandType.UNWRAP_WETH, [
           this.options.recipient,

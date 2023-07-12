@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import JSBI from 'jsbi'
 import { BigNumber, utils, Wallet } from 'ethers'
-import { expandTo18Decimals } from '../src/utils/expandTo18Decimals'
+import { expandTo18Decimals } from '../src/utils/numbers'
 import { SwapRouter, UniswapTrade } from '../src'
 import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
