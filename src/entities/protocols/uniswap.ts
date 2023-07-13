@@ -102,7 +102,9 @@ export class UniswapTrade implements Command {
 
         // If the trade is exact output, and a fee was taken, we must adjust the amount out to be the amount after the fee
         // Otherwise we continue as expected with the trade's normal expected output
-        minimumAmountOut = minimumAmountOut.sub(minimumAmountOut.mul(feeBips).div(10000))
+        if (this.trade.tradeType === TradeType.EXACT_OUTPUT) {
+          minimumAmountOut = minimumAmountOut.sub(minimumAmountOut.mul(feeBips).div(10000))
+        }
       }
 
       // The remaining tokens that need to be sent to the user after the fee is taken will be caught
