@@ -1,4 +1,3 @@
-import JSBI from 'jsbi'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { Trade as V2Trade, Pair } from '@uniswap/v2-sdk'
 import { Trade as V3Trade, Pool, encodeRouteToPath } from '@uniswap/v3-sdk'
@@ -21,6 +20,7 @@ import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
+import { BigNumber } from 'ethers'
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
@@ -28,7 +28,7 @@ export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
 }
 
-const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(JSBI.BigInt(50), JSBI.BigInt(100))
+const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(50, 100)
 
 interface Swap<TInput extends Currency, TOutput extends Currency> {
   route: IRoute<TInput, TOutput, Pair | Pool>
@@ -84,10 +84,14 @@ export class UniswapTrade implements Command {
       }
     }
 
+    let minimumAmountOut: BigNumber = BigNumber.from(
+      this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString()
+    )
+
     // The router custodies for 3 reasons: to unwrap, to take a fee, and/or to do a slippage check
     if (routerMustCustody) {
-      // If there is a fee, that percentage is passed to the contract and sent to the recipient
-      // In the case where ETH is the output currency, the fee is taken in WETH
+      // If there is a fee, that percentage is sent to the fee recipient
+      // In the case where ETH is the output currency, the fee is taken in WETH (for gas reasons)
       if (!!this.options.fee) {
         const feeBips = encodeFeeBips(this.options.fee.fee)
         planner.addCommand(CommandType.PAY_PORTION, [
@@ -95,19 +99,21 @@ export class UniswapTrade implements Command {
           this.options.fee.recipient,
           feeBips,
         ])
+
+        // If the trade is exact output, and a fee was taken, we must adjust the amount out to be the amount after the fee
+        // Otherwise we continue as expected with the trade's normal expected output
+        minimumAmountOut = minimumAmountOut.sub(minimumAmountOut.mul(feeBips).div(10000))
       }
-      // The ETH or ERC20 that needs to be sent to the user after the fee is taken will also be caught
+
+      // The remaining tokens that need to be sent to the user after the fee is taken will be caught
       // by this if-else clause.
       if (outputIsNative) {
-        planner.addCommand(CommandType.UNWRAP_WETH, [
-          this.options.recipient,
-          this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
-        ])
+        planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, minimumAmountOut])
       } else {
         planner.addCommand(CommandType.SWEEP, [
           this.trade.outputAmount.currency.wrapped.address,
           this.options.recipient,
-          this.trade.minimumAmountOut(this.options.slippageTolerance).quotient.toString(),
+          minimumAmountOut,
         ])
       }
     }
