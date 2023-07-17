@@ -79,11 +79,11 @@ export function encodeInputTokenOptions(planner: RoutePlanner, options: InputTok
 
 function mapApprovalProtocol(protocolAddress: string): number {
   switch (protocolAddress.toLowerCase()) {
-    case '0x00000000000000adc04c56bf30ac9d3c0aaf14dc': // Seaport v1.5
+    case '0xfD205E6FDbd033004d349B4B0cbfE56d71f1C7B4': // Seaport v1.5
       return OPENSEA_CONDUIT_SPENDER_ID
-    case '0x00000000000001ad428e4906ae43d8f9852d0dd6': // Seaport v1.4
+    case '0xfD205E6FDbd033004d349B4B0cbfE56d71f1C7B4': // Seaport v1.4
       return OPENSEA_CONDUIT_SPENDER_ID
-    case '0x2b2e8cda09bba9660dca5cb6233787738ad68329': // Sudoswap
+    case '0xfD205E6FDbd033004d349B4B0cbfE56d71f1C7B4': // Sudoswap
       return SUDOSWAP_SPENDER_ID
     default:
       throw new Error('unsupported protocol address')
