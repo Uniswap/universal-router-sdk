@@ -18,7 +18,7 @@ import {
 import { Permit2Permit } from '../../utils/inputTokens'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
-import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
+import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE, PAIR_HAS_TOKENS } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
 import { BigNumber } from 'ethers'
 
@@ -36,6 +36,12 @@ interface Swap<TInput extends Currency, TOutput extends Currency> {
   outputAmount: CurrencyAmount<TOutput>
 }
 
+enum InputPayer {
+  User,
+  Router,
+  Pair,
+}
+
 // Wrapper for uniswap router-sdk trade entity to encode swaps for Universal Router
 // also translates trade objects from previous (v2, v3) SDKs
 export class UniswapTrade implements Command {
@@ -43,17 +49,28 @@ export class UniswapTrade implements Command {
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {}
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
-    let payerIsUser = true
+    let inputPayer: InputPayer = InputPayer.User
 
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
-      // TODO: optimize if only one v2 pool we can directly send this to the pool
+      // If theres only 1 route, and it starts with a V2 pool, we can send the WETH straight into the pool
+      // Otherwise it must go to the router
+      const firstSwapRoute = this.trade.swaps[0].route
+      let wethRecipient = ROUTER_AS_RECIPIENT
+      // since WETH is now owned by the router, the router pays for inputs
+      inputPayer = InputPayer.Router
+      if (
+        this.trade.swaps.length == 1 &&
+        this.trade.tradeType === TradeType.EXACT_INPUT &&
+        firstSwapRoute.pools[0] instanceof Pair
+      ) {
+        wethRecipient = Pair.getAddress(firstSwapRoute.pools[0].token0, firstSwapRoute.pools[0].token1)
+        inputPayer = InputPayer.Pair
+      }
       planner.addCommand(CommandType.WRAP_ETH, [
-        ROUTER_AS_RECIPIENT,
+        wethRecipient,
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
       ])
-      // since WETH is now owned by the router, the router pays for inputs
-      payerIsUser = false
     }
     // The overall recipient at the end of the trade, SENDER_AS_RECIPIENT uses the msg.sender
     this.options.recipient = this.options.recipient ?? SENDER_AS_RECIPIENT
@@ -68,16 +85,17 @@ export class UniswapTrade implements Command {
     const inputIsNative = this.trade.inputAmount.currency.isNative
     const routerMustCustody = performAggregatedSlippageCheck || outputIsNative || !!this.options.fee
 
+    // Each "swap" is 1 entire route from input token to output token. This route can be all V2, all V3, or a mixture
     for (const swap of this.trade.swaps) {
       switch (swap.route.protocol) {
         case Protocol.V2:
-          addV2Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addV2Swap(planner, swap, this.trade.tradeType, this.options, inputPayer, routerMustCustody)
           break
         case Protocol.V3:
-          addV3Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addV3Swap(planner, swap, this.trade.tradeType, this.options, inputPayer, routerMustCustody)
           break
         case Protocol.MIXED:
-          addMixedSwap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addMixedSwap(planner, swap, this.trade.tradeType, this.options, inputPayer, routerMustCustody)
           break
         default:
           throw new Error('UNSUPPORTED_TRADE_PROTOCOL')
@@ -134,7 +152,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
+  inputPayer: InputPayer,
   routerMustCustody: boolean
 ): void {
   const trade = new V2Trade(
@@ -147,10 +165,12 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
     planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
       // if native, we have to unwrap so keep in the router for now
       routerMustCustody ? ROUTER_AS_RECIPIENT : options.recipient,
-      trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
+      inputPayer == InputPayer.Pair
+        ? PAIR_HAS_TOKENS
+        : trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      payerIsUser,
+      inputPayer == InputPayer.User,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
@@ -158,7 +178,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      payerIsUser,
+      inputPayer == InputPayer.User,
     ])
   }
 }
@@ -169,7 +189,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
+  inputPayer: InputPayer,
   routerMustCustody: boolean
 ): void {
   const trade = V3Trade.createUncheckedTrade({
@@ -186,7 +206,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       path,
-      payerIsUser,
+      inputPayer == InputPayer.User,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
@@ -194,7 +214,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       path,
-      payerIsUser,
+      inputPayer == InputPayer.User,
     ])
   }
 }
@@ -205,7 +225,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   swap: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
+  inputPayer: InputPayer,
   routerMustCustody: boolean
 ): void {
   const { route, inputAmount, outputAmount } = swap
@@ -214,9 +234,9 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   // single hop, so it can be reduced to plain v2 or v3 swap logic
   if (route.pools.length === 1) {
     if (route.pools[0] instanceof Pool) {
-      return addV3Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
+      return addV3Swap(planner, swap, tradeType, options, inputPayer, routerMustCustody)
     } else if (route.pools[0] instanceof Pair) {
-      return addV2Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
+      return addV2Swap(planner, swap, tradeType, options, inputPayer, routerMustCustody)
     } else {
       throw new Error('Invalid route type')
     }
@@ -271,15 +291,15 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i == 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOut
         path, // path
-        payerIsUser && i === 0, // payerIsUser
+        inputPayer == InputPayer.User && i === 0, // payerIsUser
       ])
     } else {
       planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
         isLastSectionInRoute(i) ? tradeRecipient : ROUTER_AS_RECIPIENT, // recipient
-        i === 0 ? amountIn : CONTRACT_BALANCE, // amountIn
+        i === 0 ? (inputPayer == InputPayer.Pair ? PAIR_HAS_TOKENS : amountIn) : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
-        payerIsUser && i === 0,
+        inputPayer == InputPayer.User && i === 0, // payerIsUser
       ])
     }
   }
