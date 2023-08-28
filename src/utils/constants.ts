@@ -29,7 +29,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // polygon
   [137]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0x643770E279d5D0733F21d6DC03A8efbABf3255B4',
     weth: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
     creationBlock: 42294741,
   },
@@ -41,7 +41,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   //optimism
   [10]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x4200000000000000000000000000000000000006',
     creationBlock: 96333990,
   },
@@ -53,7 +53,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // arbitrum
   [42161]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
     creationBlock: 87206402,
   },
@@ -65,7 +65,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // celo
   [42220]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0x88a3ED7F21A3fCF6adb86b6F878C5B7a02D20e9b',
     weth: WETH_NOT_SUPPORTED_ON_CHAIN,
     creationBlock: 19106929,
   },
@@ -77,13 +77,13 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // binance smart chain
   [56]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
     creationBlock: 27915533,
   },
   // avalanche
   [43114]: {
-    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    router: '0x82635AF6146972cD6601161c4472ffe97237D292',
     weth: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
     creationBlock: 31583684,
   },
@@ -95,7 +95,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // base mainnet
   [8453]: {
-    router: '0x198EF79F1F515F02dFE9e3115eD9fC07183f02fC',
+    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x4200000000000000000000000000000000000006',
     creationBlock: 1452376,
   },
