@@ -31,7 +31,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [137]: {
     router: '0x643770E279d5D0733F21d6DC03A8efbABf3255B4',
     weth: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-    creationBlock: 42294741,
+    creationBlock: 46866777,
   },
   //polygon mumbai
   [80001]: {
@@ -43,7 +43,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [10]: {
     router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x4200000000000000000000000000000000000006',
-    creationBlock: 96333990,
+    creationBlock: 108825869,
   },
   // optimism goerli
   [420]: {
@@ -55,7 +55,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [42161]: {
     router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-    creationBlock: 87206402,
+    creationBlock: 125861718,
   },
   // arbitrum goerli
   [421613]: {
@@ -67,7 +67,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [42220]: {
     router: '0x88a3ED7F21A3fCF6adb86b6F878C5B7a02D20e9b',
     weth: WETH_NOT_SUPPORTED_ON_CHAIN,
-    creationBlock: 19106929,
+    creationBlock: 21116361,
   },
   // celo alfajores
   [44787]: {
@@ -79,13 +79,13 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [56]: {
     router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-    creationBlock: 27915533,
+    creationBlock: 31254967,
   },
   // avalanche
   [43114]: {
     router: '0x82635AF6146972cD6601161c4472ffe97237D292',
     weth: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
-    creationBlock: 31583684,
+    creationBlock: 34491144,
   },
   // base goerli
   [84531]: {
@@ -97,7 +97,7 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [8453]: {
     router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0x4200000000000000000000000000000000000006',
-    creationBlock: 1452376,
+    creationBlock: 3229053,
   },
 }
 
