@@ -99,6 +99,18 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
     weth: '0x4200000000000000000000000000000000000006',
     creationBlock: 1452376,
   },
+  // canxium mainnet [temp]
+  [3003]: {
+    router: '0xAC5DcA1235d685E473B428ff52E2842444384abd',
+    weth: '0x0B1ab52d408B7C61d52dC69942609Eca1BAd1053',
+    creationBlock: 375015,
+  },
+  // canxium testnet [cerium]
+  [30103]: {
+    router: '0xAC5DcA1235d685E473B428ff52E2842444384abd',
+    weth: '0x0B1ab52d408B7C61d52dC69942609Eca1BAd1053',
+    creationBlock: 375015,
+  },
 }
 
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
