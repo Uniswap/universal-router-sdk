@@ -65,9 +65,9 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // celo
   [42220]: {
-    router: '0x88a3ED7F21A3fCF6adb86b6F878C5B7a02D20e9b',
+    router: '0x643770e279d5d0733f21d6dc03a8efbabf3255b4',
     weth: WETH_NOT_SUPPORTED_ON_CHAIN,
-    creationBlock: 21116361,
+    creationBlock: 21407637,
   },
   // celo alfajores
   [44787]: {
