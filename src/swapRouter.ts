@@ -99,10 +99,16 @@ export abstract class SwapRouter {
         trade.encode(planner, { allowRevert: false })
         currentNativeValueInRouter = currentNativeValueInRouter.add(UnwrapWETH.amount)
         /**
+         * is WrapSTETH
+         */
+      } else if (trade.tradeType == RouterTradeType.WrapSTETH) {
+        const WrapSTETH = trade as WrapSTETH
+        trade.encode(planner, { allowRevert: false })
+        /**
          * else
          */
       } else {
-        throw 'trade must be of instance: UniswapTrade or NFTTrade'
+        throw 'trade must be of instance: UniswapTrade, NFTTrade, UnwrapWETH, WrapSTETH'
       }
     }
 

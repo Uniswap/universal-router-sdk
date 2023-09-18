@@ -546,4 +546,25 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertEq(USDC.balanceOf(address(router)), 0);
         assertEq(address(router).balance, 0);
     }
+
+    function testSTETHtoWETH() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_STETH_FOR_WETH");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(WETH.balanceOf(RECIPIENT), 0);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(WETH.balanceOf(RECIPIENT), 0);
+        // assertEq(USDC.balanceOf(address(router)), 0);
+        assertEq(address(router).balance, 0);
+    }
+
+
+
+
+
+
+
 }
