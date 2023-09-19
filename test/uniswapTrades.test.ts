@@ -375,7 +375,7 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
-    it.only('encodes a single exactOutput ETH->USDC swap', async () => {
+    it('encodes a single exactOutput ETH->USDC swap', async () => {
       const outputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = await V3Trade.fromRoute(
         new RouteV3([WETH_USDC_V3], ETHER, USDC),
@@ -605,10 +605,10 @@ describe('Uniswap', () => {
       WETH_WSTETH_V3 = await getUniswapStethPool()
     })
 
-    it.only('encodes a single exactInput STETH -> WSTETH -> WETH swap with Permit', async () => {
-      const inputSTETH = expandTo18DecimalsBN('0.001').toString()
-      const inputWSTETH = await getWStethPerSteth(inputSTETH)
-      const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), '0', FORGE_ROUTER_ADDRESS)
+    it('encodes a single exactInput STETH -> WSTETH -> WETH swap with Permit', async () => {
+      const inputSTETH = expandTo18DecimalsBN('0.001')
+      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1), 18135610)
+      const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
 
       const WrapSTETHPermitData = {
@@ -624,8 +624,33 @@ describe('Uniswap', () => {
         TradeType.EXACT_INPUT
       )
 
-      const methodParameters = SwapRouter.swapCallParameters([wrapSTETH, new UniswapTrade(buildTrade([trade]), swapOptions({}))])
+      const methodParameters = SwapRouter.swapCallParameters([wrapSTETH, new UniswapTrade(buildTrade([trade]), swapOptions({ payerIsRouter: true }))])
       registerFixture('_UNISWAP_V3_001_STETH_FOR_WETH', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+      // other assertions carried out in forge
+    })
+
+    it('encodes a single exactInput STETH -> WSTETH -> ETH swap with Permit', async () => {
+      const inputSTETH = expandTo18DecimalsBN('0.001')
+      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1), 18135610)
+      const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), undefined, FORGE_ROUTER_ADDRESS)
+      const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
+
+      const WrapSTETHPermitData = {
+        ...permit2Data,
+        signature,
+      }
+
+      const wrapSTETH = new WrapSTETH(inputSTETH, 1, WrapSTETHPermitData)
+
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_WSTETH_V3], WSTETH, ETHER),
+        CurrencyAmount.fromRawAmount(WSTETH, inputWSTETH),
+        TradeType.EXACT_INPUT
+      )
+
+      const methodParameters = SwapRouter.swapCallParameters([wrapSTETH, new UniswapTrade(buildTrade([trade]), swapOptions({ payerIsRouter: true }))])
+      registerFixture('_UNISWAP_V3_001_STETH_FOR_ETH', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.eq('0')
       // other assertions carried out in forge
     })

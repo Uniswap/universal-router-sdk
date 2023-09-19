@@ -14,6 +14,8 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     ERC20 private constant WETH = ERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     ERC20 private constant USDC = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     ERC20 private constant DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    ERC20 private constant STETH_TOKEN = ERC20(STETH);
+
     // starting eth balance
     uint256 constant BALANCE = 10 ether;
     uint256 ONE_USDC = 10 ** 6;
@@ -550,21 +552,55 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
     function testSTETHtoWETH() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_STETH_FOR_WETH");
 
+        vm.createSelectFork(vm.envString("FORK_URL"), 18135610);
+        deployRouterAndPermit2();
+        vm.deal(from, BALANCE);
+
+        vm.stopPrank();
+
+        vm.prank(WSTETH); // STETH whale
+        STETH_TOKEN.transfer(from, BALANCE);
+
+        vm.startPrank(from);
+
         assertEq(from.balance, BALANCE);
         assertEq(WETH.balanceOf(RECIPIENT), 0);
+        STETH_TOKEN.approve(address(permit2), type(uint256).max);
+
+        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(from);
 
         (bool success,) = address(router).call{value: params.value}(params.data);
         require(success, "call failed");
         assertLe(from.balance, BALANCE - params.value);
-        assertGt(WETH.balanceOf(RECIPIENT), 0);
-        // assertEq(USDC.balanceOf(address(router)), 0);
+        assertEq(WETH.balanceOf(RECIPIENT), 999761518427454);
+        assertLt(STETH_TOKEN.balanceOf(from), balanceStethBefore);
         assertEq(address(router).balance, 0);
     }
 
+    function testSTETHtoETH() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_STETH_FOR_ETH");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 18135610);
+        deployRouterAndPermit2();
+        vm.deal(from, BALANCE);
+        assertEq(from.balance, BALANCE);
+
+        vm.stopPrank();
+
+        vm.prank(WSTETH); // STETH whale
+        STETH_TOKEN.transfer(from, BALANCE);
 
 
+        vm.startPrank(from);
 
+        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(from);
+        uint256 balanceETHBefore = RECIPIENT.balance;
 
-
-
+        STETH_TOKEN.approve(address(permit2), type(uint256).max);
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(RECIPIENT.balance - balanceETHBefore, 999761518427454);
+        assertLt(STETH_TOKEN.balanceOf(from), balanceStethBefore);
+        assertEq(address(router).balance, 0);
+    }
 }

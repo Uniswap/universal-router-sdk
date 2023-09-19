@@ -26,6 +26,7 @@ import { BigNumber } from 'ethers'
 // so we extend swap options with the permit2 permit
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
+  payerIsRouter?: boolean
 }
 
 const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(50, 100)
@@ -43,7 +44,7 @@ export class UniswapTrade implements Command {
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {}
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
-    let payerIsUser = true
+    let payerIsUser = !this.options.payerIsRouter
 
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
