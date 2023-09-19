@@ -590,7 +590,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         vm.prank(WSTETH); // STETH whale
         STETH_TOKEN.transfer(from, BALANCE);
 
-
         vm.startPrank(from);
 
         uint256 balanceStethBefore = STETH_TOKEN.balanceOf(from);
@@ -615,7 +614,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         WETH.approve(address(permit2), type(uint256).max);
         permit2.approve(address(WETH), address(router), type(uint160).max, uint48(block.timestamp + 1000));
 
-        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(RECIPIENT);
         uint256 balanceWethBefore = WETH.balanceOf(from);
 
         (bool success,) = address(router).call{value: params.value}(params.data);
@@ -632,7 +630,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         deployRouterAndPermit2();
         vm.deal(from, BALANCE);
 
-        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(RECIPIENT);
         uint256 balanceEthBefore = from.balance;
 
         (bool success,) = address(router).call{value: params.value}(params.data);

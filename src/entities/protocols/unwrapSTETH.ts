@@ -10,7 +10,6 @@ export class UnwrapSTETH implements Command {
   readonly recipient: string
   readonly amountMinimum: BigNumberish
 
-
   constructor(recipient: string, amountMinimum: BigNumberish, chainId: number) {
     this.recipient = recipient
     this.amountMinimum = amountMinimum

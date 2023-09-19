@@ -154,7 +154,8 @@ export const WETH_ADDRESS = (chainId: number): string => {
 export const STETH_ADDRESS = (chainId: number): string => {
   if (!(chainId in CHAIN_CONFIGS)) throw new Error(`Universal Router not deployed on chain ${chainId}`)
 
-  if (CHAIN_CONFIGS[chainId].steth == NOT_SUPPORTED_ON_CHAIN) throw new Error(`Chain ${chainId} does not have STETH support`)
+  if (CHAIN_CONFIGS[chainId].steth == NOT_SUPPORTED_ON_CHAIN)
+    throw new Error(`Chain ${chainId} does not have STETH support`)
 
   return CHAIN_CONFIGS[chainId].steth
 }
@@ -162,7 +163,8 @@ export const STETH_ADDRESS = (chainId: number): string => {
 export const WSTETH_ADDRESS = (chainId: number): string => {
   if (!(chainId in CHAIN_CONFIGS)) throw new Error(`Universal Router not deployed on chain ${chainId}`)
 
-  if (CHAIN_CONFIGS[chainId].wsteth == NOT_SUPPORTED_ON_CHAIN) throw new Error(`Chain ${chainId} does not have WSTETH support`)
+  if (CHAIN_CONFIGS[chainId].wsteth == NOT_SUPPORTED_ON_CHAIN)
+    throw new Error(`Chain ${chainId} does not have WSTETH support`)
 
   return CHAIN_CONFIGS[chainId].wsteth
 }

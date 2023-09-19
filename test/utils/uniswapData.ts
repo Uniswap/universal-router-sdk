@@ -48,22 +48,22 @@ const V2_ABI = [
 const STETH_ABI = [
   {
     inputs: [
-          {
-        internalType: "uint256",
-        name: "_ethAmount",
-        type: "uint256"
-          }
-        ],
-    name: "getSharesByPooledEth",
+      {
+        internalType: 'uint256',
+        name: '_ethAmount',
+        type: 'uint256',
+      },
+    ],
+    name: 'getSharesByPooledEth',
     outputs: [
-          {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-          }
-        ],
-    stateMutability: "view",
-    type: "function"
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
   },
 ]
 

@@ -101,7 +101,7 @@ export abstract class SwapRouter {
         /**
          * is (Un)WrapSTETH
          */
-      } else if (trade.tradeType == RouterTradeType.WrapSTETH || trade.tradeType == RouterTradeType.UnwrapSTETH ) {
+      } else if (trade.tradeType == RouterTradeType.WrapSTETH || trade.tradeType == RouterTradeType.UnwrapSTETH) {
         trade.encode(planner, { allowRevert: false })
         /**
          * else
