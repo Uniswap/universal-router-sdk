@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import JSBI from 'jsbi'
 import { BigNumber, utils, Wallet } from 'ethers'
 import { expandTo18Decimals, expandTo18DecimalsBN } from '../src/utils/numbers'
-import { SwapRouter, UniswapTrade, WrapSTETH } from '../src'
+import { SwapRouter, UniswapTrade, WrapSTETH, UnwrapSTETH } from '../src'
 import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
 import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions } from '@uniswap/v3-sdk'
@@ -11,8 +11,8 @@ import { CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
 import { buildTrade, getUniswapPools, swapOptions, getWStethPerSteth, getUniswapStethPool, ETHER, DAI, USDC, WETH, STETH, WSTETH } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
-import { STETH_ADDRESS } from '../src/utils/constants'
-import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
+import { ROUTER_AS_RECIPIENT, STETH_ADDRESS } from '../src/utils/constants'
+import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS, TEST_RECIPIENT_ADDRESS } from './utils/addresses'
 
 const FORK_BLOCK = 16075500
 
@@ -652,6 +652,42 @@ describe('Uniswap', () => {
       const methodParameters = SwapRouter.swapCallParameters([wrapSTETH, new UniswapTrade(buildTrade([trade]), swapOptions({ payerIsRouter: true }))])
       registerFixture('_UNISWAP_V3_001_STETH_FOR_ETH', methodParameters)
       expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+      // other assertions carried out in forge
+    })
+
+    it('encodes a single exactInput WETH -> WSTETH -> STETH swap', async () => {
+      const inputWETH = expandTo18DecimalsBN('0.001')
+
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_WSTETH_V3], WETH, WSTETH),
+        CurrencyAmount.fromRawAmount(WETH, inputWETH),
+        TradeType.EXACT_INPUT
+      )
+
+      const uniswapTrade = new UniswapTrade(buildTrade([trade]), swapOptions({recipient: ROUTER_AS_RECIPIENT}))
+      const unwrapSTETH = new UnwrapSTETH(TEST_RECIPIENT_ADDRESS, 1, 1)
+
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, unwrapSTETH])
+      registerFixture('_UNISWAP_V3_001_WETH_FOR_STETH', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+      // other assertions carried out in forge
+    })
+
+    it('encodes a single exactInput ETH -> WSTETH -> STETH swap with Permit', async () => {
+      const inputETH = expandTo18DecimalsBN('0.001')
+
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_WSTETH_V3], ETHER, WSTETH),
+        CurrencyAmount.fromRawAmount(ETHER, inputETH),
+        TradeType.EXACT_INPUT
+      )
+
+      const uniswapTrade = new UniswapTrade(buildTrade([trade]), swapOptions({recipient: ROUTER_AS_RECIPIENT}))
+      const unwrapSTETH = new UnwrapSTETH(TEST_RECIPIENT_ADDRESS, 1, 1)
+
+      const methodParameters = SwapRouter.swapCallParameters([uniswapTrade, unwrapSTETH])
+      registerFixture('_UNISWAP_V3_001_ETH_FOR_STETH', methodParameters)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(inputETH.toString())
       // other assertions carried out in forge
     })
   })

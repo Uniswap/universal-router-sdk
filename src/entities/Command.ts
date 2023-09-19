@@ -9,6 +9,7 @@ export enum RouterTradeType {
   NFTTrade = 'NFTTrade',
   UnwrapWETH = 'UnwrapWETH',
   WrapSTETH = 'WrapSTETH',
+  UnwrapSTETH = 'UnwrapSTETH',
 }
 
 // interface for entities that can be encoded as a Universal Router command

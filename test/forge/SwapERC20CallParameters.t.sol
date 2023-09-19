@@ -603,4 +603,42 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertLt(STETH_TOKEN.balanceOf(from), balanceStethBefore);
         assertEq(address(router).balance, 0);
     }
+
+    function testWETHToSTETH() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_WETH_FOR_STETH");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 18135610);
+        deployRouterAndPermit2();
+        vm.deal(from, BALANCE);
+        deal(address(WETH), from, BALANCE);
+
+        WETH.approve(address(permit2), type(uint256).max);
+        permit2.approve(address(WETH), address(router), type(uint160).max, uint48(block.timestamp + 1000));
+
+        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(RECIPIENT);
+        uint256 balanceWethBefore = WETH.balanceOf(from);
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(STETH_TOKEN.balanceOf(RECIPIENT), 1000038500708199);
+        assertLt(WETH.balanceOf(from), balanceWethBefore);
+        assertEq(address(router).balance, 0);
+    }
+
+    function testETHToSTETH() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_ETH_FOR_STETH");
+
+        vm.createSelectFork(vm.envString("FORK_URL"), 18135610);
+        deployRouterAndPermit2();
+        vm.deal(from, BALANCE);
+
+        uint256 balanceStethBefore = STETH_TOKEN.balanceOf(RECIPIENT);
+        uint256 balanceEthBefore = from.balance;
+
+        (bool success,) = address(router).call{value: params.value}(params.data);
+        require(success, "call failed");
+        assertEq(STETH_TOKEN.balanceOf(RECIPIENT), 1000038500708199);
+        assertLt(from.balance, balanceEthBefore);
+        assertEq(address(router).balance, 0);
+    }
 }

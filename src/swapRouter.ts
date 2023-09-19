@@ -99,9 +99,9 @@ export abstract class SwapRouter {
         trade.encode(planner, { allowRevert: false })
         currentNativeValueInRouter = currentNativeValueInRouter.add(UnwrapWETH.amount)
         /**
-         * is WrapSTETH
+         * is (Un)WrapSTETH
          */
-      } else if (trade.tradeType == RouterTradeType.WrapSTETH) {
+      } else if (trade.tradeType == RouterTradeType.WrapSTETH || trade.tradeType == RouterTradeType.UnwrapSTETH ) {
         trade.encode(planner, { allowRevert: false })
         /**
          * else
