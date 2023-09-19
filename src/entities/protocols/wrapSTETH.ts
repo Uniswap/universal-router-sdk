@@ -3,13 +3,14 @@ import { BigNumberish } from 'ethers'
 import { RoutePlanner, CommandType } from '../../utils/routerCommands'
 import { encodeInputTokenOptions, Permit2Permit } from '../../utils/inputTokens'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
-import { CONTRACT_BALANCE, ROUTER_AS_RECIPIENT, WETH_ADDRESS, STETH_ADDRESS } from '../../utils/constants'
+import { CONTRACT_BALANCE, ROUTER_AS_RECIPIENT, STETH_ADDRESS } from '../../utils/constants'
 
 export class WrapSTETH implements Command {
-  readonly tradeType: RouterTradeType = RouterTradeType.UnwrapSTETH
+  readonly tradeType: RouterTradeType = RouterTradeType.WrapSTETH
   readonly permit2Data: Permit2Permit
   readonly stethAddress: string
   readonly amount: BigNumberish
+  readonly wrapAmount: BigNumberish
 
   constructor(amount: BigNumberish, chainId: number, permit2?: Permit2Permit, wrapAmount?: BigNumberish) {
     this.stethAddress = STETH_ADDRESS(chainId)

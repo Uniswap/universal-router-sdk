@@ -103,6 +103,8 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [56]: {
     router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
     weth: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    steth: NOT_SUPPORTED_ON_CHAIN,
+    wsteth: NOT_SUPPORTED_ON_CHAIN,
     creationBlock: 31254967,
   },
   // avalanche

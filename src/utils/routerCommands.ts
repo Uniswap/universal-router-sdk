@@ -102,6 +102,7 @@ const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.OWNER_CHECK_1155]: ['address', 'address', 'uint256', 'uint256'],
   [CommandType.APPROVE_ERC20]: ['address', 'uint256'],
   [CommandType.WRAP_STETH]: ['address', 'uint256'],
+  [CommandType.UNWRAP_STETH]: ['address', 'uint256'],
 
   // NFT Markets
   [CommandType.SEAPORT_V1_5]: ['uint256', 'bytes'],

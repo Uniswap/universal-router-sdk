@@ -102,7 +102,6 @@ export abstract class SwapRouter {
          * is WrapSTETH
          */
       } else if (trade.tradeType == RouterTradeType.WrapSTETH) {
-        const WrapSTETH = trade as WrapSTETH
         trade.encode(planner, { allowRevert: false })
         /**
          * else
