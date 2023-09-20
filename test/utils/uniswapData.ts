@@ -93,7 +93,13 @@ export const WETH = new Token(1, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', 1
 export const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'dai')
 export const USDC = new Token(1, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6, 'USDC', 'USD Coin')
 export const STETH = new Token(1, '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', 18, 'STETH', 'Liquid staked Ether')
-export const WSTETH = new Token(1, '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', 18, 'WSTETH', 'Wrapped liquid staked Ether')
+export const WSTETH = new Token(
+  1,
+  '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0',
+  18,
+  'WSTETH',
+  'Wrapped liquid staked Ether'
+)
 export const FEE_AMOUNT = FeeAmount.MEDIUM
 
 type UniswapPools = {

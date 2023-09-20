@@ -604,7 +604,6 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertEq(address(router).balance, 0);
     }
 
-
     function testSTETHtoETH() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_V3_001_STETH_FOR_ETH");
 
