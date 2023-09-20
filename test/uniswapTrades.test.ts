@@ -625,7 +625,7 @@ describe('Uniswap', () => {
 
     it('encodes a single exactInput STETH -> WSTETH -> WETH swap with Permit', async () => {
       const inputSTETH = expandTo18DecimalsBN('0.001')
-      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1), 18135610)
+      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1))
       const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
 
@@ -653,7 +653,7 @@ describe('Uniswap', () => {
 
     it('encodes a single exactInput STETH -> WSTETH -> ETH swap with Permit', async () => {
       const inputSTETH = expandTo18DecimalsBN('0.001')
-      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1), 18135610)
+      const inputWSTETH = await getWStethPerSteth(inputSTETH.sub(1))
       const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
 
@@ -691,8 +691,8 @@ describe('Uniswap', () => {
       )
 
       // Wrap Configurations
-      const maximumWstethIn = BigNumber.from(trade.maximumAmountIn((swapOpts.slippageTolerance)).quotient.toString())
-      const inputSTETH = await getStethPerWsteth(maximumWstethIn.add('1'), 18135610)
+      const maximumWstethIn = BigNumber.from(trade.maximumAmountIn(swapOpts.slippageTolerance).quotient.toString())
+      const inputSTETH = await getStethPerWsteth(maximumWstethIn.add('1'))
       const permit2Data = makePermit(STETH_ADDRESS(1), inputSTETH.toString(), undefined, FORGE_ROUTER_ADDRESS)
       const signature = await generatePermitSignature(permit2Data, wallet, 1, FORGE_PERMIT2_ADDRESS)
       const WrapSTETHPermitData = {
@@ -750,7 +750,7 @@ describe('Uniswap', () => {
 
     it('encodes a single exactInput WETH -> WSTETH -> STETH exactOutput swap', async () => {
       const outputSTETH = expandTo18DecimalsBN('0.001')
-      const outputWSTETH = await getWStethPerSteth(outputSTETH.add('2'), 18135610)
+      const outputWSTETH = await getWStethPerSteth(outputSTETH.add('2'))
 
       const trade = await V3Trade.fromRoute(
         new RouteV3([WETH_WSTETH_V3], WETH, WSTETH),
