@@ -92,6 +92,7 @@ const unwrapWETH = new UnwrapWETH(amountWETH, chainId, optionalPermit2Params)
 const { calldata, value } = SwapRouter.swapCallParameters([unwrapWETH, seaportTrades, looksRareTrades])
 ```
 
+### Trading stETH by automatically wrapping to wstETH
 
 ## Running this package
 Make sure you are running `node v16`
