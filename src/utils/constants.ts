@@ -8,7 +8,7 @@ type ChainConfig = {
   wsteth: string
 }
 
-const NOT_SUPPORTED_ON_CHAIN = '0x0000000000000000000000000000000000000000'
+export const NOT_SUPPORTED_ON_CHAIN = '0x0000000000000000000000000000000000000000'
 
 const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   // mainnet
