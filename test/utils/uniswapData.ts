@@ -65,6 +65,25 @@ const STETH_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_sharesAmount',
+        type: 'uint256',
+      },
+    ],
+    name: 'getPooledEthByShares',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ]
 
 const FORK_BLOCK = 16075500
@@ -147,6 +166,11 @@ export async function getPool(tokenA: Token, tokenB: Token, feeAmount: FeeAmount
 export async function getWStethPerSteth(stethAmount: BigNumber, blockNumber: number): Promise<BigNumber> {
   const contract = new ethers.Contract(STETH.address, STETH_ABI, getProvider())
   return await contract.getSharesByPooledEth(stethAmount, { blockTag: blockNumber })
+}
+
+export async function getStethPerWsteth(wstethAmount: BigNumber, blockNumber: number): Promise<BigNumber> {
+  const contract = new ethers.Contract(STETH.address, STETH_ABI, getProvider())
+  return await contract.getPooledEthByShares(wstethAmount, { blockTag: blockNumber })
 }
 
 // use some sane defaults
