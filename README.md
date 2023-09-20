@@ -131,7 +131,7 @@ const uniswapWstethTrade = new UniswapTrade(
   new RouterTrade({ v2Routes, v3Routes, mixedRoutes, tradeType: TradeType.EXACT_INPUT }),
   { slippageTolerance, ROUTER_AS_RECIPIENT}
 )
-const unwrapSTETH = new UnwrapSTETH(recipient, aountMinimum, chainId)
+const unwrapSTETH = new UnwrapSTETH(recipient, amountMinimum, chainId)
 
 const { calldata, value } = SwapRouter.swapCallParameters([uniswapWstethTrade, unwrapSTETH])
 ```
