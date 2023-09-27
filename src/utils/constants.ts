@@ -23,8 +23,8 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   [5]: {
     router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
     weth: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6',
-    steth: NOT_SUPPORTED_ON_CHAIN,
-    wsteth: NOT_SUPPORTED_ON_CHAIN,
+    steth: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
+    wsteth: '0x6320cD32aA674d2898A68ec82e869385Fc5f7E2f',
     creationBlock: 8940568,
   },
   // sepolia
