@@ -268,6 +268,23 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
+    it('encodes a single exactOutput USDC->ETH swap, with a flat fee', async () => {
+      const outputUSDC = utils.parseUnits('15', 18).toString()
+      const trade = new V2Trade(
+        new RouteV2([WETH_USDC_V2], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(ETHER, outputUSDC),
+        TradeType.EXACT_OUTPUT
+      )
+      const feeOptions: FlatFeeOptions = { amount: utils.parseUnits('5', 18), recipient: TEST_FEE_RECIPIENT_ADDRESS }
+      const opts = swapOptions({ flatFee: feeOptions })
+      const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+      const methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+      registerFixture('_UNISWAP_V2_USCD_FOR_10_ETH_WITH_FLAT_FEE', methodParametersV2)
+      expect(hexToDecimalString(methodParameters.value)).to.equal('0')
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
+    })
+
     it('encodes a single exactOutput USDC->ETH swap', async () => {
       const outputETH = utils.parseEther('1').toString()
       const trade = new V2Trade(
