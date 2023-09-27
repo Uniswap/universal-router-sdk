@@ -679,7 +679,7 @@ describe('Uniswap', () => {
       // other assertions carried out in forge
     })
 
-    it('encodes a single exactInput STETH -> WSTETH -> WETH exactOutput swap', async () => {
+    it('encodes a single exactOutput STETH -> WSTETH -> WETH swap', async () => {
       const outputWETH = expandTo18DecimalsBN('0.001')
 
       // Trade Configurations
@@ -748,7 +748,7 @@ describe('Uniswap', () => {
       // other assertions carried out in forge
     })
 
-    it('encodes a single exactInput WETH -> WSTETH -> STETH exactOutput swap', async () => {
+    it('encodes a single exactOutput WETH -> WSTETH -> STETH swap', async () => {
       const outputSTETH = expandTo18DecimalsBN('0.001')
       const outputWSTETH = await getWStethPerSteth(outputSTETH.add('2'))
 
