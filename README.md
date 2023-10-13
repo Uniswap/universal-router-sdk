@@ -151,6 +151,12 @@ const { calldata, value } = SwapRouter.swapCallParameters([uniswapWstethTrade, u
 
 
 ## Running this package
+Create `.env` file with forking url
+
+```
+FORK_URL='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+```
+
 Make sure you are running `node v16`
 Install dependencies and run typescript unit tests
 ```bash
