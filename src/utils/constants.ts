@@ -29,9 +29,9 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // polygon
   [137]: {
-    router: '0x643770E279d5D0733F21d6DC03A8efbABf3255B4',
+    router: '0xec7BE89e9d109e7e3Fec59c222CF297125FEFda2',
     weth: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-    creationBlock: 46866777,
+    creationBlock: 52210153,
   },
   //polygon mumbai
   [80001]: {
@@ -41,9 +41,9 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   //optimism
   [10]: {
-    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
+    router: '0xCb1355ff08Ab38bBCE60111F1bb2B784bE25D7e8',
     weth: '0x4200000000000000000000000000000000000006',
-    creationBlock: 108825869,
+    creationBlock: 114702266,
   },
   // optimism goerli
   [420]: {
@@ -53,9 +53,9 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // arbitrum
   [42161]: {
-    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
+    router: '0x5E325eDA8064b456f4781070C0738d849c824258',
     weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-    creationBlock: 125861718,
+    creationBlock: 169472836,
   },
   // arbitrum goerli
   [421613]: {
@@ -77,15 +77,15 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // binance smart chain
   [56]: {
-    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
+    router: '0x4Dae2f939ACf50408e13d58534Ff8c2776d45265',
     weth: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-    creationBlock: 31254967,
+    creationBlock: 35160263,
   },
   // avalanche
   [43114]: {
-    router: '0x82635AF6146972cD6601161c4472ffe97237D292',
+    router: '0x4Dae2f939ACf50408e13d58534Ff8c2776d45265',
     weth: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
-    creationBlock: 34491144,
+    creationBlock: 40237257,
   },
   // base goerli
   [84531]: {
@@ -95,9 +95,9 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
   },
   // base mainnet
   [8453]: {
-    router: '0xeC8B0F7Ffe3ae75d7FfAb09429e3675bb63503e4',
+    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
     weth: '0x4200000000000000000000000000000000000006',
-    creationBlock: 3229053,
+    creationBlock: 9107268,
   },
 }
 
