@@ -2215,6 +2215,18 @@
     tiny-invariant "^1.1.0"
     toformat "^2.0.0"
 
+"@uniswap/sdk-core@^4.0.7":
+  version "4.0.10"
+  resolved "https://registry.yarnpkg.com/@uniswap/sdk-core/-/sdk-core-4.0.10.tgz#6173cc39d4e6b5ed679775447bb96a5b3c3fb2f2"
+  integrity sha512-RiobXJKXvVVb+wfNM09Ik8djOMOuRQGfyRP5pHgUjojicK/7nscZILjZ87DjVCGjXEoD8yTSIps0UAQuz6pJIw==
+  dependencies:
+    "@ethersproject/address" "^5.0.2"
+    big.js "^5.2.2"
+    decimal.js-light "^2.5.0"
+    jsbi "^3.1.4"
+    tiny-invariant "^1.1.0"
+    toformat "^2.0.0"
+
 "@uniswap/swap-router-contracts@1.1.0":
   version "1.1.0"
   resolved "https://registry.npmjs.org/@uniswap/swap-router-contracts/-/swap-router-contracts-1.1.0.tgz"
@@ -2238,10 +2250,10 @@
     dotenv "^14.2.0"
     hardhat-watcher "^2.1.1"
 
-"@uniswap/universal-router@1.4.3":
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/@uniswap/universal-router/-/universal-router-1.4.3.tgz#7736cf7f8dc99435a6be87c2e80b5c5d4589d641"
-  integrity sha512-SZmYfhYZtsuxrTMCitcA39iJuG9sbe2nvm9iQfd70WjMpbB0+GuEs5OqSHc5tB/ujrVKzPJ1LOoNNGOs0xPEeA==
+"@uniswap/universal-router@1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@uniswap/universal-router/-/universal-router-1.6.0.tgz#3d7372e98a0303c70587802ee6841b8b6b42fc6f"
+  integrity sha512-Gt0b0rtMV1vSrgXY3vz5R1RCZENB+rOkbOidY9GvcXrK1MstSrQSOAc+FCr8FSgsDhmRAdft0lk5YUxtM9i9Lg==
   dependencies:
     "@openzeppelin/contracts" "4.7.0"
     "@uniswap/v2-core" "1.0.1"
@@ -2260,6 +2272,17 @@
     "@ethersproject/address" "^5.0.0"
     "@ethersproject/solidity" "^5.0.0"
     "@uniswap/sdk-core" "^4.0.2"
+    tiny-invariant "^1.1.0"
+    tiny-warning "^1.0.3"
+
+"@uniswap/v2-sdk@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@uniswap/v2-sdk/-/v2-sdk-3.3.0.tgz#76c95d234fe73ca6ad34ba9509f7451955ee0ce7"
+  integrity sha512-cf5PjoNQN5tNELIOVJsqV4/VeuDtxFw6Zl8oFmFJ6PNoQ8sx+XnGoO0aGKTB/o5II3oQ7820xtY3k47UsXgd6A==
+  dependencies:
+    "@ethersproject/address" "^5.0.0"
+    "@ethersproject/solidity" "^5.0.0"
+    "@uniswap/sdk-core" "^4.0.7"
     tiny-invariant "^1.1.0"
     tiny-warning "^1.0.3"
 
