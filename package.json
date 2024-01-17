@@ -53,7 +53,7 @@
     "@uniswap/router-sdk": "^1.6.0",
     "@uniswap/sdk-core": "^4.0.0",
     "@uniswap/universal-router": "1.6.0",
-    "@uniswap/v2-sdk": "^3.2.0",
+    "@uniswap/v2-sdk": "^4.0.1",
     "@uniswap/v3-sdk": "^3.10.0",
     "bignumber.js": "^9.0.2",
     "ethers": "^5.3.1"
