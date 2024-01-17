@@ -2192,28 +2192,16 @@
     ethers "^5.3.1"
     tiny-invariant "^1.3.1"
 
-"@uniswap/router-sdk@^1.7.3":
-  version "1.7.3"
-  resolved "https://registry.yarnpkg.com/@uniswap/router-sdk/-/router-sdk-1.7.3.tgz#c843c81365a56398e46def66a7d5e33b3c849ba8"
-  integrity sha512-CeC1LKWBPDIW/vzVBYXgFhrQMcQXN2yxjDlQPoY7Yzlei5v3mKi4UlcHrM0SH1mZIqpW3nSCEuw8jFKKNJiWFA==
+"@uniswap/router-sdk@^1.7.5":
+  version "1.7.5"
+  resolved "https://registry.yarnpkg.com/@uniswap/router-sdk/-/router-sdk-1.7.5.tgz#1c8b60ec0c4ac198f54053dbf61efc5575f4a001"
+  integrity sha512-wfCq45cRmABIGHDNxnUaO+RRJRj5dRv5n+v/yBInt0ABv8BEJm5iX/sKd12CznXNxFD9phtWs7fK1LaLFxtbyA==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@uniswap/sdk-core" "^4.0.7"
     "@uniswap/swap-router-contracts" "^1.1.0"
     "@uniswap/v2-sdk" "^4.0.1"
-    "@uniswap/v3-sdk" "^3.10.0"
-
-"@uniswap/sdk-core@^4", "@uniswap/sdk-core@^4.0.0":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@uniswap/sdk-core/-/sdk-core-4.0.2.tgz#2eca2b5bf00bad74519aef918465c19218285b4b"
-  integrity sha512-rR5xobsAAP4yMYC7C+0+duVx0pFoDn2lV9kTWpoKgH1WJuw7hD1uDEvuevU2dL89TuixVgGvnYd0QxmrMtsIlg==
-  dependencies:
-    "@ethersproject/address" "^5.0.2"
-    big.js "^5.2.2"
-    decimal.js-light "^2.5.0"
-    jsbi "^3.1.4"
-    tiny-invariant "^1.1.0"
-    toformat "^2.0.0"
+    "@uniswap/v3-sdk" "^3.10.1"
 
 "@uniswap/sdk-core@^4.0.7":
   version "4.0.10"
@@ -2320,14 +2308,14 @@
     "@uniswap/v3-core" "^1.0.0"
     base64-sol "1.0.1"
 
-"@uniswap/v3-sdk@^3.10.0":
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/@uniswap/v3-sdk/-/v3-sdk-3.10.0.tgz#962c9e598250ced00702d944783c2d9ee3fa12f6"
-  integrity sha512-sbmSA1O+Ct960r66Ie/c1rOmVadpwRu8nQ79pGICv0pZJdnFIQ/SReG3F+iC2C2UNNjNP6aC2WDUggXrjyrgnA==
+"@uniswap/v3-sdk@^3.10.1":
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/@uniswap/v3-sdk/-/v3-sdk-3.10.1.tgz#a7c3d798e022cdc080854094005702839041a431"
+  integrity sha512-Ed3A/O0egU6qEuW5EaF+DiFIVNOHBgOXdCdtUsJ1J2862mEKiDU9zZjDQ03AZjME9BLj/xJiDTWMdQ+Y5D8+7w==
   dependencies:
     "@ethersproject/abi" "^5.0.12"
     "@ethersproject/solidity" "^5.0.9"
-    "@uniswap/sdk-core" "^4"
+    "@uniswap/sdk-core" "^4.0.7"
     "@uniswap/swap-router-contracts" "^1.2.1"
     "@uniswap/v3-periphery" "^1.1.1"
     "@uniswap/v3-staker" "1.0.0"
