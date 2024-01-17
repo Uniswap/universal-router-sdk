@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="034fb9ee-a5c3-4705-90fa-41ad52773ac0" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2SRrvvuA5fhJrpL2g1iZVR6ww3B" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "jsy1218/bump-v2-sdk-in-ur-sdk",
+    "last_opened_file_path": "/Users/siyu.jiang/workspace/universal-router-sdk",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "yarn",
+    "ts.external.directory.path": "/Applications/WebStorm.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="034fb9ee-a5c3-4705-90fa-41ad52773ac0" name="Changes" comment="" />
+      <created>1689120468878</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1689120468878</updated>
+      <workItem from="1689120469958" duration="4857000" />
+      <workItem from="1689126964002" duration="11724000" />
+      <workItem from="1689293941601" duration="14182000" />
+      <workItem from="1692581312896" duration="547000" />
+      <workItem from="1692582266136" duration="8773000" />
+      <workItem from="1694129129006" duration="1334000" />
+      <workItem from="1694135676336" duration="74845000" />
+      <workItem from="1694824686812" duration="2219000" />
+      <workItem from="1694985754544" duration="598000" />
+      <workItem from="1695971369906" duration="6641000" />
+      <workItem from="1697135845743" duration="29386000" />
+      <workItem from="1697481560396" duration="1815000" />
+      <workItem from="1697669811222" duration="7633000" />
+      <workItem from="1705449623669" duration="2537000" />
+      <workItem from="1705507352950" duration="3837000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
