@@ -56,10 +56,7 @@ export class UniswapTrade implements Command {
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: optimize if only one v2 pool we can directly send this to the pool
-      planner.addCommand(CommandType.WRAP_ETH, [
-        ROUTER_AS_RECIPIENT,
-        this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
-      ])
+      planner.addCommand(CommandType.WRAP_ETH, [ROUTER_AS_RECIPIENT, CONTRACT_BALANCE])
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
@@ -295,7 +292,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         // if not last section: send tokens directly to the first v2 pair of the next section
         // note: because of the partitioning function we can be sure that the next section is v2
         isLastSectionInRoute(i) ? tradeRecipient : (sections[i + 1][0] as Pair).liquidityToken.address,
-        i == 0 ? amountIn : CONTRACT_BALANCE, // amountIn
+        i === 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOut
         path, // path
         payerIsUser && i === 0, // payerIsUser
