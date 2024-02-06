@@ -29,9 +29,11 @@ export type FlatFeeOptions = {
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
+// when safe mode is enabled, the SDK will add extra token sweeps for security
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
   flatFee?: FlatFeeOptions
+  safeMode?: boolean
 }
 
 const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(50, 100)
@@ -144,7 +146,7 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))) {
+    if (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade)) || this.options.safeMode) {
       // for exactOutput swaps that take native currency as input
       // we need to send back the change to the user
       planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
