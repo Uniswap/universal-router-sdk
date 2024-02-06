@@ -146,7 +146,10 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade)) || this.options.safeMode) {
+    if (
+      (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))) ||
+      this.options.safeMode
+    ) {
       // for exactOutput swaps that take native currency as input
       // we need to send back the change to the user
       planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
