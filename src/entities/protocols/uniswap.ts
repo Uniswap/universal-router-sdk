@@ -18,7 +18,7 @@ import {
 import { Permit2Permit } from '../../utils/inputTokens'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
-import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
+import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE, ETH_ADDRESS } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
 import { BigNumber, BigNumberish } from 'ethers'
 
@@ -58,7 +58,10 @@ export class UniswapTrade implements Command {
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
       // TODO: optimize if only one v2 pool we can directly send this to the pool
-      planner.addCommand(CommandType.WRAP_ETH, [ROUTER_AS_RECIPIENT, CONTRACT_BALANCE])
+      planner.addCommand(CommandType.WRAP_ETH, [
+        ROUTER_AS_RECIPIENT,
+        this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
+      ])
       // since WETH is now owned by the router, the router pays for inputs
       payerIsUser = false
     }
@@ -146,13 +149,15 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (
-      (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))) ||
-      this.options.safeMode
-    ) {
-      // for exactOutput swaps that take native currency as input
-      // we need to send back the change to the user
-      planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
+    if (inputIsNative) {
+      if (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade)) {
+        // for exactOutput swaps that take native currency as input
+        // we need to send back the change to the user
+        planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
+      }
+      if (this.options.safeMode) {
+        planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, this.options.recipient, 0])
+      }
     }
   }
 }
