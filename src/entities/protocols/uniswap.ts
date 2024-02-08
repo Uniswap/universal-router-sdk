@@ -155,11 +155,11 @@ export class UniswapTrade implements Command {
       planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
     }
 
-    if (this.options.tokensToSweep) addIntermediateSweeps(planner, this.options.recipient, this.options.tokensToSweep)
+    if (this.options.tokensToSweep) addExtraTokenSweeps(planner, this.options.recipient, this.options.tokensToSweep)
   }
 }
 
-function addIntermediateSweeps(planner: RoutePlanner, recipient: string, tokensToSweep: string[]) {
+function addExtraTokenSweeps(planner: RoutePlanner, recipient: string, tokensToSweep: string[]) {
   for (const token of tokensToSweep) {
     planner.addCommand(CommandType.SWEEP, [token, recipient, 0])
   }
