@@ -18,7 +18,7 @@ import {
 import { Permit2Permit } from '../../utils/inputTokens'
 import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
-import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE, ETH_ADDRESS } from '../../utils/constants'
+import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
 import { BigNumber, BigNumberish } from 'ethers'
 
@@ -27,26 +27,13 @@ export type FlatFeeOptions = {
   recipient: string
 }
 
-// SafetyModes can be used to protect against any tokens being left in the router. With a correct integration to the SDK, no
-// safety modes should be needed.
-// Normal: The normal router SDK encodings are used. This is the default.
-// InputOutputSweeps: This adds an extra ETH sweep for ETH-input trades incase extra ETH was accidentally sent to the transaction
-// IntermediateSweeps: This sweeps all intermediate tokens on a route, and protects against trading on very low liquidity pools
-// AllSweeps: Both InputOutputSweeps and IntermediateSweeps are applied.
-export enum SafetyModes {
-  Normal = 'Normal',
-  InputOutputSweeps = 'InputOutputSweeps',
-  IntermediateSweeps = 'IntermediateSweeps',
-  AllSweeps = 'AllSweeps',
-}
-
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
 // when safe mode is enabled, the SDK will add extra token sweeps for security
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
   flatFee?: FlatFeeOptions
-  safetyMode?: SafetyModes
+  tokensToSweep?: string[]
 }
 
 const REFUND_ETH_PRICE_IMPACT_THRESHOLD = new Percent(50, 100)
@@ -67,11 +54,6 @@ export class UniswapTrade implements Command {
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
     let payerIsUser = true
-
-    let safetyMode = this.options.safetyMode ?? SafetyModes.Normal
-    let inputETHSweep = safetyMode == SafetyModes.InputOutputSweeps || safetyMode == SafetyModes.AllSweeps
-    let intermediateSweeps = safetyMode == SafetyModes.IntermediateSweeps || safetyMode == SafetyModes.AllSweeps
-    let tokensToSweep = new Set<string>()
 
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
@@ -167,37 +149,17 @@ export class UniswapTrade implements Command {
       }
     }
 
-    if (inputIsNative) {
-      if (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade)) {
-        // for exactOutput swaps that take native currency as input
-        // we need to send back the change to the user
-        planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
-      }
-      if (inputETHSweep) {
-        planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, this.options.recipient, 0])
-      }
-      if (intermediateSweeps) {
-        addIntermediateSweeps(planner, this.trade, this.options.recipient, tokensToSweep)
-      }
+    if (inputIsNative && (this.trade.tradeType === TradeType.EXACT_OUTPUT || riskOfPartialFill(this.trade))) {
+      // for exactOutput swaps that take native currency as input
+      // we need to send back the change to the user
+      planner.addCommand(CommandType.UNWRAP_WETH, [this.options.recipient, 0])
     }
+
+    if (this.options.tokensToSweep) addIntermediateSweeps(planner, this.options.recipient, this.options.tokensToSweep)
   }
 }
 
-function addIntermediateSweeps(
-  planner: RoutePlanner,
-  trade: RouterTrade<Currency, Currency, TradeType>,
-  recipient: string,
-  tokensToSweep: Set<string>
-) {
-  for (const swap of trade.swaps) {
-    for (const token of swap.route.path) {
-      tokensToSweep.add(token.address)
-    }
-  }
-
-  tokensToSweep.delete(trade.inputAmount.currency.wrapped.address)
-  tokensToSweep.delete(trade.outputAmount.currency.wrapped.address)
-
+function addIntermediateSweeps(planner: RoutePlanner, recipient: string, tokensToSweep: string[]) {
   for (const token of tokensToSweep) {
     planner.addCommand(CommandType.SWEEP, [token, recipient, 0])
   }
