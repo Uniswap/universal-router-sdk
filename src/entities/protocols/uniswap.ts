@@ -29,7 +29,7 @@ export type FlatFeeOptions = {
 
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
-// when safe mode is enabled, the SDK will add extra token sweeps for security
+// when tokensToSweep is provided, the SDK will add extra sweep commands at the end of the swap encoding
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
   flatFee?: FlatFeeOptions
