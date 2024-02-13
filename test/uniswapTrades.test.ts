@@ -425,6 +425,22 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
 
+    it('encodes a single exactInput ETH->USDC->DAI swap in safemode, sends too much ETH', async () => {
+      const inputEther = utils.parseEther('1').toString()
+      const trade = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC_V3, USDC_DAI_V3], ETHER, DAI),
+        CurrencyAmount.fromRawAmount(ETHER, inputEther),
+        TradeType.EXACT_INPUT
+      )
+      const opts = swapOptions({ safeMode: true })
+      const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+      let methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+      registerFixture('_UNISWAP_V3_ETH_FOR_DAI_SAFE_MODE', methodParametersV2)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(inputEther)
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.value).to.eq(methodParametersV2.value)
+    })
+
     it('encodes a single exactOutput ETH->USDC swap', async () => {
       const outputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = await V3Trade.fromRoute(

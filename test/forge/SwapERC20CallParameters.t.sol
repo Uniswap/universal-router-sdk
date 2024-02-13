@@ -427,6 +427,22 @@ contract SwapERC20CallParametersTest is Test, Interop, DeployRouter {
         assertGt(DAI.balanceOf(RECIPIENT), 1000 * ONE_DAI);
     }
 
+    function testV3ExactInputNativeWithSafeMode() public {
+        MethodParameters memory params = readFixture(json, "._UNISWAP_V3_ETH_FOR_DAI_SAFE_MODE");
+
+        assertEq(from.balance, BALANCE);
+        assertEq(DAI.balanceOf(RECIPIENT), 0);
+
+        // intended call value is 1e18 but 5e18 are sent in
+        assertEq(params.value, 1e18);
+        (bool success,) = address(router).call{value: 5e18}(params.data);
+        require(success, "call failed");
+
+        // the final balance only decreased by 1e18 because safemode swept back the excess
+        assertLe(from.balance, BALANCE - params.value);
+        assertGt(DAI.balanceOf(RECIPIENT), 1000 * ONE_DAI);
+    }
+
     function testV3ExactOutputSingleNative() public {
         MethodParameters memory params = readFixture(json, "._UNISWAP_V3_ETH_FOR_1000_USDC");
 
