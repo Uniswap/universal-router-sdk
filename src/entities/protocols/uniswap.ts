@@ -21,6 +21,7 @@ import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE, ETH_ADDRESS } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
 import { BigNumber, BigNumberish } from 'ethers'
+import { PermitSingle } from '@uniswap/permit2-sdk'
 
 export type FlatFeeOptions = {
   amount: BigNumberish
@@ -32,6 +33,11 @@ export type FlatFeeOptions = {
 // when safe mode is enabled, the SDK will add an extra ETH sweep for security
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
   inputTokenPermit?: Permit2Permit
+  // Use in lieu of inputTokenPermit when the caller will embed their own permit signature into final calldata
+  inputTokenPermitPlaceholder?: {
+    permit: PermitSingle
+    signaturePlaceholder: string
+  }
   flatFee?: FlatFeeOptions
   safeMode?: boolean
 }

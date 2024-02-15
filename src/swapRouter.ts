@@ -10,7 +10,7 @@ import { Market, NFTTrade, SupportedProtocolsData } from './entities/NFTTrade'
 import { UniswapTrade, SwapOptions } from './entities/protocols/uniswap'
 import { UnwrapWETH } from './entities/protocols/unwrapWETH'
 import { CommandType, RoutePlanner } from './utils/routerCommands'
-import { encodePermit } from './utils/inputTokens'
+import { encodePermit, encodePermitPlaceholder } from './utils/inputTokens'
 import { ROUTER_AS_RECIPIENT, SENDER_AS_RECIPIENT, ETH_ADDRESS } from './utils/constants'
 import { SeaportTrade } from './entities'
 
@@ -156,6 +156,10 @@ export abstract class SwapRouter {
 
     if (options.inputTokenPermit) {
       encodePermit(planner, options.inputTokenPermit)
+    }
+
+    if (options.inputTokenPermitPlaceholder) {
+      encodePermitPlaceholder(planner, options.inputTokenPermitPlaceholder.permit, options.inputTokenPermitPlaceholder.signaturePlaceholder)
     }
 
     const nativeCurrencyValue = inputCurrency.isNative

@@ -41,6 +41,10 @@ export function encodePermit(planner: RoutePlanner, permit2: Permit2Permit): voi
   planner.addCommand(CommandType.PERMIT2_PERMIT, [permit2, signature])
 }
 
+export function encodePermitPlaceholder(planner: RoutePlanner, permit: PermitSingle, signaturePlaceholder: string): void {
+  planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, signaturePlaceholder])
+}
+
 // Handles the encoding of commands needed to gather input tokens for a trade
 // Approval: The router approving another address to take tokens.
 //   note: Only seaport and sudoswap support this action. Approvals are left open.
