@@ -166,6 +166,20 @@ describe('Uniswap', () => {
       expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
       expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
+    
+    it('encodes a single exactInput USDC->ETH swap with a permit placeholder', async () => {
+      const inputUSDC = utils.parseUnits('1000', 6).toString()
+      const trade = new V2Trade(
+        new RouteV2([WETH_USDC_V2], USDC, ETHER),
+        CurrencyAmount.fromRawAmount(USDC, inputUSDC),
+        TradeType.EXACT_INPUT
+      )
+      const SIG_PLACEHOLDER = `{test}`
+      const permit = makePermit(USDC.address, inputUSDC, undefined, FORGE_ROUTER_ADDRESS)
+      const opts = swapOptions({ inputTokenPermitPlaceholder: { permit, signaturePlaceholder: SIG_PLACEHOLDER} })
+      const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+      expect(methodParameters.calldata.includes(SIG_PLACEHOLDER)).to.be.true
+    })
 
     it('encodes a single exactInput USDC->ETH swap with permit with v recovery id', async () => {
       const inputUSDC = utils.parseUnits('1000', 6).toString()
