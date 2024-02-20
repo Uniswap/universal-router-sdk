@@ -12,6 +12,7 @@ import { registerFixture } from './forge/writeInterop'
 import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
+import { formatBytes32String, hexlify, hexZeroPad } from 'ethers/lib/utils'
 
 const FORK_BLOCK = 16075500
 
@@ -167,18 +168,33 @@ describe('Uniswap', () => {
       expect(methodParameters.value).to.eq(methodParametersV2.value)
     })
     
-    it('encodes a single exactInput USDC->ETH swap with a permit placeholder', async () => {
+    it.only('encodes a single exactInput USDC->ETH swap with a permit placeholder', async () => {
       const inputUSDC = utils.parseUnits('1000', 6).toString()
       const trade = new V2Trade(
         new RouteV2([WETH_USDC_V2], USDC, ETHER),
         CurrencyAmount.fromRawAmount(USDC, inputUSDC),
         TradeType.EXACT_INPUT
       )
-      const SIG_PLACEHOLDER = `{test}`
+      const SIG_PLACEHOLDER = `deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef`
+      const prefix = hexZeroPad(hexlify(Math.ceil(SIG_PLACEHOLDER.length / 2)), 32).substring(2) // remove the 0x
       const permit = makePermit(USDC.address, inputUSDC, undefined, FORGE_ROUTER_ADDRESS)
-      const opts = swapOptions({ inputTokenPermitPlaceholder: { permit, signaturePlaceholder: SIG_PLACEHOLDER} })
+      const opts = swapOptions({ inputTokenPermitPlaceholder: { permit, signaturePlaceholder: `0x${SIG_PLACEHOLDER}` }})
       const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
+      console.log(methodParameters.calldata)
       expect(methodParameters.calldata.includes(SIG_PLACEHOLDER)).to.be.true
+      expect(methodParameters.calldata.includes(prefix + SIG_PLACEHOLDER)).to.be.true
+      
+      const actualSignatureWith0x = await generatePermitSignature(permit, wallet, trade.route.chainId, FORGE_PERMIT2_ADDRESS)
+      const actualSignature = actualSignatureWith0x.substring(2)
+      const lengthPrefix = hexZeroPad(hexlify(actualSignature.length / 2), 32).substring(2)
+      console.log("old signature: ",prefix + SIG_PLACEHOLDER )
+      console.log("new signature: ", lengthPrefix + actualSignature)
+      const interpolatedCalldata = methodParameters.calldata.replace(prefix + SIG_PLACEHOLDER, lengthPrefix + actualSignature)
+
+      const newOpts = swapOptions({ inputTokenPermit: { ...permit, signature: actualSignatureWith0x }})
+      const { calldata: generatedCalldata } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), newOpts)
+      expect(interpolatedCalldata).to.eq(generatedCalldata)
+      
     })
 
     it('encodes a single exactInput USDC->ETH swap with permit with v recovery id', async () => {
