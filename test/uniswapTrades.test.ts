@@ -12,7 +12,7 @@ import { registerFixture } from './forge/writeInterop'
 import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
-import { formatBytes32String, hexlify, hexZeroPad } from 'ethers/lib/utils'
+import { formatBytes32String, hexlify, hexZeroPad, zeroPad } from 'ethers/lib/utils'
 
 const FORK_BLOCK = 16075500
 
@@ -184,12 +184,17 @@ describe('Uniswap', () => {
       expect(methodParameters.calldata.includes(SIG_PLACEHOLDER)).to.be.true
       expect(methodParameters.calldata.includes(prefix + SIG_PLACEHOLDER)).to.be.true
       
+      
       const actualSignatureWith0x = await generatePermitSignature(permit, wallet, trade.route.chainId, FORGE_PERMIT2_ADDRESS)
       const actualSignature = actualSignatureWith0x.substring(2)
-      const lengthPrefix = hexZeroPad(hexlify(actualSignature.length / 2), 32).substring(2)
+      console.log("actual signature", actualSignature)
+      const paddedActualSignature = actualSignature.length === 64 ? actualSignature : hexZeroPad(actualSignatureWith0x, 96).substring(2)
+      const lengthPrefix = hexZeroPad(hexlify(Math.ceil(actualSignature.length / 2)), 32).substring(2)
+     
       console.log("old signature: ",prefix + SIG_PLACEHOLDER )
       console.log("new signature: ", lengthPrefix + actualSignature)
-      const interpolatedCalldata = methodParameters.calldata.replace(prefix + SIG_PLACEHOLDER, lengthPrefix + actualSignature)
+      console.log('before interpolation: ', methodParameters.calldata)
+      const interpolatedCalldata = methodParameters.calldata.replace(prefix + SIG_PLACEHOLDER, lengthPrefix + paddedActualSignature)
 
       const newOpts = swapOptions({ inputTokenPermit: { ...permit, signature: actualSignatureWith0x }})
       const { calldata: generatedCalldata } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), newOpts)
