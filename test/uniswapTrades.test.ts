@@ -1,4 +1,7 @@
 import { expect } from 'chai'
+import { ethers } from 'ethers';
+import { abi } from '@uniswap/universal-router/artifacts/contracts/UniversalRouter.sol/UniversalRouter.json'
+import { Interface } from '@ethersproject/abi'
 import JSBI from 'jsbi'
 import { BigNumber, utils, Wallet } from 'ethers'
 import { expandTo18Decimals } from '../src/utils/numbers'
@@ -176,33 +179,26 @@ describe('Uniswap', () => {
         CurrencyAmount.fromRawAmount(USDC, inputUSDC),
         TradeType.EXACT_INPUT
       )
+
       const SIG_PLACEHOLDER = `deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef`
       const prefix = hexZeroPad(hexlify(Math.ceil(SIG_PLACEHOLDER.length / 2)), 32).substring(2) // remove the 0x
       const permit = makePermit(USDC.address, inputUSDC, undefined, FORGE_ROUTER_ADDRESS)
-      const opts = swapOptions({ inputTokenPermitPlaceholder: { permit, signaturePlaceholder: `0x${SIG_PLACEHOLDER}` }})
+      const PERMIT_STRUCT =
+        '((address token,uint160 amount,uint48 expiration,uint48 nonce) details,address spender,uint256 sigDeadline)'
+      const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
-      console.log(methodParameters.calldata)
-      expect(methodParameters.calldata.includes(SIG_PLACEHOLDER)).to.be.true
-      expect(methodParameters.calldata.includes(prefix + SIG_PLACEHOLDER)).to.be.true
-
+      const routerInterface: Interface = new Interface(abi)
+      const decoded = routerInterface.decodeFunctionData("execute(bytes,bytes[])", methodParameters.calldata);
+      const newCommands = `0x0a${decoded.commands.slice(2)}`
       const actualSignatureWith0x = await generatePermitSignature(permit, wallet, trade.route.chainId, FORGE_PERMIT2_ADDRESS)
-      const actualSignature = actualSignatureWith0x.substring(2)
-      console.log("actual signature", actualSignature)
-      const paddedActualSignature = actualSignature.length === 64 ? actualSignature : `${actualSignature}${'0'.repeat(192 - actualSignature.length)}`;
-      console.log("padded actual signature", paddedActualSignature)
-      console.log(Math.ceil(actualSignature.length / 2))
-      const lengthPrefix = hexZeroPad(hexlify(Math.ceil(actualSignature.length / 2)), 32).substring(2)
+      const permitInputs = ethers.utils.defaultAbiCoder.encode([PERMIT_STRUCT, "bytes"], [permit, actualSignatureWith0x]);
+      const newInputs = [permitInputs, ...decoded.inputs];
+      const interpolatedCalldata = routerInterface.encodeFunctionData("execute(bytes,bytes[])", [newCommands, newInputs]);
 
-      console.log("old signature: ",prefix + SIG_PLACEHOLDER )
-      console.log("new signature: ", lengthPrefix + actualSignature)
-      console.log('before interpolation: ', methodParameters.calldata)
-      const interpolatedCalldata = methodParameters.calldata.replace(prefix + SIG_PLACEHOLDER, lengthPrefix + paddedActualSignature)
-      console.log('after interpolation: ', interpolatedCalldata)
 
       const newOpts = swapOptions({ inputTokenPermit: { ...permit, signature: actualSignatureWith0x }})
       const { calldata: generatedCalldata } = SwapRouter.swapERC20CallParameters(buildTrade([trade]), newOpts)
       expect(interpolatedCalldata).to.eq(generatedCalldata)
-
     })
 
     it('encodes a single exactInput USDC->ETH swap with permit with v recovery id', async () => {
