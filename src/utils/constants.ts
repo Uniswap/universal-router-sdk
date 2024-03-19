@@ -108,34 +108,10 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
 }
 
 export const WRAPPED_NATIVE_CURRENCY: { [chainId in ChainId]: Token } = {
-  [ChainId.MAINNET]: new Token(
-    1,
-    '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.GOERLI]: new Token(
-    5,
-    '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.SEPOLIA]: new Token(
-    11155111,
-    '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.BNB]: new Token(
-    56,
-    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-    18,
-    'WBNB',
-    'Wrapped BNB'
-  ),
+  [ChainId.MAINNET]: new Token(1, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether'),
+  [ChainId.GOERLI]: new Token(5, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH', 'Wrapped Ether'),
+  [ChainId.SEPOLIA]: new Token(11155111, '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', 18, 'WETH', 'Wrapped Ether'),
+  [ChainId.BNB]: new Token(56, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB'),
   [ChainId.OPTIMISM]: new Token(
     ChainId.OPTIMISM,
     '0x4200000000000000000000000000000000000006',
@@ -229,13 +205,7 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId in ChainId]: Token } = {
     'WAVAX',
     'Wrapped AVAX'
   ),
-  [ChainId.BASE]: new Token(
-    ChainId.BASE,
-    '0x4200000000000000000000000000000000000006',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
+  [ChainId.BASE]: new Token(ChainId.BASE, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether'),
   [ChainId.BASE_GOERLI]: new Token(
     ChainId.BASE_GOERLI,
     '0x4200000000000000000000000000000000000006',
@@ -250,13 +220,7 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId in ChainId]: Token } = {
     'WRBTC',
     'Wrapped BTC'
   ),
-  [ChainId.ZORA]: new Token(
-    ChainId.ZORA,
-    '0x4200000000000000000000000000000000000006',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
+  [ChainId.ZORA]: new Token(ChainId.ZORA, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether'),
   [ChainId.ZORA_SEPOLIA]: new Token(
     ChainId.ZORA_SEPOLIA,
     '0x4200000000000000000000000000000000000006',
@@ -264,16 +228,8 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId in ChainId]: Token } = {
     'WETH',
     'Wrapped Ether'
   ),
-  [ChainId.BLAST]: new Token(
-    ChainId.BLAST,
-    '0x4300000000000000000000000000000000000004',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-};
-
-export const SUPPORTED_CHAINS = Object.keys(CHAIN_CONFIGS).map((chainId) => parseInt(chainId))
+  [ChainId.BLAST]: new Token(ChainId.BLAST, '0x4300000000000000000000000000000000000004', 18, 'WETH', 'Wrapped Ether'),
+}
 
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {
   if (!(chainId in CHAIN_CONFIGS)) throw new Error(`Universal Router not deployed on chain ${chainId}`)

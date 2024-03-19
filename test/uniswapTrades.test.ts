@@ -7,12 +7,13 @@ import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
 import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions } from '@uniswap/v3-sdk'
 import { generatePermitSignature, toInputPermit, makePermit, generateEip2098PermitSignature } from './utils/permit2'
-import { CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+import { CurrencyAmount, Ether, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
 import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC, WETH } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
-import { PartialClassicQuote, PoolType, RouterTradeAdapter } from '../src/utils/routerTradeAdapter'
+import { PartialClassicQuote, PoolType, RouterTradeAdapter, V2PoolInRoute } from '../src/utils/routerTradeAdapter'
+import { ETH_ADDRESS } from '../src/utils/constants'
 
 const FORK_BLOCK = 16075500
 
@@ -695,82 +696,240 @@ describe('Uniswap', () => {
     })
   })
 
-  describe("RouterTradeAdapter", () => {
-    it("encoded UR parameters are the same using fromClassicQuote and raw SDK", async () => {
+  describe.only('RouterTradeAdapter', () => {
+    const mockV2PoolInRoute = (pair: Pair, tokenIn: Token, tokenOut: Token, amountIn: string, amountOut: string): V2PoolInRoute => {
+      // get token0 and token1
+      const token0 = tokenIn.sortsBefore(tokenOut) ? tokenIn : tokenOut
+      const token1 = tokenIn.sortsBefore(tokenOut) ? tokenOut : tokenIn
+
+      return {
+        type: PoolType.V2Pool,
+        tokenIn: {
+          address: tokenIn.address,
+          chainId: 1,
+          symbol: tokenIn.symbol!,
+          decimals: String(tokenIn.decimals),
+        },
+        tokenOut: {
+          address: tokenOut.address,
+          chainId: 1,
+          symbol: tokenOut.symbol!,
+          decimals: String(tokenOut.decimals),
+        },
+        reserve0: {
+          token: {
+            address: token0.address,
+            chainId: 1,
+            symbol: token0.symbol!,
+            decimals: String(token0.decimals),
+          },
+          quotient: pair.reserve0.quotient.toString(),
+        },
+        reserve1: {
+          token: {
+            address: token1.address,
+            chainId: 1,
+            symbol: token1.symbol!,
+            decimals: String(token1.decimals),
+          },
+          quotient: pair.reserve1.quotient.toString(),
+        },
+        amountIn,
+        amountOut
+      }
+    }
+
+    it('v2 - encoded UR parameters are the same using fromClassicQuote and raw SDK', async () => {
       const inputAmount = utils.parseEther('1000').toString()
-      const outputAmount = utils.parseUnits('1000', 6).toString()
-      const rawInputAmount = CurrencyAmount.fromRawAmount(DAI, inputAmount);
-      const rawOutputAmount = CurrencyAmount.fromRawAmount(USDC, outputAmount);
+      const rawInputAmount = CurrencyAmount.fromRawAmount(DAI, inputAmount)
+
+      const opts = swapOptions({})
+      const trade = new V2Trade(new RouteV2([USDC_DAI_V2], DAI, USDC), rawInputAmount, TradeType.EXACT_INPUT)
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+
+      const rawOutputAmount = trade.outputAmount
+      const outputAmount = utils.parseUnits(rawOutputAmount.toExact(), USDC.decimals).toString()
+
       const classicQuote: PartialClassicQuote = {
+        tokenIn: DAI.address,
+        tokenOut: USDC.address,
         tradeType: TradeType.EXACT_INPUT,
         route: [
           [
-            {
-              type: PoolType.V2Pool,
-              tokenIn: {
-                address: DAI.address,
-                chainId: 1,
-                symbol: DAI.symbol!,
-                decimals: String(DAI.decimals),                
-              },
-              tokenOut: {
-                address: USDC.address,
-                chainId: 1,
-                symbol: USDC.symbol!,
-                decimals: String(USDC.decimals),                
-              },
-              reserve0: {
-                token: {
-                  address: DAI.address,
-                  chainId: 1,
-                  symbol: DAI.symbol!,
-                  decimals: String(DAI.decimals),                
-                },
-                quotient: USDC_DAI_V2.reserve0.quotient.toString(),
-              },
-              reserve1: {
-                token: {
-                  address: USDC.address,
-                  chainId: 1,
-                  symbol: USDC.symbol!,
-                  decimals: String(USDC.decimals),                
-                },
-                quotient: USDC_DAI_V2.reserve1.quotient.toString(),
-              },
-              amountIn: inputAmount,
-              amountOut: outputAmount
-            }
-          ]
-        ]
+            mockV2PoolInRoute(USDC_DAI_V2, DAI, USDC, inputAmount, outputAmount)
+          ],
+        ],
       }
-      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote);
-      const opts = swapOptions({ })
-      const uniswapTrade = new UniswapTrade(routerTrade, opts);
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
       // ensure values are correct in UniswapTrade entity
-      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact());
-      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact());
+      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact())
+      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact())
       // check route
-      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1);
-      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(DAI.address);
-      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(USDC.address);
+      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1)
+      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(DAI.address)
+      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(USDC.address)
       // check swap
-      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(DAI.address);
-      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(USDC.address);
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(DAI.address)
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(USDC.address)
       // there will be some slippage on the output amount
-      expect(uniswapTrade.trade.minimumAmountOut(opts.slippageTolerance, rawOutputAmount).lessThan(uniswapTrade.trade.outputAmount)).to.be.true;
-      
-      // ensure that we can generate the encoded call parameters
-      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts));
-      expect(hexToDecimalString(methodParameters.value)).to.eq('0');
+      expect(
+        uniswapTrade.trade
+          .minimumAmountOut(opts.slippageTolerance, rawOutputAmount)
+          .lessThan(uniswapTrade.trade.outputAmount)
+      ).to.be.true
 
-      const trade = new V2Trade(
-        new RouteV2([USDC_DAI_V2], DAI, USDC),
-        rawInputAmount,
-        TradeType.EXACT_INPUT
-      )
-      const methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts))
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+
       // ensure that the encoded call parameters are the same
-      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
+    })
+
+    it('v2 - handles weth properly', async () => {
+      const inputAmount = utils.parseEther('1').toString()
+      const rawInputAmount = CurrencyAmount.fromRawAmount(WETH, inputAmount)
+
+      const opts = swapOptions({})
+      const trade = new V2Trade(new RouteV2([WETH_USDC_V2], WETH, USDC), rawInputAmount, TradeType.EXACT_INPUT)
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+
+      const rawOutputAmount = trade.outputAmount
+      const outputAmount = utils.parseUnits(rawOutputAmount.toExact(), USDC.decimals).toString()
+
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, inputAmount, outputAmount)
+          ],
+        ],
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
+      // ensure values are correct in UniswapTrade entity
+      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact())
+      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact())
+      // check route
+      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1)
+      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(WETH.address)
+      // check swap
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(WETH.address)
+      // there will be some slippage on the output amount
+      expect(
+        uniswapTrade.trade
+          .minimumAmountOut(opts.slippageTolerance, rawOutputAmount)
+          .lessThan(uniswapTrade.trade.outputAmount)
+      ).to.be.true
+
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts))
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
+    })
+
+    it('v2 - handles eth input properly', async () => {
+      const inputAmount = utils.parseEther('1').toString()
+      const rawInputAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), inputAmount)
+
+      const opts = swapOptions({})
+      const trade = new V2Trade(new RouteV2([WETH_USDC_V2], Ether.onChain(1), USDC), rawInputAmount, TradeType.EXACT_INPUT)
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+
+      const rawOutputAmount = trade.outputAmount
+      const outputAmount = utils.parseUnits(rawOutputAmount.toExact(), USDC.decimals).toString()
+
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: ETH_ADDRESS,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            // WETH here since all pairs use WETH
+            mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, inputAmount, outputAmount)
+          ],
+        ],
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
+      // ensure values are correct in UniswapTrade entity
+      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact())
+      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact())
+      // check route
+      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1)
+      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(WETH.address)
+      // check swap
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(WETH.address)
+      // there will be some slippage on the output amount
+      expect(
+        uniswapTrade.trade
+          .minimumAmountOut(opts.slippageTolerance, rawOutputAmount)
+          .lessThan(uniswapTrade.trade.outputAmount)
+      ).to.be.true
+
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts))
+      expect(hexToDecimalString(methodParameters.value)).to.eq(inputAmount)
+
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
+    })
+
+    it('v2 - handles eth output properly', async () => {
+      const inputAmount = utils.parseUnits('1000', 6).toString()
+      const rawInputAmount = CurrencyAmount.fromRawAmount(USDC, inputAmount)
+      const opts = swapOptions({})
+      const trade = new V2Trade(new RouteV2([WETH_USDC_V2], USDC, Ether.onChain(1)), rawInputAmount, TradeType.EXACT_INPUT)
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+
+      const rawOutputAmount = trade.outputAmount
+      const outputAmount = utils.parseEther(rawOutputAmount.toExact()).toString()
+
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: USDC.address,
+        tokenOut: ETH_ADDRESS,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            // WETH here since all pairs use WETH
+            mockV2PoolInRoute(WETH_USDC_V2, USDC, WETH, inputAmount, outputAmount)
+          ],
+        ],
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
+      // ensure values are correct in UniswapTrade entity
+      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact())
+      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact())
+      // check route
+      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1)
+      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(WETH.address)
+      // check swap
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(USDC.address)
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(WETH.address)
+      // there will be some slippage on the output amount
+      expect(
+        uniswapTrade.trade
+          .minimumAmountOut(opts.slippageTolerance, rawOutputAmount)
+          .lessThan(uniswapTrade.trade.outputAmount)
+      ).to.be.true
+
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts))
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
     })
   })
 })

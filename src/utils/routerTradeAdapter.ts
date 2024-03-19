@@ -11,7 +11,7 @@ import {
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { Pool, Route as V3Route, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber } from 'ethers'
-import { ETH_ADDRESS, WETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
 
 export type TokenInRoute = {
   address: string
@@ -58,6 +58,9 @@ export type V3PoolInRoute = {
 }
 
 export type PartialClassicQuote = {
+  // We still need tokenIn/Out to support native currency
+  tokenIn: string
+  tokenOut: string
   tradeType: TradeType
   route: Array<(V3PoolInRoute | V2PoolInRoute)[]>
 }
@@ -70,22 +73,25 @@ interface RouteResult {
   outputAmount: CurrencyAmount<Currency>
 }
 
-export const isNativeCurrency = (address: string, chainId: number) =>
-  address.toLowerCase() === WETH_ADDRESS(chainId).toLowerCase() || address.toLowerCase() === ETH_ADDRESS.toLowerCase()
+export const isNativeCurrency = (address: string) =>
+  address.toLowerCase() === ETH_ADDRESS.toLowerCase()
 
 // Helper class to convert routing-specific quote entities to RouterTrade entities
 // the returned RouterTrade can then be used to build the UniswapTrade entity in this package
 export class RouterTradeAdapter {
   static fromClassicQuote(quote: PartialClassicQuote) {
-    const { route } = quote
+    const { route, tokenIn, tokenOut } = quote
 
-    const tokenIn = route[0]?.[0]?.tokenIn
-    const tokenOut = route[0]?.[route[0]?.length - 1]?.tokenOut
-    if (!tokenIn || !tokenOut) throw new Error('Expected both tokenIn and tokenOut to be present')
-    if (tokenIn.chainId !== tokenOut.chainId) throw new Error('Expected tokenIn and tokenOut to be have same chainId')
+    const tokenInData = route[0]?.[0]?.tokenIn
+    const tokenOutData = route[0]?.[route[0]?.length - 1]?.tokenOut
+    if (!tokenInData || !tokenOutData) throw new Error('Expected both tokenIn and tokenOut to be present')
+    if (tokenInData.chainId !== tokenOutData.chainId) throw new Error('Expected tokenIn and tokenOut to be have same chainId')
 
-    const parsedCurrencyIn = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenIn.address, tokenIn.chainId), tokenIn)
-    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenOut.address, tokenIn.chainId), tokenOut)
+    const parsedCurrencyIn = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenIn), tokenInData)
+    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(
+      isNativeCurrency(tokenOut),
+      tokenOutData
+    )
 
     const typedRoutes: RouteResult[] = route.map((subRoute) => {
       if (subRoute.length === 0) {
