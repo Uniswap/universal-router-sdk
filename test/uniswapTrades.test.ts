@@ -9,9 +9,10 @@ import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions } from '@uniswap/v
 import { generatePermitSignature, toInputPermit, makePermit, generateEip2098PermitSignature } from './utils/permit2'
 import { CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
-import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC } from './utils/uniswapData'
+import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC, WETH } from './utils/uniswapData'
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
+import { PartialClassicQuote, PoolType, RouterTradeAdapter } from '../src/utils/routerTradeAdapter'
 
 const FORK_BLOCK = 16075500
 
@@ -691,6 +692,85 @@ describe('Uniswap', () => {
       expect(function () {
         SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
       }).to.throw('Flat fee amount greater than minimumAmountOut')
+    })
+  })
+
+  describe.only("RouterTradeAdapter", () => {
+    it("encoded UR parameters are the same from ClassicQuote and equivalent SDK", async () => {
+      const inputAmount = utils.parseEther('1000').toString()
+      const outputAmount = utils.parseUnits('1000', 6).toString()
+      const rawInputAmount = CurrencyAmount.fromRawAmount(DAI, inputAmount);
+      const rawOutputAmount = CurrencyAmount.fromRawAmount(USDC, outputAmount);
+      const classicQuote: PartialClassicQuote = {
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            {
+              type: PoolType.V2Pool,
+              tokenIn: {
+                address: DAI.address,
+                chainId: 1,
+                symbol: DAI.symbol!,
+                decimals: String(DAI.decimals),                
+              },
+              tokenOut: {
+                address: USDC.address,
+                chainId: 1,
+                symbol: USDC.symbol!,
+                decimals: String(USDC.decimals),                
+              },
+              reserve0: {
+                token: {
+                  address: DAI.address,
+                  chainId: 1,
+                  symbol: DAI.symbol!,
+                  decimals: String(DAI.decimals),                
+                },
+                quotient: USDC_DAI_V2.reserve0.quotient.toString(),
+              },
+              reserve1: {
+                token: {
+                  address: USDC.address,
+                  chainId: 1,
+                  symbol: USDC.symbol!,
+                  decimals: String(USDC.decimals),                
+                },
+                quotient: USDC_DAI_V2.reserve1.quotient.toString(),
+              },
+              amountIn: inputAmount,
+              amountOut: outputAmount
+            }
+          ]
+        ]
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote);
+      const opts = swapOptions({ })
+      const uniswapTrade = new UniswapTrade(routerTrade, opts);
+      // ensure values are correct in UniswapTrade entity
+      expect(uniswapTrade.trade.inputAmount.toExact()).to.eq(rawInputAmount.toExact());
+      expect(uniswapTrade.trade.outputAmount.toExact()).to.eq(rawOutputAmount.toExact());
+      // check route
+      expect(uniswapTrade.trade.routes[0].pools.length).to.eq(1);
+      expect(uniswapTrade.trade.routes[0].pools[0].token0.address).to.eq(DAI.address);
+      expect(uniswapTrade.trade.routes[0].pools[0].token1.address).to.eq(USDC.address);
+      // check swap
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token0.address).to.eq(DAI.address);
+      expect(uniswapTrade.trade.swaps[0].route.pools[0].token1.address).to.eq(USDC.address);
+      // there will be some slippage on the output amount
+      expect(uniswapTrade.trade.minimumAmountOut(opts.slippageTolerance, rawOutputAmount).lessThan(uniswapTrade.trade.outputAmount)).to.be.true;
+      
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(new UniswapTrade(routerTrade, opts));
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0');
+
+      const trade = new V2Trade(
+        new RouteV2([USDC_DAI_V2], DAI, USDC),
+        rawInputAmount,
+        TradeType.EXACT_INPUT
+      )
+      const methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(methodParametersV2.calldata)
     })
   })
 })

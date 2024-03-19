@@ -1,5 +1,6 @@
 import { MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import {
+  ChainId,
   Currency,
   CurrencyAmount,
   Ether,
@@ -10,60 +11,7 @@ import {
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { Pool, Route as V3Route, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber } from 'ethers'
-import { ETH_ADDRESS, WETH_ADDRESS } from './constants'
-
-export enum ChainId {
-  MAINNET = 1,
-  OPTIMISM = 10,
-  POLYGON = 137,
-  ARBITRUM = 42161,
-  BNB = 56,
-  BASE = 8453,
-}
-
-export const WRAPPED_NATIVE_CURRENCY = {
-  [ChainId.MAINNET]: new Token(
-    ChainId.MAINNET,
-    '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.POLYGON]: new Token(
-    ChainId.POLYGON,
-    '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
-    18,
-    'WMATIC',
-    'Wrapped MATIC'
-  ),
-  [ChainId.OPTIMISM]: new Token(
-    ChainId.OPTIMISM,
-    '0x4200000000000000000000000000000000000006',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.ARBITRUM]: new Token(
-    ChainId.ARBITRUM,
-    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.BNB]: new Token(ChainId.BNB, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB'),
-  [ChainId.BASE]: new Token(ChainId.BASE, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether'),
-}
-
-export type ClassicInput = {
-  readonly token: string
-  readonly amount: string
-}
-
-export type ClassicOutput = {
-  readonly token: string
-  readonly amount: string
-  readonly recipient: string
-}
+import { ETH_ADDRESS, WETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
 
 export type TokenInRoute = {
   address: string
@@ -110,11 +58,6 @@ export type V3PoolInRoute = {
 }
 
 export type PartialClassicQuote = {
-  chainId: number
-  swapper: string
-  input: ClassicInput
-  output: ClassicOutput
-  slippage: number
   tradeType: TradeType
   route: Array<(V3PoolInRoute | V2PoolInRoute)[]>
 }
@@ -130,23 +73,26 @@ interface RouteResult {
 export const isNativeCurrency = (address: string, chainId: number) =>
   address.toLowerCase() === WETH_ADDRESS(chainId).toLowerCase() || address.toLowerCase() === ETH_ADDRESS.toLowerCase()
 
+// Helper class to convert routing-specific quote entities to RouterTrade entities
+// the returned RouterTrade can then be used to build the UniswapTrade entity in this package
 export class RouterTradeAdapter {
   static fromClassicQuote(quote: PartialClassicQuote) {
-    const { route, input, output, chainId } = quote
+    const { route } = quote
 
     const tokenIn = route[0]?.[0]?.tokenIn
     const tokenOut = route[0]?.[route[0]?.length - 1]?.tokenOut
     if (!tokenIn || !tokenOut) throw new Error('Expected both tokenIn and tokenOut to be present')
+    if (tokenIn.chainId !== tokenOut.chainId) throw new Error('Expected tokenIn and tokenOut to be have same chainId')
 
-    const parsedCurrencyIn = RouterTradeAdapter.toCurrency(isNativeCurrency(input.token, chainId), tokenIn)
-    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(isNativeCurrency(output.token, chainId), tokenOut)
+    const parsedCurrencyIn = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenIn.address, tokenIn.chainId), tokenIn)
+    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenOut.address, tokenIn.chainId), tokenOut)
 
-    const typedRoutes: RouteResult[] = route.map((route) => {
-      if (route.length === 0) {
+    const typedRoutes: RouteResult[] = route.map((subRoute) => {
+      if (subRoute.length === 0) {
         throw new Error('Expected route to have at least one pair or pool')
       }
-      const rawAmountIn = route[0].amountIn
-      const rawAmountOut = route[route.length - 1].amountOut
+      const rawAmountIn = subRoute[0].amountIn
+      const rawAmountOut = subRoute[subRoute.length - 1].amountOut
 
       if (!rawAmountIn || !rawAmountOut) {
         throw new Error('Expected both raw amountIn and raw amountOut to be present')
@@ -155,19 +101,19 @@ export class RouterTradeAdapter {
       const inputAmount = CurrencyAmount.fromRawAmount(parsedCurrencyIn, rawAmountIn)
       const outputAmount = CurrencyAmount.fromRawAmount(parsedCurrencyOut, rawAmountOut)
 
-      const isOnlyV2 = RouterTradeAdapter.isVersionedRoute<V2PoolInRoute>(PoolType.V2Pool, route)
-      const isOnlyV3 = RouterTradeAdapter.isVersionedRoute<V3PoolInRoute>(PoolType.V3Pool, route)
+      const isOnlyV2 = RouterTradeAdapter.isVersionedRoute<V2PoolInRoute>(PoolType.V2Pool, subRoute)
+      const isOnlyV3 = RouterTradeAdapter.isVersionedRoute<V3PoolInRoute>(PoolType.V3Pool, subRoute)
 
       return {
         routev3: isOnlyV3
-          ? new V3Route(route.map(RouterTradeAdapter.toPool), parsedCurrencyIn, parsedCurrencyOut)
+          ? new V3Route(subRoute.map(RouterTradeAdapter.toPool), parsedCurrencyIn, parsedCurrencyOut)
           : null,
         routev2: isOnlyV2
-          ? new V2Route(route.map(RouterTradeAdapter.toPair), parsedCurrencyIn, parsedCurrencyOut)
+          ? new V2Route(subRoute.map(RouterTradeAdapter.toPair), parsedCurrencyIn, parsedCurrencyOut)
           : null,
         mixedRoute:
           !isOnlyV3 && !isOnlyV2
-            ? new MixedRouteSDK(route.map(RouterTradeAdapter.toPoolOrPair), parsedCurrencyIn, parsedCurrencyOut)
+            ? new MixedRouteSDK(subRoute.map(RouterTradeAdapter.toPoolOrPair), parsedCurrencyIn, parsedCurrencyOut)
             : null,
         inputAmount,
         outputAmount,
@@ -252,7 +198,7 @@ export class RouterTradeAdapter {
 }
 
 export class NativeCurrency extends SdkNativeCurrency {
-  constructor(chainId: number, decimals: number, symbol?: string, name?: string) {
+  constructor(chainId: ChainId, decimals: number, symbol?: string, name?: string) {
     if (chainId === ChainId.MAINNET) {
       return Ether.onChain(chainId)
     }
