@@ -73,8 +73,7 @@ interface RouteResult {
   outputAmount: CurrencyAmount<Currency>
 }
 
-export const isNativeCurrency = (address: string) =>
-  address.toLowerCase() === ETH_ADDRESS.toLowerCase()
+export const isNativeCurrency = (address: string) => address.toLowerCase() === ETH_ADDRESS.toLowerCase()
 
 // Helper class to convert routing-specific quote entities to RouterTrade entities
 // the returned RouterTrade can then be used to build the UniswapTrade entity in this package
@@ -85,13 +84,11 @@ export class RouterTradeAdapter {
     const tokenInData = route[0]?.[0]?.tokenIn
     const tokenOutData = route[0]?.[route[0]?.length - 1]?.tokenOut
     if (!tokenInData || !tokenOutData) throw new Error('Expected both tokenIn and tokenOut to be present')
-    if (tokenInData.chainId !== tokenOutData.chainId) throw new Error('Expected tokenIn and tokenOut to be have same chainId')
+    if (tokenInData.chainId !== tokenOutData.chainId)
+      throw new Error('Expected tokenIn and tokenOut to be have same chainId')
 
     const parsedCurrencyIn = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenIn), tokenInData)
-    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(
-      isNativeCurrency(tokenOut),
-      tokenOutData
-    )
+    const parsedCurrencyOut = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenOut), tokenOutData)
 
     const typedRoutes: RouteResult[] = route.map((subRoute) => {
       if (subRoute.length === 0) {
