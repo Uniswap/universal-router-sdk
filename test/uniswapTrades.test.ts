@@ -695,8 +695,8 @@ describe('Uniswap', () => {
     })
   })
 
-  describe.only("RouterTradeAdapter", () => {
-    it("encoded UR parameters are the same from ClassicQuote and equivalent SDK", async () => {
+  describe("RouterTradeAdapter", () => {
+    it("encoded UR parameters are the same using fromClassicQuote and raw SDK", async () => {
       const inputAmount = utils.parseEther('1000').toString()
       const outputAmount = utils.parseUnits('1000', 6).toString()
       const rawInputAmount = CurrencyAmount.fromRawAmount(DAI, inputAmount);
