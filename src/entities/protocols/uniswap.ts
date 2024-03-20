@@ -16,11 +16,12 @@ import {
   partitionMixedRouteByProtocol,
 } from '@uniswap/router-sdk'
 import { Permit2Permit } from '../../utils/inputTokens'
-import { Currency, TradeType, CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { Currency, TradeType, CurrencyAmount, Percent, Fraction } from '@uniswap/sdk-core'
 import { Command, RouterTradeType, TradeConfig } from '../Command'
 import { SENDER_AS_RECIPIENT, ROUTER_AS_RECIPIENT, CONTRACT_BALANCE, ETH_ADDRESS } from '../../utils/constants'
 import { encodeFeeBips } from '../../utils/numbers'
 import { BigNumber, BigNumberish } from 'ethers'
+import JSBI from 'jsbi'
 
 export type FlatFeeOptions = {
   amount: BigNumberish
@@ -177,11 +178,16 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
     tradeType
   )
 
+  const ZERO = JSBI.BigInt(0);
+  console.log(typeof ZERO, ZERO instanceof JSBI)
+  console.log(new Fraction(ZERO) instanceof Fraction)
+
+
   console.log(
     'ur-sdk',
     options.slippageTolerance.toFixed(),
     options.slippageTolerance.isPercent,
-    options.slippageTolerance
+    options.slippageTolerance.lessThan(new Fraction(ZERO))
   )
 
   if (tradeType == TradeType.EXACT_INPUT) {
