@@ -31,6 +31,7 @@ export type FlatFeeOptions = {
 // so we extend swap options with the permit2 permit
 // when safe mode is enabled, the SDK will add an extra ETH sweep for security
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
+  payerIsUser?: boolean
   inputTokenPermit?: Permit2Permit
   flatFee?: FlatFeeOptions
   safeMode?: boolean
@@ -53,7 +54,10 @@ export class UniswapTrade implements Command {
   }
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
-    let payerIsUser = true
+    if(this.options.payerIsUser === undefined) {
+      // default to user as payer
+      Object.assign(this.options, { payerIsUser: true })
+    }
 
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
@@ -63,7 +67,7 @@ export class UniswapTrade implements Command {
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
       ])
       // since WETH is now owned by the router, the router pays for inputs
-      payerIsUser = false
+      Object.assign(this.options, { payerIsUser: false })
     }
     // The overall recipient at the end of the trade, SENDER_AS_RECIPIENT uses the msg.sender
     this.options.recipient = this.options.recipient ?? SENDER_AS_RECIPIENT
@@ -81,13 +85,13 @@ export class UniswapTrade implements Command {
     for (const swap of this.trade.swaps) {
       switch (swap.route.protocol) {
         case Protocol.V2:
-          addV2Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addV2Swap(planner, swap, this.trade.tradeType, this.options, routerMustCustody)
           break
         case Protocol.V3:
-          addV3Swap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addV3Swap(planner, swap, this.trade.tradeType, this.options, routerMustCustody)
           break
         case Protocol.MIXED:
-          addMixedSwap(planner, swap, this.trade.tradeType, this.options, payerIsUser, routerMustCustody)
+          addMixedSwap(planner, swap, this.trade.tradeType, this.options, routerMustCustody)
           break
         default:
           throw new Error('UNSUPPORTED_TRADE_PROTOCOL')
@@ -165,7 +169,6 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
   routerMustCustody: boolean
 ): void {
   const trade = new V2Trade(
@@ -181,7 +184,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      payerIsUser,
+      options.payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
@@ -189,7 +192,7 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       route.path.map((pool) => pool.address),
-      payerIsUser,
+      options.payerIsUser,
     ])
   }
 }
@@ -200,7 +203,6 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
   { route, inputAmount, outputAmount }: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
   routerMustCustody: boolean
 ): void {
   const trade = V3Trade.createUncheckedTrade({
@@ -217,7 +219,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       path,
-      payerIsUser,
+      options.payerIsUser,
     ])
   } else if (tradeType == TradeType.EXACT_OUTPUT) {
     planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [
@@ -225,7 +227,7 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
       trade.minimumAmountOut(options.slippageTolerance).quotient.toString(),
       trade.maximumAmountIn(options.slippageTolerance).quotient.toString(),
       path,
-      payerIsUser,
+      options.payerIsUser,
     ])
   }
 }
@@ -236,7 +238,6 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   swap: Swap<TInput, TOutput>,
   tradeType: TradeType,
   options: SwapOptions,
-  payerIsUser: boolean,
   routerMustCustody: boolean
 ): void {
   const { route, inputAmount, outputAmount } = swap
@@ -245,9 +246,9 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
   // single hop, so it can be reduced to plain v2 or v3 swap logic
   if (route.pools.length === 1) {
     if (route.pools[0] instanceof Pool) {
-      return addV3Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
+      return addV3Swap(planner, swap, tradeType, options, routerMustCustody)
     } else if (route.pools[0] instanceof Pair) {
-      return addV2Swap(planner, swap, tradeType, options, payerIsUser, routerMustCustody)
+      return addV2Swap(planner, swap, tradeType, options, routerMustCustody)
     } else {
       throw new Error('Invalid route type')
     }
@@ -302,7 +303,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i == 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOut
         path, // path
-        payerIsUser && i === 0, // payerIsUser
+        options.payerIsUser && i === 0, // payerIsUser
       ])
     } else {
       planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
@@ -310,7 +311,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
         i === 0 ? amountIn : CONTRACT_BALANCE, // amountIn
         !isLastSectionInRoute(i) ? 0 : amountOut, // amountOutMin
         newRoute.path.map((pool) => pool.address), // path
-        payerIsUser && i === 0,
+        options.payerIsUser && i === 0,
       ])
     }
   }

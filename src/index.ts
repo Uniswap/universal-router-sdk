@@ -1,5 +1,6 @@
 export { SwapRouter } from './swapRouter'
 export * from './entities'
+export * from './utils/routerTradeAdapter'
 export { RoutePlanner, CommandType } from './utils/routerCommands'
 export {
   UNIVERSAL_ROUTER_ADDRESS,
