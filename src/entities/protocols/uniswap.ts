@@ -54,7 +54,7 @@ export class UniswapTrade implements Command {
   }
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
-    if(this.options.payerIsUser === undefined) {
+    if (this.options.payerIsUser === undefined) {
       // default to user as payer
       Object.assign(this.options, { payerIsUser: true })
     }
@@ -175,6 +175,13 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
     route as RouteV2<TInput, TOutput>,
     tradeType == TradeType.EXACT_INPUT ? inputAmount : outputAmount,
     tradeType
+  )
+
+  console.log(
+    'ur-sdk',
+    options.slippageTolerance.toFixed(),
+    options.slippageTolerance.isPercent,
+    options.slippageTolerance
   )
 
   if (tradeType == TradeType.EXACT_INPUT) {
