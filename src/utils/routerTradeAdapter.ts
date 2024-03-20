@@ -58,7 +58,7 @@ export type V3PoolInRoute = {
 }
 
 export type PartialClassicQuote = {
-  // We still need tokenIn/Out to support native currency
+  // We need tokenIn/Out to support native currency
   tokenIn: string
   tokenOut: string
   tradeType: TradeType
@@ -78,6 +78,7 @@ export const isNativeCurrency = (address: string) => address.toLowerCase() === E
 // Helper class to convert routing-specific quote entities to RouterTrade entities
 // the returned RouterTrade can then be used to build the UniswapTrade entity in this package
 export class RouterTradeAdapter {
+  // Generate a RouterTrade using fields from a classic quote response
   static fromClassicQuote(quote: PartialClassicQuote) {
     const { route, tokenIn, tokenOut } = quote
 
