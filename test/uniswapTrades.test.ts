@@ -702,7 +702,7 @@ describe('Uniswap', () => {
     })
   })
 
-  describe.only('RouterTradeAdapter', () => {
+  describe('RouterTradeAdapter', () => {
     const mockV2PoolInRoute = (
       pair: Pair,
       tokenIn: Token,
