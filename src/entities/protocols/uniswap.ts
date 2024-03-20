@@ -178,18 +178,6 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
     tradeType
   )
 
-  const ZERO = JSBI.BigInt(0);
-  console.log(typeof ZERO, ZERO instanceof JSBI)
-  console.log(new Fraction(ZERO) instanceof Fraction)
-
-
-  console.log(
-    'ur-sdk',
-    options.slippageTolerance.toFixed(),
-    options.slippageTolerance.isPercent,
-    options.slippageTolerance.lessThan(new Fraction(ZERO))
-  )
-
   if (tradeType == TradeType.EXACT_INPUT) {
     planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
       // if native, we have to unwrap so keep in the router for now
