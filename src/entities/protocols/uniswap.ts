@@ -57,7 +57,7 @@ export class UniswapTrade implements Command {
 
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
     if (this.trade.inputAmount.currency.isNative) {
-      // TODO: optimize if only one v2 pool we can directly send this to the pool
+      // leave the WETH in the router, as this is cheapest gas-wise than sending it straight to a V2 Pair
       planner.addCommand(CommandType.WRAP_ETH, [
         ROUTER_AS_RECIPIENT,
         this.trade.maximumAmountIn(this.options.slippageTolerance).quotient.toString(),
