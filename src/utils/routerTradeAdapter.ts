@@ -11,7 +11,7 @@ import {
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { Pool, Route as V3Route, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber } from 'ethers'
-import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
+import { ETH_ADDRESS, E_ETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
 
 export type TokenInRoute = {
   address: string
@@ -73,7 +73,7 @@ interface RouteResult {
   outputAmount: CurrencyAmount<Currency>
 }
 
-export const isNativeCurrency = (address: string) => address.toLowerCase() === ETH_ADDRESS.toLowerCase()
+export const isNativeCurrency = (address: string) => address.toLowerCase() === ETH_ADDRESS.toLowerCase() || address.toLowerCase() === E_ETH_ADDRESS.toLowerCase();
 
 // Helper class to convert routing-specific quote entities to RouterTrade entities
 // the returned RouterTrade can then be used to build the UniswapTrade entity in this package
