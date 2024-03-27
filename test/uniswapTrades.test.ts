@@ -19,7 +19,7 @@ import {
   V2PoolInRoute,
   V3PoolInRoute,
 } from '../src/utils/routerTradeAdapter'
-import { ETH_ADDRESS } from '../src/utils/constants'
+import { E_ETH_ADDRESS, ETH_ADDRESS } from '../src/utils/constants'
 
 const FORK_BLOCK = 16075500
 
@@ -938,6 +938,44 @@ describe('Uniswap', () => {
       expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
     })
 
+
+    it('v2 - handles eth input properly - 0xeeee...eeee address', async () => {
+      const inputAmount = utils.parseEther('1').toString()
+      const rawInputAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), inputAmount)
+
+      const opts = swapOptions({})
+      const trade = new V2Trade(
+        new RouteV2([WETH_USDC_V2], Ether.onChain(1), USDC),
+        rawInputAmount,
+        TradeType.EXACT_INPUT
+      )
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
+
+      const rawOutputAmount = trade.outputAmount
+      const outputAmount = utils.parseUnits(rawOutputAmount.toExact(), USDC.decimals).toString()
+
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: E_ETH_ADDRESS,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            // WETH here since all pairs use WETH
+            mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, inputAmount, outputAmount),
+          ],
+        ],
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
+
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(uniswapTrade)
+      expect(hexToDecimalString(methodParameters.value)).to.eq(inputAmount)
+
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
+    })
+
     it('v3 - handles eth input properly', async () => {
       const inputAmount = utils.parseEther('1').toString()
       const rawInputAmount = CurrencyAmount.fromRawAmount(Ether.onChain(1), inputAmount)
@@ -1034,6 +1072,46 @@ describe('Uniswap', () => {
             // WETH here since all pairs use WETH
             mockV3PoolInRoute(WETH_USDC_V3, USDC, WETH, inputAmount, outputAmount),
           ],
+        ],
+      }
+      const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+      const uniswapTrade = new UniswapTrade(routerTrade, opts)
+
+      // ensure that we can generate the encoded call parameters
+      const methodParameters = SwapRouter.swapCallParameters(uniswapTrade)
+      expect(hexToDecimalString(methodParameters.value)).to.eq('0')
+
+      // ensure that the encoded call parameters are the same
+      expect(methodParameters.calldata).to.eq(SDKMethodParameters.calldata)
+    })
+
+    it('v3 - handles split routes properly', async () => {
+      const inputAmount = utils.parseEther('1').toString()
+      const splitRouteInputAmounts = [utils.parseEther('0.5').toString(), utils.parseEther('0.5').toString()]
+      const rawInputAmount = CurrencyAmount.fromRawAmount(WETH, inputAmount)
+
+      const opts = swapOptions({})
+      const trade1 = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC_V3], WETH, USDC),
+        rawInputAmount.divide(2),
+        TradeType.EXACT_INPUT
+      )
+      const trade2 = await V3Trade.fromRoute(
+        new RouteV3([WETH_USDC_V3_LOW_FEE], WETH, USDC),
+        rawInputAmount.divide(2),
+        TradeType.EXACT_INPUT
+      )
+      const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade1, trade2]), opts))
+
+      const splitRouteOutputAmounts = [utils.parseUnits(trade1.outputAmount.toExact(), USDC.decimals).toString(), utils.parseUnits(trade2.outputAmount.toExact(), USDC.decimals).toString()]
+
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [mockV3PoolInRoute(WETH_USDC_V3, WETH, USDC, splitRouteInputAmounts[0], splitRouteOutputAmounts[0])],
+          [mockV3PoolInRoute(WETH_USDC_V3_LOW_FEE, WETH, USDC, splitRouteInputAmounts[1], splitRouteOutputAmounts[1])],
         ],
       }
       const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
