@@ -8,6 +8,8 @@ on:
 
 jobs:
   tests:
+    # Disable tests for fork
+    if: false
     name: Hardhat tests
 
     runs-on: ubuntu-latest

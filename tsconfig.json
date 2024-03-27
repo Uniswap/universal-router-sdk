@@ -12,7 +12,10 @@
     "noUnusedParameters": true,
     "lib": ["esnext.string"],
     "typeRoots": ["./typechain", "./node_modules/@types"],
-    "types": ["@types/mocha", "node"]
+    "types": ["@types/mocha", "node"],
+    "paths": {
+      "@uniswap/sdk-core": ["./node_modules/@hemilabs/sdk-core"]
+    }
   },
   "include": ["src", "test"]
 }

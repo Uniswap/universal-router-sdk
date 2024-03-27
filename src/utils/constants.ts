@@ -104,6 +104,12 @@ const CHAIN_CONFIGS: { [key: number]: ChainConfig } = {
     weth: '0x4300000000000000000000000000000000000004',
     creationBlock: 1116444,
   },
+  [743_111]: {
+    router: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+    weth: '0x0C8aFD1b58aa2A5bAd2414B861D8A7fF898eDC3A',
+    // Needs to be updated once the contract is deployed on Hemi
+    creationBlock: 201254,
+  },
 }
 
 export const UNIVERSAL_ROUTER_ADDRESS = (chainId: number): string => {

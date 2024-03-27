@@ -1,5 +1,5 @@
 {
-  "name": "@uniswap/universal-router-sdk",
+  "name": "@hemilabs/universal-router-sdk",
   "version": "1.8.2",
   "description": "sdk for integrating with the Universal Router contracts",
   "main": "dist/index.js",
@@ -51,7 +51,7 @@
   "dependencies": {
     "@uniswap/permit2-sdk": "^1.2.0",
     "@uniswap/router-sdk": "^1.9.0",
-    "@uniswap/sdk-core": "^4.2.0",
+    "@hemilabs/sdk-core": "4.2.0-beta.2",
     "@uniswap/universal-router": "1.6.0",
     "@uniswap/v2-sdk": "^4.2.0",
     "@uniswap/v3-sdk": "^3.11.0",
@@ -60,10 +60,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Uniswap/universal-router-sdk.git"
+    "url": "git+https://github.com/hemilabs/universal-router-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/Uniswap/universal-router-sdk/issues"
+    "url": "https://github.com/hemilabs/universal-router-sdk/issues"
   },
-  "homepage": "https://github.com/Uniswap/universal-router-sdk#readme"
+  "homepage": "https://github.com/hemilabs/universal-router-sdk#readme"
 }
