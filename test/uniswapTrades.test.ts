@@ -229,7 +229,7 @@ describe('Uniswap', () => {
         CurrencyAmount.fromRawAmount(USDC, outputUSDC),
         TradeType.EXACT_OUTPUT
       )
-      const routerTrade = buildTrade([trade]);
+      const routerTrade = buildTrade([trade])
       const opts = swapOptions({})
       const methodParameters = SwapRouter.swapERC20CallParameters(buildTrade([trade]), opts)
       const methodParametersV2 = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
@@ -706,10 +706,19 @@ describe('Uniswap', () => {
 
   for (let tradeType of [TradeType.EXACT_INPUT, TradeType.EXACT_OUTPUT]) {
     describe('RouterTradeAdapter ' + tradeType, () => {
-      const getAmountToken = (tokenIn: Token | NativeCurrency, tokenOut: Token | NativeCurrency, tradeType: TradeType): Token | NativeCurrency => {
+      const getAmountToken = (
+        tokenIn: Token | NativeCurrency,
+        tokenOut: Token | NativeCurrency,
+        tradeType: TradeType
+      ): Token | NativeCurrency => {
         return tradeType === TradeType.EXACT_INPUT ? tokenIn : tokenOut
       }
-      const getAmount = (tokenIn: Token | NativeCurrency, tokenOut: Token | NativeCurrency, amount: string, tradeType: TradeType): CurrencyAmount<Token | NativeCurrency> => {
+      const getAmount = (
+        tokenIn: Token | NativeCurrency,
+        tokenOut: Token | NativeCurrency,
+        amount: string,
+        tradeType: TradeType
+      ): CurrencyAmount<Token | NativeCurrency> => {
         return tradeType === TradeType.EXACT_INPUT
           ? CurrencyAmount.fromRawAmount(tokenIn, amount)
           : CurrencyAmount.fromRawAmount(tokenOut, amount)
@@ -794,7 +803,9 @@ describe('Uniswap', () => {
       }
       it('v2 - erc20 <> erc20', async () => {
         const [tokenIn, tokenOut] = [DAI, USDC]
-        const inputAmount = ethers.utils.parseUnits("1000", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1000', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -806,7 +817,17 @@ describe('Uniswap', () => {
           tokenIn: DAI.address,
           tokenOut: USDC.address,
           tradeType,
-          route: [[mockV2PoolInRoute(USDC_DAI_V2, tokenIn, tokenOut, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())]],
+          route: [
+            [
+              mockV2PoolInRoute(
+                USDC_DAI_V2,
+                tokenIn,
+                tokenOut,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
+            ],
+          ],
         }
         const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
         const uniswapTrade = new UniswapTrade(routerTrade, opts)
@@ -821,7 +842,9 @@ describe('Uniswap', () => {
 
       it('v3 - erc20 <> erc20', async () => {
         const [tokenIn, tokenOut] = [DAI, USDC]
-        const inputAmount = ethers.utils.parseUnits("1000", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1000', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -832,7 +855,17 @@ describe('Uniswap', () => {
           tokenIn: DAI.address,
           tokenOut: USDC.address,
           tradeType,
-          route: [[mockV3PoolInRoute(USDC_DAI_V3, tokenIn, tokenOut, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())]],
+          route: [
+            [
+              mockV3PoolInRoute(
+                USDC_DAI_V3,
+                tokenIn,
+                tokenOut,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
+            ],
+          ],
         }
         const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
         const uniswapTrade = new UniswapTrade(routerTrade, opts)
@@ -847,7 +880,9 @@ describe('Uniswap', () => {
 
       it('v2 - handles weth input properly', async () => {
         const [tokenIn, tokenOut] = [WETH, USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -858,7 +893,17 @@ describe('Uniswap', () => {
           tokenIn: WETH.address,
           tokenOut: USDC.address,
           tradeType,
-          route: [[mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())]],
+          route: [
+            [
+              mockV2PoolInRoute(
+                WETH_USDC_V2,
+                WETH,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
+            ],
+          ],
         }
         const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
         const uniswapTrade = new UniswapTrade(routerTrade, opts)
@@ -873,7 +918,9 @@ describe('Uniswap', () => {
 
       it('v3 - handles weth input properly', async () => {
         const [tokenIn, tokenOut] = [WETH, USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -884,7 +931,17 @@ describe('Uniswap', () => {
           tokenIn: WETH.address,
           tokenOut: USDC.address,
           tradeType,
-          route: [[mockV3PoolInRoute(WETH_USDC_V3, WETH, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())]],
+          route: [
+            [
+              mockV3PoolInRoute(
+                WETH_USDC_V3,
+                WETH,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
+            ],
+          ],
         }
         const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
         const uniswapTrade = new UniswapTrade(routerTrade, opts)
@@ -899,7 +956,9 @@ describe('Uniswap', () => {
 
       it('v2 - handles eth input properly', async () => {
         const [tokenIn, tokenOut] = [Ether.onChain(1), USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -913,7 +972,13 @@ describe('Uniswap', () => {
           route: [
             [
               // WETH here since all pairs use WETH
-              mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())
+              mockV2PoolInRoute(
+                WETH_USDC_V2,
+                WETH,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -930,7 +995,9 @@ describe('Uniswap', () => {
 
       it('v2 - handles eth input properly - 0xeeee...eeee address', async () => {
         const [tokenIn, tokenOut] = [Ether.onChain(1), USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -944,7 +1011,13 @@ describe('Uniswap', () => {
           route: [
             [
               // WETH here since all pairs use WETH
-              mockV2PoolInRoute(WETH_USDC_V2, WETH, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())
+              mockV2PoolInRoute(
+                WETH_USDC_V2,
+                WETH,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -961,7 +1034,9 @@ describe('Uniswap', () => {
 
       it('v3 - handles eth input properly', async () => {
         const [tokenIn, tokenOut] = [Ether.onChain(1), USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -979,7 +1054,13 @@ describe('Uniswap', () => {
           route: [
             [
               // WETH here since all pools use WETH
-              mockV3PoolInRoute(WETH_USDC_V3, WETH, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString())
+              mockV3PoolInRoute(
+                WETH_USDC_V3,
+                WETH,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -996,7 +1077,9 @@ describe('Uniswap', () => {
 
       it('v2 - handles eth output properly', async () => {
         const [tokenIn, tokenOut] = [USDC, Ether.onChain(1)]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -1010,7 +1093,13 @@ describe('Uniswap', () => {
           route: [
             [
               // WETH here since all pairs use WETH
-              mockV2PoolInRoute(WETH_USDC_V2, USDC, WETH, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString()),
+              mockV2PoolInRoute(
+                WETH_USDC_V2,
+                USDC,
+                WETH,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -1027,15 +1116,13 @@ describe('Uniswap', () => {
 
       it('v3 - handles eth output properly', async () => {
         const [tokenIn, tokenOut] = [USDC, Ether.onChain(1)]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
-        const trade = await V3Trade.fromRoute(
-          new RouteV3([WETH_USDC_V3], tokenIn, tokenOut),
-          rawInputAmount,
-          tradeType
-        )
+        const trade = await V3Trade.fromRoute(new RouteV3([WETH_USDC_V3], tokenIn, tokenOut), rawInputAmount, tradeType)
         const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade]), opts))
 
         const classicQuote: PartialClassicQuote = {
@@ -1045,7 +1132,13 @@ describe('Uniswap', () => {
           route: [
             [
               // WETH here since all pairs use WETH
-              mockV3PoolInRoute(WETH_USDC_V3, USDC, WETH, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString()),
+              mockV3PoolInRoute(
+                WETH_USDC_V3,
+                USDC,
+                WETH,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -1062,7 +1155,9 @@ describe('Uniswap', () => {
 
       it('v3 - multi pool erc20 <> erc20', async () => {
         const [tokenIn, tokenOut] = [DAI, WETH]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -1079,8 +1174,20 @@ describe('Uniswap', () => {
           tradeType,
           route: [
             [
-              mockV3PoolInRoute(USDC_DAI_V3, DAI, USDC, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString()),
-              mockV3PoolInRoute(WETH_USDC_V3, USDC, WETH, trade.inputAmount.quotient.toString(), trade.outputAmount.quotient.toString()),
+              mockV3PoolInRoute(
+                USDC_DAI_V3,
+                DAI,
+                USDC,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
+              mockV3PoolInRoute(
+                WETH_USDC_V3,
+                USDC,
+                WETH,
+                trade.inputAmount.quotient.toString(),
+                trade.outputAmount.quotient.toString()
+              ),
             ],
           ],
         }
@@ -1097,7 +1204,9 @@ describe('Uniswap', () => {
 
       it('v3 - handles split routes properly', async () => {
         const [tokenIn, tokenOut] = [WETH, USDC]
-        const inputAmount = ethers.utils.parseUnits("1", getAmountToken(tokenIn, tokenOut, tradeType).decimals).toString();
+        const inputAmount = ethers.utils
+          .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+          .toString()
         const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
 
         const opts = swapOptions({})
@@ -1113,10 +1222,7 @@ describe('Uniswap', () => {
         )
         const SDKMethodParameters = SwapRouter.swapCallParameters(new UniswapTrade(buildTrade([trade1, trade2]), opts))
 
-        const splitRouteInputAmounts = [
-          trade1.inputAmount.quotient.toString(),
-          trade2.inputAmount.quotient.toString(),
-        ]
+        const splitRouteInputAmounts = [trade1.inputAmount.quotient.toString(), trade2.inputAmount.quotient.toString()]
 
         const splitRouteOutputAmounts = [
           trade1.outputAmount.quotient.toString(),

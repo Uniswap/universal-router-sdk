@@ -49,13 +49,13 @@ interface Swap<TInput extends Currency, TOutput extends Currency> {
 // also translates trade objects from previous (v2, v3) SDKs
 export class UniswapTrade implements Command {
   readonly tradeType: RouterTradeType = RouterTradeType.UniswapTrade
-  readonly payerIsUser: boolean;
+  readonly payerIsUser: boolean
 
   constructor(public trade: RouterTrade<Currency, Currency, TradeType>, public options: SwapOptions) {
     if (!!options.fee && !!options.flatFee) throw new Error('Only one fee option permitted')
 
-    if(this.inputRequiresWrap) this.payerIsUser = false;
-    else if (this.options.directSend) this.payerIsUser = false;
+    if (this.inputRequiresWrap) this.payerIsUser = false
+    else if (this.options.directSend) this.payerIsUser = false
     else this.payerIsUser = true
   }
 

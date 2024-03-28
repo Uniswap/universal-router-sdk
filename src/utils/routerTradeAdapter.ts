@@ -85,10 +85,10 @@ export class RouterTradeAdapter {
 
     if (!route) throw new Error('Expected route to be present')
     if (!route.length) throw new Error('Expected there to be at least one route')
-    if(route.some((r) => !r.length)) throw new Error('Expected all routes to have at least one pool')
+    if (route.some((r) => !r.length)) throw new Error('Expected all routes to have at least one pool')
     const firstRoute = route[0]
-    if(!firstRoute.length) throw new Error('Expected route to have at least one pool')
-    
+    if (!firstRoute.length) throw new Error('Expected route to have at least one pool')
+
     const tokenInData = firstRoute[0].tokenIn
     const tokenOutData = firstRoute[firstRoute.length - 1].tokenOut
 
