@@ -1,11 +1,5 @@
 import { MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
-import {
-  Currency,
-  CurrencyAmount,
-  Ether,
-  Token,
-  TradeType,
-} from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Ether, Token, TradeType } from '@uniswap/sdk-core'
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { Pool, Route as V3Route, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber } from 'ethers'
@@ -85,7 +79,6 @@ export class RouterTradeAdapter {
     if (!route.length) throw new Error('Expected there to be at least one route')
     if (route.some((r) => !r.length)) throw new Error('Expected all routes to have at least one pool')
     const firstRoute = route[0]
-    if (!firstRoute.length) throw new Error('Expected route to have at least one pool')
 
     const tokenInData = firstRoute[0].tokenIn
     const tokenOutData = firstRoute[firstRoute.length - 1].tokenOut
@@ -98,9 +91,6 @@ export class RouterTradeAdapter {
     const parsedCurrencyOut = RouterTradeAdapter.toCurrency(isNativeCurrency(tokenOut), tokenOutData)
 
     const typedRoutes: RouteResult[] = route.map((subRoute) => {
-      if (subRoute.length === 0) {
-        throw new Error('Expected route to have at least one pair or pool')
-      }
       const rawAmountIn = subRoute[0].amountIn
       const rawAmountOut = subRoute[subRoute.length - 1].amountOut
 

@@ -704,6 +704,84 @@ describe('Uniswap', () => {
     })
   })
 
+  const mockV2PoolInRoute = (
+    pair: Pair,
+    tokenIn: Token,
+    tokenOut: Token,
+    amountIn: string,
+    amountOut: string
+  ): V2PoolInRoute => {
+    // get token0 and token1
+    const token0 = tokenIn.sortsBefore(tokenOut) ? tokenIn : tokenOut
+    const token1 = tokenIn.sortsBefore(tokenOut) ? tokenOut : tokenIn
+
+    return {
+      type: PoolType.V2Pool,
+      tokenIn: {
+        address: tokenIn.address,
+        chainId: 1,
+        symbol: tokenIn.symbol!,
+        decimals: String(tokenIn.decimals),
+      },
+      tokenOut: {
+        address: tokenOut.address,
+        chainId: 1,
+        symbol: tokenOut.symbol!,
+        decimals: String(tokenOut.decimals),
+      },
+      reserve0: {
+        token: {
+          address: token0.address,
+          chainId: 1,
+          symbol: token0.symbol!,
+          decimals: String(token0.decimals),
+        },
+        quotient: pair.reserve0.quotient.toString(),
+      },
+      reserve1: {
+        token: {
+          address: token1.address,
+          chainId: 1,
+          symbol: token1.symbol!,
+          decimals: String(token1.decimals),
+        },
+        quotient: pair.reserve1.quotient.toString(),
+      },
+      amountIn,
+      amountOut,
+    }
+  }
+
+  const mockV3PoolInRoute = (
+    pool: Pool,
+    tokenIn: Token,
+    tokenOut: Token,
+    amountIn: string,
+    amountOut: string
+  ): V3PoolInRoute => {
+    return {
+      type: PoolType.V3Pool,
+      tokenIn: {
+        address: tokenIn.address,
+        chainId: 1,
+        symbol: tokenIn.symbol!,
+        decimals: String(tokenIn.decimals),
+      },
+      tokenOut: {
+        address: tokenOut.address,
+        chainId: 1,
+        symbol: tokenOut.symbol!,
+        decimals: String(tokenOut.decimals),
+      },
+      sqrtRatioX96: pool.sqrtRatioX96.toString(),
+      liquidity: pool.liquidity.toString(),
+      tickCurrent: pool.tickCurrent.toString(),
+      fee: pool.fee.toString(),
+      amountIn,
+      amountOut,
+    }
+  }
+
   for (let tradeType of [TradeType.EXACT_INPUT, TradeType.EXACT_OUTPUT]) {
     describe('RouterTradeAdapter ' + tradeType, () => {
       const getAmountToken = (
@@ -722,84 +800,6 @@ describe('Uniswap', () => {
         return tradeType === TradeType.EXACT_INPUT
           ? CurrencyAmount.fromRawAmount(tokenIn, amount)
           : CurrencyAmount.fromRawAmount(tokenOut, amount)
-      }
-
-      const mockV2PoolInRoute = (
-        pair: Pair,
-        tokenIn: Token,
-        tokenOut: Token,
-        amountIn: string,
-        amountOut: string
-      ): V2PoolInRoute => {
-        // get token0 and token1
-        const token0 = tokenIn.sortsBefore(tokenOut) ? tokenIn : tokenOut
-        const token1 = tokenIn.sortsBefore(tokenOut) ? tokenOut : tokenIn
-
-        return {
-          type: PoolType.V2Pool,
-          tokenIn: {
-            address: tokenIn.address,
-            chainId: 1,
-            symbol: tokenIn.symbol!,
-            decimals: String(tokenIn.decimals),
-          },
-          tokenOut: {
-            address: tokenOut.address,
-            chainId: 1,
-            symbol: tokenOut.symbol!,
-            decimals: String(tokenOut.decimals),
-          },
-          reserve0: {
-            token: {
-              address: token0.address,
-              chainId: 1,
-              symbol: token0.symbol!,
-              decimals: String(token0.decimals),
-            },
-            quotient: pair.reserve0.quotient.toString(),
-          },
-          reserve1: {
-            token: {
-              address: token1.address,
-              chainId: 1,
-              symbol: token1.symbol!,
-              decimals: String(token1.decimals),
-            },
-            quotient: pair.reserve1.quotient.toString(),
-          },
-          amountIn,
-          amountOut,
-        }
-      }
-
-      const mockV3PoolInRoute = (
-        pool: Pool,
-        tokenIn: Token,
-        tokenOut: Token,
-        amountIn: string,
-        amountOut: string
-      ): V3PoolInRoute => {
-        return {
-          type: PoolType.V3Pool,
-          tokenIn: {
-            address: tokenIn.address,
-            chainId: 1,
-            symbol: tokenIn.symbol!,
-            decimals: String(tokenIn.decimals),
-          },
-          tokenOut: {
-            address: tokenOut.address,
-            chainId: 1,
-            symbol: tokenOut.symbol!,
-            decimals: String(tokenOut.decimals),
-          },
-          sqrtRatioX96: pool.sqrtRatioX96.toString(),
-          liquidity: pool.liquidity.toString(),
-          tickCurrent: pool.tickCurrent.toString(),
-          fee: pool.fee.toString(),
-          amountIn,
-          amountOut,
-        }
       }
 
       function compareUniswapTrades(left: UniswapTrade, right: UniswapTrade): void {
@@ -1186,4 +1186,97 @@ describe('Uniswap', () => {
       })
     })
   }
+
+  describe('RouterTradeAdapter handles malformed classic quote', () => {
+    it('throws on missing route', async () => {
+      const classicQuote: any = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw('Expected route to be present')
+    })
+    it('throws on no route', async () => {
+      const classicQuote: any = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [],
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw(
+        'Expected there to be at least one route'
+      )
+    })
+    it('throws on route with no pools', async () => {
+      const classicQuote: any = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [[]],
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw(
+        'Expected all routes to have at least one pool'
+      )
+    })
+    it('throws on quote missing tokenIn/Out', async () => {
+      const classicQuote: any = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            {
+              ...mockV2PoolInRoute(USDC_DAI_V2, DAI, USDC, '1000', '1000'),
+              tokenIn: undefined,
+            },
+          ],
+        ],
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw(
+        'Expected both tokenIn and tokenOut to be present'
+      )
+    })
+    it('throws on route with mismatched token chainIds', async () => {
+      const classicQuote: PartialClassicQuote = {
+        tokenIn: DAI.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            {
+              ...mockV2PoolInRoute(USDC_DAI_V2, DAI, USDC, '1000', '1000'),
+              tokenIn: {
+                address: DAI.address,
+                // Different chainId
+                chainId: 2,
+                symbol: DAI.symbol!,
+                decimals: String(DAI.decimals),
+              },
+            },
+          ],
+        ],
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw(
+        'Expected tokenIn and tokenOut to be have same chainId'
+      )
+    })
+    it('throws on route with missing amountIn/Out', async () => {
+      const classicQuote: any = {
+        tokenIn: WETH.address,
+        tokenOut: USDC.address,
+        tradeType: TradeType.EXACT_INPUT,
+        route: [
+          [
+            {
+              ...mockV2PoolInRoute(USDC_DAI_V2, DAI, USDC, '1000', '1000'),
+              amountIn: undefined,
+            },
+          ],
+        ],
+      }
+      expect(() => RouterTradeAdapter.fromClassicQuote(classicQuote)).to.throw(
+        'Expected both raw amountIn and raw amountOut to be present'
+      )
+    })
+  })
 })
