@@ -1,17 +1,15 @@
 import { MixedRouteSDK, Trade as RouterTrade } from '@uniswap/router-sdk'
 import {
-  ChainId,
   Currency,
   CurrencyAmount,
   Ether,
-  NativeCurrency as SdkNativeCurrency,
   Token,
   TradeType,
 } from '@uniswap/sdk-core'
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { Pool, Route as V3Route, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber } from 'ethers'
-import { ETH_ADDRESS, E_ETH_ADDRESS, WRAPPED_NATIVE_CURRENCY } from './constants'
+import { ETH_ADDRESS, E_ETH_ADDRESS } from './constants'
 
 export type TokenInRoute = {
   address: string
@@ -168,7 +166,7 @@ export class RouterTradeAdapter {
 
   private static toCurrency(isNative: boolean, token: TokenInRoute): Currency {
     if (isNative) {
-      return new NativeCurrency(token.chainId, parseInt(token.decimals))
+      return Ether.onChain(token.chainId)
     }
     return this.toToken(token)
   }
@@ -214,27 +212,5 @@ export class RouterTradeAdapter {
     route: (V3PoolInRoute | V2PoolInRoute)[]
   ): route is T[] {
     return route.every((pool) => pool.type === type)
-  }
-}
-
-export class NativeCurrency extends SdkNativeCurrency {
-  constructor(chainId: ChainId, decimals: number, symbol?: string, name?: string) {
-    if (chainId === ChainId.MAINNET) {
-      return Ether.onChain(chainId)
-    }
-    super(chainId, decimals, symbol, name)
-  }
-
-  equals(currency: Currency): boolean {
-    return currency.isNative && currency.chainId === this.chainId
-  }
-
-  get wrapped(): Token {
-    const wrapped = WRAPPED_NATIVE_CURRENCY[this.chainId as ChainId]
-    if (!wrapped) {
-      throw new Error('unsupported chain')
-    }
-
-    return wrapped
   }
 }
