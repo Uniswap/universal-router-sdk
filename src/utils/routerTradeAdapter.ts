@@ -73,7 +73,8 @@ interface RouteResult {
   outputAmount: CurrencyAmount<Currency>
 }
 
-export const isNativeCurrency = (address: string) => address.toLowerCase() === ETH_ADDRESS.toLowerCase() || address.toLowerCase() === E_ETH_ADDRESS.toLowerCase();
+export const isNativeCurrency = (address: string) =>
+  address.toLowerCase() === ETH_ADDRESS.toLowerCase() || address.toLowerCase() === E_ETH_ADDRESS.toLowerCase()
 
 // Helper class to convert routing-specific quote entities to RouterTrade entities
 // the returned RouterTrade can then be used to build the UniswapTrade entity in this package
@@ -82,8 +83,15 @@ export class RouterTradeAdapter {
   static fromClassicQuote(quote: PartialClassicQuote) {
     const { route, tokenIn, tokenOut } = quote
 
-    const tokenInData = route[0]?.[0]?.tokenIn
-    const tokenOutData = route[0]?.[route[0]?.length - 1]?.tokenOut
+    if (!route) throw new Error('Expected route to be present')
+    if (!route.length) throw new Error('Expected there to be at least one route')
+    if(route.some((r) => !r.length)) throw new Error('Expected all routes to have at least one pool')
+    const firstRoute = route[0]
+    if(!firstRoute.length) throw new Error('Expected route to have at least one pool')
+    
+    const tokenInData = firstRoute[0].tokenIn
+    const tokenOutData = firstRoute[firstRoute.length - 1].tokenOut
+
     if (!tokenInData || !tokenOutData) throw new Error('Expected both tokenIn and tokenOut to be present')
     if (tokenInData.chainId !== tokenOutData.chainId)
       throw new Error('Expected tokenIn and tokenOut to be have same chainId')
