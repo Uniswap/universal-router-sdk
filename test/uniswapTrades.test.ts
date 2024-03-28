@@ -3,9 +3,9 @@ import JSBI from 'jsbi'
 import { BigNumber, ethers, utils, Wallet } from 'ethers'
 import { expandTo18Decimals } from '../src/utils/numbers'
 import { SwapRouter, UniswapTrade, FlatFeeOptions } from '../src'
-import { MixedRouteTrade, MixedRouteSDK, MixedRoute } from '@uniswap/router-sdk'
+import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
-import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions, Trade } from '@uniswap/v3-sdk'
+import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions } from '@uniswap/v3-sdk'
 import { generatePermitSignature, toInputPermit, makePermit, generateEip2098PermitSignature } from './utils/permit2'
 import { CurrencyAmount, Ether, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
@@ -13,7 +13,6 @@ import { buildTrade, getUniswapPools, swapOptions, ETHER, DAI, USDC, WETH } from
 import { hexToDecimalString } from './utils/hexToDecimalString'
 import { FORGE_PERMIT2_ADDRESS, FORGE_ROUTER_ADDRESS, TEST_FEE_RECIPIENT_ADDRESS } from './utils/addresses'
 import {
-  NativeCurrency,
   PartialClassicQuote,
   PoolType,
   RouterTradeAdapter,
@@ -785,18 +784,18 @@ describe('Uniswap', () => {
   for (let tradeType of [TradeType.EXACT_INPUT, TradeType.EXACT_OUTPUT]) {
     describe('RouterTradeAdapter ' + tradeType, () => {
       const getAmountToken = (
-        tokenIn: Token | NativeCurrency,
-        tokenOut: Token | NativeCurrency,
+        tokenIn: Token | Ether,
+        tokenOut: Token | Ether,
         tradeType: TradeType
-      ): Token | NativeCurrency => {
+      ): Token | Ether => {
         return tradeType === TradeType.EXACT_INPUT ? tokenIn : tokenOut
       }
       const getAmount = (
-        tokenIn: Token | NativeCurrency,
-        tokenOut: Token | NativeCurrency,
+        tokenIn: Token | Ether,
+        tokenOut: Token | Ether,
         amount: string,
         tradeType: TradeType
-      ): CurrencyAmount<Token | NativeCurrency> => {
+      ): CurrencyAmount<Token | Ether> => {
         return tradeType === TradeType.EXACT_INPUT
           ? CurrencyAmount.fromRawAmount(tokenIn, amount)
           : CurrencyAmount.fromRawAmount(tokenOut, amount)
@@ -1139,7 +1138,7 @@ describe('Uniswap', () => {
       })
 
       // Mixed routes are only supported for exact input
-      if(tradeType === TradeType.EXACT_INPUT) {
+      if (tradeType === TradeType.EXACT_INPUT) {
         it('v2/v3 - mixed route erc20 <> erc20', async () => {
           const [tokenIn, tokenOut] = [DAI, WETH]
           const inputAmount = ethers.utils
@@ -1182,7 +1181,6 @@ describe('Uniswap', () => {
           compareUniswapTrades(new UniswapTrade(buildTrade([trade]), opts), new UniswapTrade(routerTrade, opts))
         })
       }
-
 
       it('v3 - handles split routes properly', async () => {
         const [tokenIn, tokenOut] = [WETH, USDC]
