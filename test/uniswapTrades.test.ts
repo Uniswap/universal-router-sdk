@@ -3,9 +3,9 @@ import JSBI from 'jsbi'
 import { BigNumber, ethers, utils, Wallet } from 'ethers'
 import { expandTo18Decimals } from '../src/utils/numbers'
 import { SwapRouter, UniswapTrade, FlatFeeOptions } from '../src'
-import { MixedRouteTrade, MixedRouteSDK } from '@uniswap/router-sdk'
+import { MixedRouteTrade, MixedRouteSDK, MixedRoute } from '@uniswap/router-sdk'
 import { Trade as V2Trade, Pair, Route as RouteV2 } from '@uniswap/v2-sdk'
-import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions } from '@uniswap/v3-sdk'
+import { Trade as V3Trade, Route as RouteV3, Pool, FeeOptions, Trade } from '@uniswap/v3-sdk'
 import { generatePermitSignature, toInputPermit, makePermit, generateEip2098PermitSignature } from './utils/permit2'
 import { CurrencyAmount, Ether, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { registerFixture } from './forge/writeInterop'
@@ -1137,6 +1137,52 @@ describe('Uniswap', () => {
 
         compareUniswapTrades(new UniswapTrade(buildTrade([trade]), opts), new UniswapTrade(routerTrade, opts))
       })
+
+      // Mixed routes are only supported for exact input
+      if(tradeType === TradeType.EXACT_INPUT) {
+        it('v2/v3 - mixed route erc20 <> erc20', async () => {
+          const [tokenIn, tokenOut] = [DAI, WETH]
+          const inputAmount = ethers.utils
+            .parseUnits('1', getAmountToken(tokenIn, tokenOut, tradeType).decimals)
+            .toString()
+          const rawInputAmount = getAmount(tokenIn, tokenOut, inputAmount, tradeType)
+
+          const opts = swapOptions({})
+          const trade = await MixedRouteTrade.fromRoute(
+            new MixedRouteSDK([USDC_DAI_V3, WETH_USDC_V2], tokenIn, tokenOut),
+            rawInputAmount,
+            tradeType
+          )
+
+          const classicQuote: PartialClassicQuote = {
+            tokenIn: DAI.address,
+            tokenOut: USDC.address,
+            tradeType,
+            route: [
+              [
+                mockV3PoolInRoute(
+                  USDC_DAI_V3,
+                  DAI,
+                  USDC,
+                  trade.inputAmount.quotient.toString(),
+                  trade.outputAmount.quotient.toString()
+                ),
+                mockV2PoolInRoute(
+                  WETH_USDC_V2,
+                  USDC,
+                  WETH,
+                  trade.inputAmount.quotient.toString(),
+                  trade.outputAmount.quotient.toString()
+                ),
+              ],
+            ],
+          }
+          const routerTrade = RouterTradeAdapter.fromClassicQuote(classicQuote)
+
+          compareUniswapTrades(new UniswapTrade(buildTrade([trade]), opts), new UniswapTrade(routerTrade, opts))
+        })
+      }
+
 
       it('v3 - handles split routes properly', async () => {
         const [tokenIn, tokenOut] = [WETH, USDC]
