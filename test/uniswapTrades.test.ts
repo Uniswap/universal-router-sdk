@@ -783,11 +783,7 @@ describe('Uniswap', () => {
 
   for (let tradeType of [TradeType.EXACT_INPUT, TradeType.EXACT_OUTPUT]) {
     describe('RouterTradeAdapter ' + tradeType, () => {
-      const getAmountToken = (
-        tokenIn: Token | Ether,
-        tokenOut: Token | Ether,
-        tradeType: TradeType
-      ): Token | Ether => {
+      const getAmountToken = (tokenIn: Token | Ether, tokenOut: Token | Ether, tradeType: TradeType): Token | Ether => {
         return tradeType === TradeType.EXACT_INPUT ? tokenIn : tokenOut
       }
       const getAmount = (
