@@ -1,4 +1,3 @@
-import { ChainId, Token } from '@uniswap/sdk-core'
 import { BigNumber } from 'ethers'
 
 type ChainConfig = {

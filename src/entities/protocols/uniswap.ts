@@ -30,8 +30,9 @@ export type FlatFeeOptions = {
 // the existing router permit object doesn't include enough data for permit2
 // so we extend swap options with the permit2 permit
 // when safe mode is enabled, the SDK will add an extra ETH sweep for security
+// when useRouterBalance is enabled the SDK will use the balance in the router for the swap
 export type SwapOptions = Omit<RouterSwapOptions, 'inputTokenPermit'> & {
-  directSend?: boolean
+  useRouterBalance?: boolean
   inputTokenPermit?: Permit2Permit
   flatFee?: FlatFeeOptions
   safeMode?: boolean
@@ -55,7 +56,7 @@ export class UniswapTrade implements Command {
     if (!!options.fee && !!options.flatFee) throw new Error('Only one fee option permitted')
 
     if (this.inputRequiresWrap) this.payerIsUser = false
-    else if (this.options.directSend) this.payerIsUser = false
+    else if (this.options.useRouterBalance) this.payerIsUser = false
     else this.payerIsUser = true
   }
 
@@ -65,7 +66,7 @@ export class UniswapTrade implements Command {
 
   encode(planner: RoutePlanner, _config: TradeConfig): void {
     // If the input currency is the native currency, we need to wrap it with the router as the recipient
-    if (this.trade.inputAmount.currency.isNative) {
+    if (this.inputRequiresWrap) {
       // TODO: optimize if only one v2 pool we can directly send this to the pool
       planner.addCommand(CommandType.WRAP_ETH, [
         ROUTER_AS_RECIPIENT,
