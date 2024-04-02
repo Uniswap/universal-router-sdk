@@ -264,7 +264,7 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
     }
   }
 
-  if(tradeType !== TradeType.EXACT_INPUT) {
+  if (tradeType !== TradeType.EXACT_INPUT) {
     throw new Error('TRADE_TYPE')
   }
 
