@@ -198,6 +198,8 @@ function addV2Swap<TInput extends Currency, TOutput extends Currency>(
       route.path.map((pool) => pool.address),
       payerIsUser,
     ])
+  } else {
+    throw new Error('TRADE_TYPE')
   }
 }
 
@@ -234,6 +236,8 @@ function addV3Swap<TInput extends Currency, TOutput extends Currency>(
       path,
       payerIsUser,
     ])
+  } else {
+    throw new Error('TRADE_TYPE')
   }
 }
 
@@ -258,6 +262,10 @@ function addMixedSwap<TInput extends Currency, TOutput extends Currency>(
     } else {
       throw new Error('Invalid route type')
     }
+  }
+
+  if(tradeType !== TradeType.EXACT_INPUT) {
+    throw new Error('TRADE_TYPE')
   }
 
   const trade = MixedRouteTrade.createUncheckedTrade({
