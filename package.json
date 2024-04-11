@@ -22,6 +22,7 @@
     "prettier:fix": "prettier --write '**/*.ts' && prettier --write '**/*.json'",
     "forge:fix": "forge fmt",
     "lint:fix": "yarn prettier:fix && yarn forge:fix",
+    "prepublishOnly": "tsdx build",
     "prettier": "prettier --check '**/*.ts' && prettier --check '**/*.json'",
     "docs": "typedoc"
   },
